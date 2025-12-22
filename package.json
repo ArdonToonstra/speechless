@@ -15,24 +15,37 @@
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start"
   },
   "dependencies": {
+    "@payloadcms/db-postgres": "beta",
     "@payloadcms/next": "beta",
     "@payloadcms/payload-cloud": "beta",
     "@payloadcms/richtext-lexical": "beta",
+    "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-slot": "^1.2.4",
+    "class-variance-authority": "^0.7.1",
     "cross-env": "^7.0.3",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.26",
     "graphql": "^16.8.1",
-    "next": "15.0.0",
+    "lucide-react": "^0.561.0",
+    "next": "^15.5.7",
     "payload": "beta",
     "react": "19.0.0-rc-65a56d0e-20241020",
+    "react-day-picker": "^9.13.0",
     "react-dom": "19.0.0-rc-65a56d0e-20241020",
     "sharp": "0.32.6",
-    "@payloadcms/db-postgres": "beta"
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/node": "^22.5.4",
     "@types/react": "npm:types-react@19.0.0-rc.1",
     "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1",
+    "autoprefixer": "^10.4.23",
+    "clsx": "^2.1.1",
     "eslint": "^8",
-    "eslint-config-next": "15.0.0",
+    "eslint-config-next": "^15.5.7",
+    "postcss": "^8.5.6",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss": "^3.4.17",
     "typescript": "5.6.3"
   },
   "engines": {
@@ -42,10 +55,24 @@
     "overrides": {
       "@types/react": "npm:types-react@19.0.0-rc.1",
       "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1"
+    },
+    "supportedArchitectures": {
+      "os": [
+        "win32",
+        "linux"
+      ],
+      "cpu": [
+        "x64"
+      ],
+      "libc": [
+        "glibc",
+        "musl"
+      ]
     }
   },
   "overrides": {
     "@types/react": "npm:types-react@19.0.0-rc.1",
     "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1"
-  }
+  },
+  "packageManager": "pnpm@10.26.0+sha512.3b3f6c725ebe712506c0ab1ad4133cf86b1f4b687effce62a9b38b4d72e3954242e643190fc51fa1642949c735f403debd44f5cb0edd657abe63a8b6a7e1e402"
 }
