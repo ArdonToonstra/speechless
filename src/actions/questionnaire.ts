@@ -41,8 +41,12 @@ export async function submitQuestionnaire(data: {
 }) {
     const payload = await getPayload({ config })
 
+    console.log('[submitQuestionnaire] Starting submission...')
+    console.log('[submitQuestionnaire] Data:', { projectId: data.projectId, token: data.token, submitterName: data.submitterName })
+
     try {
         // Verify the project exists with this magic token
+        console.log('[submitQuestionnaire] Verifying project...')
         const projects = await payload.find({
             collection: 'projects',
             where: {
@@ -52,7 +56,10 @@ export async function submitQuestionnaire(data: {
             limit: 1,
         })
 
+        console.log('[submitQuestionnaire] Projects found:', projects.docs.length)
+
         if (!projects.docs.length) {
+            console.error('[submitQuestionnaire] Invalid project or token')
             return { error: 'Invalid project or token' }
         }
 
@@ -62,6 +69,7 @@ export async function submitQuestionnaire(data: {
 
         // Find or create a guest for this submission
         // For now, let's create a temporary guest record
+        console.log('[submitQuestionnaire] Creating guest record...')
         const guest = await payload.create({
             collection: 'guests',
             data: {
@@ -73,23 +81,32 @@ export async function submitQuestionnaire(data: {
             },
         })
 
+        console.log('[submitQuestionnaire] Guest created:', guest.id)
+
         // Create the submission
-        await payload.create({
+        // Filter out empty answers - only submit questions that were actually answered
+        const validAnswers = data.answers.filter(a => a.answer && a.answer.trim().length > 0)
+
+        console.log('[submitQuestionnaire] Creating submission with', validAnswers.length, 'answers...')
+        const submission = await payload.create({
             collection: 'submissions',
             data: {
                 project: data.projectId,
                 guest: guest.id,
                 submitterName: data.submitterName,
-                answers: data.answers,
+                answers: validAnswers,
             },
         })
+
+        console.log('[submitQuestionnaire] Submission created:', submission.id)
 
         // Revalidate the input page to show new submission
         revalidatePath(`/projects/${data.projectId}/input`)
 
+        console.log('[submitQuestionnaire] Success!')
         return { success: true }
     } catch (error) {
-        console.error('Failed to submit questionnaire:', error)
+        console.error('[submitQuestionnaire] Error occurred:', error)
         return { error: 'Failed to submit questionnaire' }
     }
 }
