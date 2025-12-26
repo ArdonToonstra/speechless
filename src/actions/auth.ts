@@ -46,11 +46,12 @@ export async function login(formData: FormData) {
 }
 
 export async function signup(formData: FormData) {
+    const name = formData.get('name') as string
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     const confirmPassword = formData.get('confirmPassword') as string
 
-    if (!email || !password || !confirmPassword) {
+    if (!name || !email || !password || !confirmPassword) {
         return { error: 'All fields are required' }
     }
 
@@ -68,9 +69,10 @@ export async function signup(formData: FormData) {
         await payload.create({
             collection: 'users',
             data: {
+                name,
                 email,
                 password,
-            }
+            } as any
         })
 
         // Auto-login after creation
