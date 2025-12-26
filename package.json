@@ -15,6 +15,14 @@
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start"
   },
   "dependencies": {
+    "@lexical/code": "0.20.0", 
+    "@lexical/history": "0.20.0",
+    "@lexical/link": "0.20.0",
+    "@lexical/list": "0.20.0",
+    "@lexical/markdown": "0.20.0",
+    "@lexical/react": "0.20.0",
+    "@lexical/rich-text": "0.20.0",
+    "@lexical/table": "0.20.0",
     "@payloadcms/db-postgres": "beta",
     "@payloadcms/next": "beta",
     "@payloadcms/payload-cloud": "beta",
@@ -26,6 +34,7 @@
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.26",
     "graphql": "^16.8.1",
+    "lexical": "0.20.0",
     "lucide-react": "^0.561.0",
     "next": "^15.5.7",
     "payload": "beta",
@@ -52,10 +61,9 @@
     "node": "^18.20.2 || >=20.9.0"
   },
   "pnpm": {
-    "overrides": {
-      "@types/react": "npm:types-react@19.0.0-rc.1",
-      "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1"
-    },
+    "onlyBuiltDependencies": [
+      "sharp"
+    ],
     "supportedArchitectures": {
       "os": [
         "win32",
@@ -72,7 +80,27 @@
   },
   "overrides": {
     "@types/react": "npm:types-react@19.0.0-rc.1",
-    "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1"
+    "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1",
+    "lexical": "0.20.0",
+    "@lexical/react": "0.20.0",
+    "@lexical/rich-text": "0.20.0",
+    "@lexical/history": "0.20.0",
+    "@lexical/markdown": "0.20.0",
+    "@lexical/table": "0.20.0",
+    "@lexical/list": "0.20.0",
+    "@lexical/code": "0.20.0",
+    "@lexical/link": "0.20.0",
+    "@lexical/clipboard": "0.20.0",
+    "@lexical/mark": "0.20.0",
+    "@lexical/selection": "0.20.0",
+    "@lexical/utils": "0.20.0",
+    "@lexical/text": "0.20.0",
+    "@lexical/plain-text": "0.20.0",
+    "@lexical/overflow": "0.20.0",
+    "@lexical/file": "0.20.0",
+    "@lexical/dragon": "0.20.0",
+    "@lexical/offset": "0.20.0",
+    "@lexical/yjs": "0.20.0"
   },
   "packageManager": "pnpm@10.26.0+sha512.3b3f6c725ebe712506c0ab1ad4133cf86b1f4b687effce62a9b38b4d72e3954242e643190fc51fa1642949c735f403debd44f5cb0edd657abe63a8b6a7e1e402"
 }

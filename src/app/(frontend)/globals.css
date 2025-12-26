@@ -4,45 +4,44 @@
 
 @layer base {
   :root {
-    /* Slate-50 Background */
-    --background: 210 40% 98%;
-    /* Slate-900 Foreground */
-    --foreground: 222 47% 11%;
-    /* Card: White or Slate-50? Let's keep cards white for contrast against Slate-50 bg, or Slate-50? */
-    /* Let's try White cards on Slate bg as standard 'clean' look. */
+    /* Primary (Teal): #166162 */
+    --primary: 181 63% 23%;
+    --primary-foreground: 53 27% 95%;
+
+    /* Background (Off-white): #F6F5EF */
+    --background: 53 27% 95%;
+    --foreground: 80 18% 5%;
+
+    /* Card & Popover */
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 80 18% 5%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 80 18% 5%;
 
-    /* Indigo-600 Primary */
-    --primary: 249 72% 58%;
-    --primary-foreground: 0 0% 98%;
+    /* Secondary (Muted Blue): #8EA9BB */
+    --secondary: 204 25% 64%;
+    --secondary-foreground: 80 18% 5%;
 
-    /* Slate-100? or Muted */
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11%;
+    /* Muted (Brown): #695D50 */
+    --muted: 31 14% 36%;
+    --muted-foreground: 31 14% 30%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215 16% 47%;
+    /* Accent (Vibrant Teal): #409498 */
+    --accent: 182 41% 42%;
+    --accent-foreground: 53 27% 95%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222 47% 11%;
+    /* Celebration (Muted Gold): #93895E */
+    --celebration: 49 22% 47%;
+    --celebration-foreground: 53 27% 95%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 249 72% 58%;
-    /* Match primary */
+    --border: 31 14% 36%;
+    --input: 31 14% 36%;
+    --ring: 181 63% 23%;
 
     --radius: 0.5rem;
-
-    /* Custom Celebration (Amber-400) */
-    --celebration: 45 93% 47%;
-    /* adjusted amber */
-    --celebration-foreground: 222 47% 11%;
 
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
@@ -52,39 +51,38 @@
   }
 
   .dark {
-    /* Slate-950 Background */
-    --background: 222 47% 11%;
-    /* Slate-50 Foreground */
-    --foreground: 210 40% 98%;
+    /* Dark Background: #181e0e */
+    --background: 80 40% 7%;
+    --foreground: 53 27% 95%;
 
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
+    --card: 80 40% 10%;
+    --card-foreground: 53 27% 95%;
 
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 80 40% 10%;
+    --popover-foreground: 53 27% 95%;
 
-    /* Indigo-500 for Dark mode (lighter) */
-    --primary: 249 72% 65%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary (Lighter Teal for Dark Mode) */
+    --primary: 181 63% 35%;
+    --primary-foreground: 53 27% 95%;
 
-    --secondary: 217 32% 17%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 204 20% 20%;
+    --secondary-foreground: 53 27% 95%;
 
-    --muted: 217 32% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 31 10% 20%;
+    --muted-foreground: 31 10% 70%;
 
-    --accent: 217 32% 17%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 182 41% 50%;
+    --accent-foreground: 53 27% 95%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 53 27% 95%;
 
-    --border: 217 32% 17%;
-    --input: 217 32% 17%;
-    --ring: 249 72% 65%;
+    --border: 31 10% 25%;
+    --input: 31 10% 25%;
+    --ring: 181 63% 35%;
 
-    --celebration: 45 93% 47%;
-    --celebration-foreground: 210 40% 98%;
+    --celebration: 49 22% 47%;
+    --celebration-foreground: 53 27% 95%;
 
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;

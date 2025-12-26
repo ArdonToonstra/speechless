@@ -95,5 +95,23 @@ export const Projects: CollectionConfig = {
                 position: 'sidebar',
             },
         },
+        {
+            name: 'magicLinkToken',
+            type: 'text',
+            index: true,
+            admin: {
+                readOnly: true,
+                position: 'sidebar',
+            },
+        },
+        {
+            name: 'magicLinkEnabled',
+            type: 'checkbox',
+            label: 'Enable Public Sharing',
+            defaultValue: false,
+            admin: {
+                position: 'sidebar',
+            },
+        },
     ],
 }

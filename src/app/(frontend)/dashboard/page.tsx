@@ -15,41 +15,34 @@ export default async function DashboardPage() {
     // Since authentication is handled by Payload, we check for the user.
     const { headers } = await import('next/headers')
     const headersList = await headers()
-    const user = await payload.auth({ headers: headersList }) as unknown as User | null
+    const authResult = await payload.auth({ headers: headersList })
+    const user = authResult.user
 
-    if (!user) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold mb-4">Please Log In</h1>
-                    <Button asChild>
-                        <Link href="/admin/login">Log In to continue</Link>
-                    </Button>
-                </div>
-            </div>
-        )
+    if (!user || !user.id || String(user.id) === 'NaN' || Number.isNaN(Number(user.id))) {
+        const { redirect } = await import('next/navigation')
+        redirect('/admin/login')
     }
 
     const projects = await payload.find({
         collection: 'projects',
         where: {
             owner: {
-                equals: user.id
+                equals: user!.id
             }
         },
         depth: 1,
     })
 
     return (
-        <div className="min-h-screen bg-slate-50 p-6 md:p-12">
+        <div className="min-h-screen bg-background p-6 md:p-12">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="flex justify-between items-end mb-12">
                     <div>
-                        <h1 className="text-3xl font-serif font-bold text-slate-900">Your Speeches</h1>
-                        <p className="text-slate-500 mt-2">Welcome back, {user.email}</p>
+                        <h1 className="text-3xl font-serif font-bold text-foreground">Your Speeches</h1>
+                        <p className="text-muted-foreground mt-2">Welcome back, {user?.email}</p>
                     </div>
-                    <Button asChild className="rounded-full px-6 bg-indigo-600 hover:bg-indigo-700">
+                    <Button asChild className="rounded-full px-6 bg-primary hover:opacity-90">
                         <Link href="/onboarding">
                             <Plus className="w-4 h-4 mr-2" />
                             New Project
@@ -65,10 +58,10 @@ export default async function DashboardPage() {
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
-                        <h2 className="text-xl font-semibold text-slate-800 mb-2">No speeches yet</h2>
-                        <p className="text-slate-400 mb-6">Ready to write a masterpiece?</p>
-                        <Button asChild variant="outline" className="rounded-full">
+                    <div className="text-center py-20 bg-card rounded-3xl border border-dashed border-border">
+                        <h2 className="text-xl font-semibold text-foreground mb-2">No speeches yet</h2>
+                        <p className="text-muted-foreground mb-6">Ready to write a masterpiece?</p>
+                        <Button asChild variant="outline" className="rounded-full text-foreground border-border">
                             <Link href="/onboarding">Start First Project</Link>
                         </Button>
                     </div>

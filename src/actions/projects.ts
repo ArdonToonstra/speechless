@@ -19,9 +19,10 @@ export async function createProject(data: { title: string; type: string; date: s
     // In Next.js App Router + Payload, we can use `headers()`
     const { headers } = await import('next/headers')
     const headersList = await headers()
-    const user = await payload.auth({ headers: headersList }) as unknown as User | null
+    const authResult = await payload.auth({ headers: headersList })
+    const user = authResult.user
 
-    if (!user) {
+    if (!user || !user.id || String(user.id) === 'NaN' || Number.isNaN(Number(user.id))) {
         return { error: 'Unauthorized' }
     }
 
@@ -41,5 +42,48 @@ export async function createProject(data: { title: string; type: string; date: s
     } catch (error) {
         console.error('Create Project Error:', error)
         return { error: 'Failed to create project' }
+    }
+}
+
+export async function updateProjectContent(projectId: string, content: any) {
+    const payload = await getPayload({ config: configPromise })
+
+    // Auth check
+    const { headers } = await import('next/headers')
+    const headersList = await headers()
+    const authResult = await payload.auth({ headers: headersList })
+    const user = authResult.user
+
+    if (!user) {
+        return { error: 'Unauthorized' }
+    }
+
+    try {
+        // Verify ownership (optional but good practice, though Payload access control handles it too if using API)
+        // Since we are using Local API as admin usually (unless we pass user context), we should be careful.
+        // But here we are just calling local API. 
+        // Best to check if user owns it.
+        const project = await payload.findByID({
+            collection: 'projects',
+            id: projectId,
+            depth: 0,
+        })
+
+        if (!project || (typeof project.owner === 'object' ? project.owner.id : project.owner) !== user.id) {
+            return { error: 'Unauthorized or not found' }
+        }
+
+        await payload.update({
+            collection: 'projects',
+            id: projectId,
+            data: {
+                content,
+            },
+        })
+
+        return { success: true }
+    } catch (error) {
+        console.error('Update Project Error:', error)
+        return { error: 'Failed to update project' }
     }
 }

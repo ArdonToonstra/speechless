@@ -92,7 +92,7 @@ export function Wizard({ steps, onComplete, isSubmitting = false }: WizardProps)
                     disabled={!steps[currentStep].isValid || isSubmitting}
                     className={cn(
                         "min-w-[120px] rounded-full transition-all duration-300",
-                        currentStep === totalSteps - 1 ? "bg-amber-400 hover:bg-amber-500 text-slate-900 font-semibold" : "bg-primary text-white hover:bg-indigo-700"
+                        currentStep === totalSteps - 1 ? "bg-celebration hover:opacity-90 text-celebration-foreground font-semibold" : "bg-primary text-primary-foreground hover:opacity-90"
                     )}
                 >
                     {isSubmitting ? (

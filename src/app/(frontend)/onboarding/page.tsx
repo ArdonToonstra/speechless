@@ -57,12 +57,12 @@ export default function OnboardingPage() {
                             key={type.id}
                             onClick={() => updateField('type', type.id)}
                             className={`p-6 rounded-2xl border-2 text-left transition-all ${formData.type === type.id
-                                ? 'border-indigo-600 bg-indigo-50 shadow-md'
-                                : 'border-slate-100 hover:border-slate-300'
+                                ? 'border-primary bg-primary/5 shadow-md'
+                                : 'border-border/30 hover:border-border'
                                 }`}
                         >
-                            <h3 className="font-semibold text-lg text-slate-900">{type.label}</h3>
-                            <p className="text-sm text-slate-500">{type.description}</p>
+                            <h3 className="font-semibold text-lg text-foreground">{type.label}</h3>
+                            <p className="text-sm text-muted-foreground">{type.description}</p>
                         </button>
                     ))}
                 </div>
@@ -74,12 +74,12 @@ export default function OnboardingPage() {
             isValid: !!formData.date,
             content: (
                 <div className="flex justify-center mt-8">
-                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="p-4 bg-muted/10 rounded-2xl border border-border/30">
                         <Calendar
                             mode="single"
                             selected={formData.date}
                             onSelect={(date) => updateField('date', date)}
-                            className="rounded-md border bg-white"
+                            className="rounded-md border bg-card text-foreground"
                         />
                     </div>
                 </div>
@@ -92,15 +92,15 @@ export default function OnboardingPage() {
             content: (
                 <div className="mt-12 max-w-md mx-auto">
                     <div className="space-y-2">
-                        <Label htmlFor="title" className="text-slate-700">Project Title</Label>
+                        <Label htmlFor="title" className="text-foreground">Project Title</Label>
                         <Input
                             id="title"
                             placeholder="e.g. My Best Man Speech"
                             value={formData.title}
                             onChange={(e) => updateField('title', e.target.value)}
-                            className="text-lg py-6"
+                            className="text-lg py-6 bg-card border-border"
                         />
-                        <p className="text-xs text-slate-400">At least 3 characters.</p>
+                        <p className="text-xs text-muted-foreground">At least 3 characters.</p>
                     </div>
                 </div>
             ),
@@ -108,11 +108,11 @@ export default function OnboardingPage() {
     ]
 
     return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-background flex items-center justify-center p-4">
             <div className="w-full">
                 <div className="text-center mb-10">
-                    <h1 className="text-4xl font-serif font-bold text-slate-900 mb-2">Let&apos;s Get Started</h1>
-                    <p className="text-slate-500">Create your first speech project in 3 simple steps.</p>
+                    <h1 className="text-4xl font-serif font-bold text-foreground mb-2">Let&apos;s Get Started</h1>
+                    <p className="text-muted-foreground">Create your first speech project in 3 simple steps.</p>
                 </div>
                 <Wizard steps={steps} onComplete={handleSubmit} isSubmitting={isSubmitting} />
             </div>
