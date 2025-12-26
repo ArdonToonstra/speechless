@@ -53,6 +53,12 @@ export function InteractiveEditor({ project }: { project: any }) {
         // A real implementation would lift the editor state up or expose a ref.
     }
 
+    const [mounted, setMounted] = React.useState(false)
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
+
     return (
         <div className={cn("min-h-screen bg-background flex flex-col transition-all duration-500", focusMode ? "bg-card" : "")}>
             {/* Header - Hidden in Focus Mode */}
@@ -67,7 +73,7 @@ export function InteractiveEditor({ project }: { project: any }) {
                     <div>
                         <h1 className="font-bold text-lg text-foreground">{project.title}</h1>
                         <p className="text-xs text-muted-foreground">
-                            {saving ? 'Saving...' : `Saved ${lastSaved?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                            {mounted && lastSaved ? `Saved ${lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Saved'}
                         </p>
                     </div>
                 </div>

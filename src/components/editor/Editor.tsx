@@ -15,8 +15,12 @@ import { CodeHighlightNode, CodeNode } from '@lexical/code'
 import { AutoLinkNode, LinkNode } from '@lexical/link'
 import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin'
 import { ListPlugin } from '@lexical/react/LexicalListPlugin'
-import { $getRoot, $getSelection, EditorState } from 'lexical'
+import { $getRoot, $getSelection, EditorState, $isRangeSelection, SELECTION_CHANGE_COMMAND, COMMAND_PRIORITY_CRITICAL, $createParagraphNode } from 'lexical'
+import { $createHeadingNode, $isHeadingNode } from '@lexical/rich-text'
+import { $setBlocksType } from '@lexical/selection'
+import { $isListNode, INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, REMOVE_LIST_COMMAND } from '@lexical/list'
 import { cn } from '@/lib/utils'
+import { Bold, Italic, Underline as UnderlineIcon, Heading1, Heading2, List as ListIcon, ListOrdered } from 'lucide-react'
 
 // Theme
 const theme = {
@@ -44,6 +48,60 @@ const theme = {
 
 function ToolbarPlugin() {
     const [editor] = useLexicalComposerContext()
+    const [isBold, setIsBold] = useState(false)
+    const [isItalic, setIsItalic] = useState(false)
+    const [isUnderline, setIsUnderline] = useState(false)
+    const [blockType, setBlockType] = useState('paragraph')
+
+    const updateToolbar = React.useCallback(() => {
+        const selection = $getSelection()
+        if ($isRangeSelection(selection)) {
+            setIsBold(selection.hasFormat('bold'))
+            setIsItalic(selection.hasFormat('italic'))
+            setIsUnderline(selection.hasFormat('underline'))
+
+            const anchorNode = selection.anchor.getNode()
+            const element = anchorNode.getKey() === 'root'
+                ? anchorNode
+                : anchorNode.getTopLevelElementOrThrow()
+
+            const elementKey = element.getKey()
+            const elementDOM = editor.getElementByKey(elementKey)
+
+            if (elementDOM !== null) {
+                if ($isListNode(element)) {
+                    const parentList = element.getParent()
+                    if ($isListNode(parentList)) {
+                        setBlockType(parentList.getTag())
+                    } else {
+                        setBlockType(element.getTag())
+                    }
+                } else {
+                    const type = $isHeadingNode(element) ? element.getTag() : element.getType()
+                    setBlockType(type)
+                }
+            }
+        }
+    }, [editor])
+
+    useEffect(() => {
+        return editor.registerCommand(
+            SELECTION_CHANGE_COMMAND,
+            (_payload) => {
+                updateToolbar()
+                return false
+            },
+            COMMAND_PRIORITY_CRITICAL,
+        )
+    }, [editor, updateToolbar])
+
+    useEffect(() => {
+        return editor.registerUpdateListener(({ editorState }) => {
+            editorState.read(() => {
+                updateToolbar()
+            })
+        })
+    }, [editor, updateToolbar])
 
     const format = (format: 'bold' | 'italic' | 'underline') => {
         editor.update(() => {
@@ -55,15 +113,83 @@ function ToolbarPlugin() {
         })
     }
 
+    const formatHeading = (headingTag: 'h1' | 'h2') => {
+        if (blockType === headingTag) {
+            // Toggle off? Convert directly to paragraph
+            editor.update(() => {
+                const selection = $getSelection()
+                if ($isRangeSelection(selection)) {
+                    $setBlocksType(selection, () => $createParagraphNode())
+                }
+            })
+        } else {
+            editor.update(() => {
+                const selection = $getSelection()
+                if ($isRangeSelection(selection)) {
+                    $setBlocksType(selection, () => $createHeadingNode(headingTag))
+                }
+            })
+        }
+    }
+
+    const formatList = (listType: 'ul' | 'ol') => {
+        if (blockType === listType) {
+            editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined)
+        } else {
+            if (listType === 'ul') {
+                editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)
+            } else {
+                editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)
+            }
+        }
+    }
+
+    const ButtonBase = ({ active, onClick, children, label }: { active: boolean, onClick: () => void, children: React.ReactNode, label: string }) => (
+        <button
+            onClick={onClick}
+            title={label}
+            className={cn(
+                "p-2 rounded w-8 h-8 flex items-center justify-center transition-colors",
+                active ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted/30"
+            )}
+        >
+            {children}
+        </button>
+    )
+
     return (
-        <div className="flex gap-2 p-2 border-b border-border bg-muted/20 rounded-t-xl sticky top-0 z-10 items-center">
+        <div className="flex gap-2 p-2 border-b border-border bg-muted/20 rounded-t-xl sticky top-0 z-10 items-center flex-wrap">
             <div className="flex gap-1">
-                <button onClick={() => format('bold')} className="p-2 hover:bg-muted/30 rounded font-bold text-foreground w-8 h-8 flex items-center justify-center transition-colors">B</button>
-                <button onClick={() => format('italic')} className="p-2 hover:bg-muted/30 rounded italic text-foreground w-8 h-8 flex items-center justify-center transition-colors">I</button>
-                <button onClick={() => format('underline')} className="p-2 hover:bg-muted/30 rounded underline text-foreground w-8 h-8 flex items-center justify-center transition-colors">U</button>
+                <ButtonBase active={blockType === 'h1'} onClick={() => formatHeading('h1')} label="Heading 1">
+                    <Heading1 className="w-4 h-4" />
+                </ButtonBase>
+                <ButtonBase active={blockType === 'h2'} onClick={() => formatHeading('h2')} label="Heading 2">
+                    <Heading2 className="w-4 h-4" />
+                </ButtonBase>
             </div>
-            {/* Divider */}
             <div className="w-px h-6 bg-border mx-2" />
+
+            <div className="flex gap-1">
+                <ButtonBase active={isBold} onClick={() => format('bold')} label="Bold">
+                    <Bold className="w-4 h-4" />
+                </ButtonBase>
+                <ButtonBase active={isItalic} onClick={() => format('italic')} label="Italic">
+                    <Italic className="w-4 h-4" />
+                </ButtonBase>
+                <ButtonBase active={isUnderline} onClick={() => format('underline')} label="Underline">
+                    <UnderlineIcon className="w-4 h-4" />
+                </ButtonBase>
+            </div>
+            <div className="w-px h-6 bg-border mx-2" />
+
+            <div className="flex gap-1">
+                <ButtonBase active={blockType === 'ul'} onClick={() => formatList('ul')} label="Bullet List">
+                    <ListIcon className="w-4 h-4" />
+                </ButtonBase>
+                <ButtonBase active={blockType === 'ol'} onClick={() => formatList('ol')} label="Numbered List">
+                    <ListOrdered className="w-4 h-4" />
+                </ButtonBase>
+            </div>
         </div>
     )
 }
