@@ -19,7 +19,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
     return (
         <Link
-            href={`/editor/${project.id}`}
+            href={`/projects/${project.id}`}
             className="block group"
         >
             <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-primary/30 h-full flex flex-col relative overflow-hidden">

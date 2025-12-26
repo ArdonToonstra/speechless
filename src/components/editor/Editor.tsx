@@ -45,8 +45,6 @@ const theme = {
 function ToolbarPlugin() {
     const [editor] = useLexicalComposerContext()
 
-    // Quick and dirty toolbar for MVP. 
-    // In a real app, listen to selection changes to highlight active buttons.
     const format = (format: 'bold' | 'italic' | 'underline') => {
         editor.update(() => {
             const selection = $getSelection()
@@ -58,22 +56,48 @@ function ToolbarPlugin() {
     }
 
     return (
-        <div className="flex gap-2 p-2 border-b border-border bg-muted/20 rounded-t-xl sticky top-0 z-10">
-            <button onClick={() => format('bold')} className="p-2 hover:bg-muted/30 rounded font-bold text-foreground">B</button>
-            <button onClick={() => format('italic')} className="p-2 hover:bg-muted/30 rounded italic text-foreground">I</button>
-            <button onClick={() => format('underline')} className="p-2 hover:bg-muted/30 rounded underline text-foreground">U</button>
-            {/* Add more buttons here */}
+        <div className="flex gap-2 p-2 border-b border-border bg-muted/20 rounded-t-xl sticky top-0 z-10 items-center">
+            <div className="flex gap-1">
+                <button onClick={() => format('bold')} className="p-2 hover:bg-muted/30 rounded font-bold text-foreground w-8 h-8 flex items-center justify-center transition-colors">B</button>
+                <button onClick={() => format('italic')} className="p-2 hover:bg-muted/30 rounded italic text-foreground w-8 h-8 flex items-center justify-center transition-colors">I</button>
+                <button onClick={() => format('underline')} className="p-2 hover:bg-muted/30 rounded underline text-foreground w-8 h-8 flex items-center justify-center transition-colors">U</button>
+            </div>
+            {/* Divider */}
+            <div className="w-px h-6 bg-border mx-2" />
         </div>
     )
+}
+
+// Simple stats plugin
+function StatsPlugin({ onChange }: { onChange: (stats: { words: number, chars: number, readTime: number }) => void }) {
+    const [editor] = useLexicalComposerContext()
+
+    useEffect(() => {
+        return editor.registerUpdateListener(({ editorState }) => {
+            editorState.read(() => {
+                const root = $getRoot()
+                const textContent = root.getTextContent()
+                const words = textContent.split(/\s+/).filter(w => w.length > 0).length
+                const chars = textContent.length
+                // Average reading speed: 200 words per minute
+                const readTime = Math.ceil(words / 200)
+
+                onChange({ words, chars, readTime })
+            })
+        })
+    }, [editor, onChange])
+
+    return null
 }
 
 interface EditorProps {
     initialState?: any
     onChange: (editorState: EditorState) => void
     readOnly?: boolean
+    onStatsChange?: (stats: { words: number, chars: number, readTime: number }) => void
 }
 
-export function Editor({ initialState, onChange, readOnly = false }: EditorProps) {
+export function Editor({ initialState, onChange, readOnly = false, onStatsChange }: EditorProps) {
     const initialConfig = {
         namespace: 'SpeechlessEditor',
         theme,
@@ -95,16 +119,16 @@ export function Editor({ initialState, onChange, readOnly = false }: EditorProps
     }
 
     return (
-        <div className="relative w-full max-w-4xl mx-auto min-h-[500px] bg-card rounded-xl shadow-sm border border-border flex flex-col">
+        <div className="relative w-full max-w-4xl mx-auto min-h-[600px] bg-card rounded-xl shadow-sm border border-border flex flex-col transition-all duration-500">
             <LexicalComposer initialConfig={initialConfig}>
                 {!readOnly && <ToolbarPlugin />}
                 <div className="relative flex-grow">
                     <RichTextPlugin
                         contentEditable={
-                            <ContentEditable className={cn("outline-none p-8 min-h-[500px] text-foreground", readOnly && "p-8")} />
+                            <ContentEditable className={cn("outline-none p-12 min-h-[600px] text-foreground font-serif text-lg leading-relaxed max-w-none prose prose-slate dark:prose-invert", readOnly && "p-8")} />
                         }
                         placeholder={
-                            <div className="absolute top-10 left-10 text-muted-foreground opacity-50 pointer-events-none">
+                            <div className="absolute top-14 left-14 text-muted-foreground opacity-50 pointer-events-none font-serif text-lg">
                                 Start writing your speech...
                             </div>
                         }
@@ -114,6 +138,7 @@ export function Editor({ initialState, onChange, readOnly = false }: EditorProps
                     <ListPlugin />
                     <LinkPlugin />
                     <OnChangePlugin onChange={onChange} />
+                    {onStatsChange && <StatsPlugin onChange={onStatsChange} />}
                     {initialState && <LoadInitialStatePlugin initialState={initialState} />}
                 </div>
             </LexicalComposer>
@@ -128,7 +153,6 @@ function LoadInitialStatePlugin({ initialState }: { initialState: any }) {
     useEffect(() => {
         if (!isLoaded && initialState) {
             try {
-                // Parse if string, otherwise use as object
                 const state = typeof initialState === 'string' ? JSON.parse(initialState) : initialState
                 const editorState = editor.parseEditorState(state)
                 editor.setEditorState(editorState)

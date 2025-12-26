@@ -5,15 +5,15 @@ This document outlines the planned features and improvements for the Speechless 
 ## Phase 1: Authentication & User Management (MVP Polish)
 *Goal: Secure user access and provide a seamless onboarding experience.*
 
-- [ ] **Sign-up & Login Pages**
+- [X] **Sign-up & Login Pages**
   - Create dedicated `/login` and `/signup` pages (replacing the default Payload admin login for clear separation).
   - style with the new "Modern Serenity" theme.
 - [ ] **OAuth Integration**
   - Implement Google authentication providers via Payload's auth strategies.
-- [ ] **Logout Functionality**
+- [X] **Logout Functionality**
   - Add a visible "Log Out" button in the dashboard and profile dropdown.
   - Ensure proper session cleanup and redirect to landing page.
-- [ ] **User Profile Settings**
+- [X] **User Profile Settings**
   - Allow users to update their name, email, and password.
 
 ## Phase 2: Core Editor Experience
