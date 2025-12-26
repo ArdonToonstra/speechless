@@ -92,7 +92,7 @@ function StatsPlugin({ onChange }: { onChange: (stats: { words: number, chars: n
 
 interface EditorProps {
     initialState?: any
-    onChange: (editorState: EditorState) => void
+    onChange?: (editorState: EditorState) => void
     readOnly?: boolean
     onStatsChange?: (stats: { words: number, chars: number, readTime: number }) => void
 }
@@ -137,7 +137,7 @@ export function Editor({ initialState, onChange, readOnly = false, onStatsChange
                     <HistoryPlugin />
                     <ListPlugin />
                     <LinkPlugin />
-                    <OnChangePlugin onChange={onChange} />
+                    {onChange && <OnChangePlugin onChange={onChange} />}
                     {onStatsChange && <StatsPlugin onChange={onStatsChange} />}
                     {initialState && <LoadInitialStatePlugin initialState={initialState} />}
                 </div>

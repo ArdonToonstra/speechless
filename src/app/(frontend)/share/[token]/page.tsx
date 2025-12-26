@@ -52,7 +52,6 @@ export default async function SharedProjectPage({ params }: { params: any }) {
 
                 <Editor
                     initialState={project.content}
-                    onChange={() => { }} // Read-only, no-op
                     readOnly={true}
                 />
             </div>
