@@ -20,7 +20,7 @@ import { ProjectSwitcher } from '@/components/features/ProjectSwitcher'
 
 // Define the navigation items
 const navItems = [
-    { label: 'Settings', href: 'settings', icon: Settings },
+    { label: 'Overview', href: 'overview', icon: LayoutDashboard }, // Was Settings, now Overview. Using LayoutDashboard icon or Settings? User said "Overview".
     { label: 'Collaborators', href: 'collaborators', icon: Users },
     { label: 'Input Gathering', href: 'input', icon: MessageSquareQuote },
     { label: 'Speech Editor', href: 'editor', icon: PenTool },
@@ -56,14 +56,16 @@ export default async function ProjectLayout({
         <div className="flex h-screen bg-background">
             {/* Sidebar */}
             <aside className="w-64 border-r border-border bg-card flex flex-col">
-                <div className="p-4 border-b border-border h-16 flex items-center">
+                <div className="p-4 border-b border-border h-16 flex items-center justify-between">
                     <Link href="/dashboard" className="flex items-center gap-2 font-bold text-lg">
                         <span className="text-primary">Speechless</span>
                     </Link>
                 </div>
 
-                <div className="p-4">
-                    <ProjectSwitcher currentProjectId={project.id} currentUser={user} />
+                {/* Project Title implementation - simpler without switcher */}
+                <div className="p-4 bg-muted/20 border-b border-border">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Current Project</p>
+                    <p className="font-bold truncate">{project.title}</p>
                 </div>
 
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto">

@@ -65,7 +65,9 @@ export default async function DashboardPage() {
                 {projects.docs.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {projects.docs.map((project: any) => (
-                            <ProjectCard key={project.id} project={project} />
+                            <Link href={`/projects/${project.id}/editor`} key={project.id} className="block h-full">
+                                <ProjectCard project={project} />
+                            </Link>
                         ))}
                     </div>
                 ) : (

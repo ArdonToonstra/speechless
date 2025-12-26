@@ -38,7 +38,7 @@ export async function createProject(data: { title: string; type: string; date: s
             },
         })
 
-        return { success: true, projectId: project.id }
+        return { success: true, projectId: project.id, redirectUrl: `/projects/${project.id}/editor` }
     } catch (error) {
         console.error('Create Project Error:', error)
         return { error: 'Failed to create project' }
