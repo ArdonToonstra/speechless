@@ -23,19 +23,28 @@ export function GuestManagement({ projectId, guests }: GuestManagementProps) {
     const [role, setRole] = useState<'contributor' | 'collaborator'>('contributor')
     const [isLoading, setIsLoading] = useState(false)
     const [copiedToken, setCopiedToken] = useState<string | null>(null)
+    const [successMessage, setSuccessMessage] = useState<string | null>(null)
+    const router = useRouter()
 
     const handleInvite = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
+        setSuccessMessage(null)
         const formData = new FormData()
         formData.append('email', email)
         formData.append('name', name)
         formData.append('role', role)
 
-        await inviteGuest(projectId, formData)
+        const result = await inviteGuest(projectId, formData)
         setEmail('')
         setName('')
         setIsLoading(false)
+
+        if (result.success) {
+            setSuccessMessage(result.message || 'Collaborator added successfully!')
+            setTimeout(() => setSuccessMessage(null), 5000)
+            router.refresh()
+        }
     }
 
     const handleDelete = async (guestId: number) => {
@@ -58,8 +67,15 @@ export function GuestManagement({ projectId, guests }: GuestManagementProps) {
                 <CardDescription>Invite friends and family to contribute to your speech.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+                {successMessage && (
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800 flex items-center gap-2">
+                        <Check className="w-4 h-4" />
+                        {successMessage}
+                    </div>
+                )}
+
                 <form onSubmit={handleInvite} className="flex flex-col gap-4 p-4 border rounded-lg bg-muted/20">
-                    <h3 className="font-semibold text-sm">Valid Email required</h3>
+                    <h3 className="font-semibold text-sm">Add Collaborator</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="name">Name</Label>
@@ -95,13 +111,13 @@ export function GuestManagement({ projectId, guests }: GuestManagementProps) {
                         </div>
                     </div>
                     <Button type="submit" disabled={isLoading} className="w-full md:w-auto self-end">
-                        {isLoading ? 'Inviting...' : <><Plus className="w-4 h-4 mr-2" /> Invite Guest</>}
+                        {isLoading ? 'Adding...' : <><Plus className="w-4 h-4 mr-2" /> Add Collaborator</>}
                     </Button>
                 </form>
 
                 <div className="space-y-2">
                     {guests.length === 0 ? (
-                        <p className="text-muted-foreground text-center py-4">No guests invited yet.</p>
+                        <p className="text-muted-foreground text-center py-4">No collaborators invited yet.</p>
                     ) : (
                         guests.map((guest) => (
                             <div key={guest.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/10 transition-colors">
@@ -111,10 +127,15 @@ export function GuestManagement({ projectId, guests }: GuestManagementProps) {
                                     </div>
                                     <div>
                                         <p className="font-medium">{guest.name || 'Unnamed Guest'}</p>
-                                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                            <Mail className="w-3 h-3" /> {guest.email}
-                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground ml-2 capitalize">
+                                        <p className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
+                                            <span className="flex items-center gap-1">
+                                                <Mail className="w-3 h-3" /> {guest.email}
+                                            </span>
+                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground capitalize">
                                                 {guest.role}
+                                            </span>
+                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                                Email: Coming Soon
                                             </span>
                                         </p>
                                     </div>

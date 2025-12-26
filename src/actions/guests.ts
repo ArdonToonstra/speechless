@@ -16,7 +16,7 @@ export async function inviteGuest(projectId: number, formData: FormData) {
     }
 
     try {
-        await payload.create({
+        const guest = await payload.create({
             collection: 'guests',
             data: {
                 email,
@@ -24,15 +24,17 @@ export async function inviteGuest(projectId: number, formData: FormData) {
                 project: projectId,
                 role: role || 'contributor',
                 status: 'invited',
+                inviteEmailStatus: 'pending',
             },
         })
 
-        // TODO: Send email with magic link
-        // const token = guest.token
-        // await sendEmail(email, token)
+        // Mock email sending (console log for now)
+        console.log(`[INVITE SYSTEM] Collaborator invite prepared for ${email}`)
+        console.log(`Magic link: ${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/invite/${guest.token}`)
+        console.log(`Project: ${projectId}, Role: ${role}`)
 
-        revalidatePath(`/projects/${projectId}/settings`)
-        return { success: true }
+        revalidatePath(`/projects/${projectId}/collaborators`)
+        return { success: true, message: 'Collaborator added. Email sending will be enabled in a future update.' }
     } catch (error) {
         console.error('Failed to invite guest:', error)
         return { error: 'Failed to invite guest' }

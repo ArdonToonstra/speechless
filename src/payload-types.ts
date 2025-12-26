@@ -72,6 +72,7 @@ export interface Config {
     projects: Project;
     guests: Guest;
     submissions: Submission;
+    invitations: Invitation;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -84,6 +85,7 @@ export interface Config {
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     guests: GuestsSelect<false> | GuestsSelect<true>;
     submissions: SubmissionsSelect<false> | SubmissionsSelect<true>;
+    invitations: InvitationsSelect<false> | InvitationsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -201,6 +203,16 @@ export interface Project {
       }[]
     | null;
   questionnaireDescription?: string | null;
+  emailTemplates?: {
+    /**
+     * Message for guests attending the event. Use {name}, {date}, {venue}, {time}, {address} as placeholders.
+     */
+    attendeeMessage?: string | null;
+    /**
+     * Message for the speech recipient. Use {name}, {date} as placeholders.
+     */
+    receiverMessage?: string | null;
+  };
   location?: {
     venue?: string | null;
     address?: string | null;
@@ -225,6 +237,8 @@ export interface Guest {
   token?: string | null;
   role: 'contributor' | 'collaborator';
   status?: ('invited' | 'active') | null;
+  inviteEmailSentAt?: string | null;
+  inviteEmailStatus?: ('pending' | 'sent' | 'bounced') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -243,6 +257,28 @@ export interface Submission {
         id?: string | null;
       }[]
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invitations".
+ */
+export interface Invitation {
+  id: number;
+  email: string;
+  name?: string | null;
+  project: number | Project;
+  type: 'attendee' | 'receiver';
+  customMessage?: string | null;
+  /**
+   * Paid feature - requires 5 days before event
+   */
+  sendViaPostcard?: boolean | null;
+  postcardStatus?: ('pending' | 'ordered' | 'sent' | 'delivered') | null;
+  emailSentAt?: string | null;
+  postcardOrderedAt?: string | null;
+  status: 'pending' | 'prepared' | 'sent' | 'bounced';
   updatedAt: string;
   createdAt: string;
 }
@@ -289,6 +325,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'submissions';
         value: number | Submission;
+      } | null)
+    | ({
+        relationTo: 'invitations';
+        value: number | Invitation;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -393,6 +433,12 @@ export interface ProjectsSelect<T extends boolean = true> {
         id?: T;
       };
   questionnaireDescription?: T;
+  emailTemplates?:
+    | T
+    | {
+        attendeeMessage?: T;
+        receiverMessage?: T;
+      };
   location?:
     | T
     | {
@@ -415,6 +461,8 @@ export interface GuestsSelect<T extends boolean = true> {
   token?: T;
   role?: T;
   status?: T;
+  inviteEmailSentAt?: T;
+  inviteEmailStatus?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -432,6 +480,24 @@ export interface SubmissionsSelect<T extends boolean = true> {
         answer?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invitations_select".
+ */
+export interface InvitationsSelect<T extends boolean = true> {
+  email?: T;
+  name?: T;
+  project?: T;
+  type?: T;
+  customMessage?: T;
+  sendViaPostcard?: T;
+  postcardStatus?: T;
+  emailSentAt?: T;
+  postcardOrderedAt?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }

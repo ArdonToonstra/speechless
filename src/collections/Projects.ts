@@ -137,6 +137,45 @@ export const Projects: CollectionConfig = {
             defaultValue: 'We would love to get your input to help us write a great speech!',
         },
         {
+            name: 'emailTemplates',
+            type: 'group',
+            label: 'Invite Email Templates',
+            fields: [
+                {
+                    name: 'attendeeMessage',
+                    type: 'textarea',
+                    label: 'Attendee Message Template',
+                    admin: {
+                        description: 'Message for guests attending the event. Use {name}, {date}, {venue}, {time}, {address} as placeholders.',
+                    },
+                    defaultValue: `Hi {name},
+
+You're invited to {projectTitle} on {date}!
+
+Location: {venue}
+Time: {time}
+Address: {address}
+
+We're looking forward to celebrating with you!`,
+                },
+                {
+                    name: 'receiverMessage',
+                    type: 'textarea',
+                    label: 'Receiver Message Template',
+                    admin: {
+                        description: 'Message for the speech recipient. Use {name}, {date} as placeholders.',
+                    },
+                    defaultValue: `Dear {name},
+
+We're planning a special speech for you on {date}!
+
+This is going to be a wonderful surprise, and we can't wait to share it with you.
+
+See you there!`,
+                },
+            ],
+        },
+        {
             name: 'location',
             type: 'group',
             label: 'Location & Practicalities',

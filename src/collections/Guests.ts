@@ -70,5 +70,27 @@ export const Guests: CollectionConfig = {
             ],
             defaultValue: 'invited',
         },
+        {
+            name: 'inviteEmailSentAt',
+            type: 'date',
+            label: 'Invite Email Sent At',
+            admin: {
+                date: {
+                    pickerAppearance: 'dayAndTime',
+                },
+                readOnly: true,
+            },
+        },
+        {
+            name: 'inviteEmailStatus',
+            type: 'select',
+            label: 'Invite Email Status',
+            options: [
+                { label: 'Pending', value: 'pending' },
+                { label: 'Sent', value: 'sent' },
+                { label: 'Bounced', value: 'bounced' },
+            ],
+            defaultValue: 'pending',
+        },
     ],
 }

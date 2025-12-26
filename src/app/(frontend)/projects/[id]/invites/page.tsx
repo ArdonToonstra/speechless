@@ -2,10 +2,9 @@ import React from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { notFound, redirect } from 'next/navigation'
-import { Send, Mail } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Send } from 'lucide-react'
 import { StandardPageShell } from '@/components/layout/StandardPageShell'
+import { InviteSender } from '@/components/features/InviteSender'
 
 export default async function InvitesPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -27,7 +26,7 @@ export default async function InvitesPage({ params }: { params: Promise<{ id: st
 
     if (!project) notFound()
 
-    // Fetch Guests to show count
+    // Fetch Guests
     const guests = await payload.find({
         collection: 'guests',
         where: { project: { equals: projectId } },
@@ -42,35 +41,11 @@ export default async function InvitesPage({ params }: { params: Promise<{ id: st
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold">Send Invites</h1>
-                        <p className="text-muted-foreground">Launch your project and notify guests.</p>
+                        <p className="text-muted-foreground">Prepare invitations for your speech event</p>
                     </div>
                 </div>
 
-                <div className="grid gap-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Ready to Launch?</CardTitle>
-                            <CardDescription>
-                                You have <strong>{guests.totalDocs}</strong> guests on your list.
-                                Sending invites will email them their unique magic link.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="bg-muted p-4 rounded-lg text-sm">
-                                <p className="font-semibold mb-2">Each guest will receive:</p>
-                                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                                    <li>A welcome message from you</li>
-                                    <li>A link to the questionnaire</li>
-                                    <li>Access to contribute text/media</li>
-                                </ul>
-                            </div>
-                            <Button className="w-full sm:w-auto">
-                                <Mail className="w-4 h-4 mr-2" />
-                                Send {guests.totalDocs} Invites
-                            </Button>
-                        </CardContent>
-                    </Card>
-                </div>
+                <InviteSender project={project as any} guests={guests.docs as any} />
             </div>
         </StandardPageShell>
     )
