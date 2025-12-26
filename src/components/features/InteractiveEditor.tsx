@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from 'react'
 import { Editor } from '@/components/editor/Editor'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft, Save, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { updateProjectContent } from '@/actions/projects'
 import { ShareDialog } from '@/components/features/ShareDialog'
@@ -71,7 +71,14 @@ export function InteractiveEditor({ project }: { project: any }) {
                         <Link href="/dashboard"><ArrowLeft className="w-5 h-5 text-muted-foreground" /></Link>
                     </Button>
                     <div>
-                        <h1 className="font-bold text-lg text-foreground">{project.title}</h1>
+                        <h1 className="font-bold text-lg text-foreground flex items-center gap-2">
+                            {project.title}
+                            <Button variant="ghost" size="icon" className="h-6 w-6" asChild>
+                                <Link href={`/projects/${project.id}/settings`} title="Project Settings">
+                                    <Settings className="w-4 h-4 text-muted-foreground" />
+                                </Link>
+                            </Button>
+                        </h1>
                         <p className="text-xs text-muted-foreground">
                             {mounted && lastSaved ? `Saved ${lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Saved'}
                         </p>

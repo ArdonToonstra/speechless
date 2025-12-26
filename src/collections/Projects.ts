@@ -113,5 +113,58 @@ export const Projects: CollectionConfig = {
                 position: 'sidebar',
             },
         },
+        {
+            name: 'questions',
+            type: 'array',
+            label: 'Questionnaire',
+            fields: [
+                {
+                    name: 'text',
+                    type: 'text',
+                    required: true,
+                    label: 'Question',
+                },
+            ],
+            defaultValue: [
+                { text: 'What is your favorite memory with the couple?' },
+                { text: 'Do you have any advice for them?' },
+            ],
+        },
+        {
+            name: 'questionnaireDescription',
+            type: 'textarea',
+            label: 'Questionnaire Intro',
+            defaultValue: 'We would love to get your input to help us write a great speech!',
+        },
+        {
+            name: 'location',
+            type: 'group',
+            label: 'Location & Practicalities',
+            fields: [
+                {
+                    name: 'venue',
+                    type: 'text',
+                    label: 'Venue Name',
+                },
+                {
+                    name: 'address',
+                    type: 'text',
+                    label: 'Address',
+                },
+                {
+                    name: 'time',
+                    type: 'text',
+                    label: 'Time',
+                    admin: {
+                        description: 'e.g. 14:00 or 2:00 PM',
+                    },
+                },
+                {
+                    name: 'notes',
+                    type: 'textarea',
+                    label: 'Notes / Logistics',
+                },
+            ],
+        },
     ],
 }

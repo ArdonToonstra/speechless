@@ -70,6 +70,8 @@ export interface Config {
     users: User;
     media: Media;
     projects: Project;
+    guests: Guest;
+    submissions: Submission;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -80,6 +82,8 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
+    guests: GuestsSelect<false> | GuestsSelect<true>;
+    submissions: SubmissionsSelect<false> | SubmissionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -190,6 +194,55 @@ export interface Project {
   status?: ('draft' | 'final' | 'archived') | null;
   magicLinkToken?: string | null;
   magicLinkEnabled?: boolean | null;
+  questions?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  questionnaireDescription?: string | null;
+  location?: {
+    venue?: string | null;
+    address?: string | null;
+    /**
+     * e.g. 14:00 or 2:00 PM
+     */
+    time?: string | null;
+    notes?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "guests".
+ */
+export interface Guest {
+  id: number;
+  email: string;
+  name?: string | null;
+  project: number | Project;
+  token?: string | null;
+  role: 'contributor' | 'collaborator';
+  status?: ('invited' | 'active') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "submissions".
+ */
+export interface Submission {
+  id: number;
+  project: number | Project;
+  guest: number | Guest;
+  answers?:
+    | {
+        question: string;
+        answer: string;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -228,6 +281,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'projects';
         value: number | Project;
+      } | null)
+    | ({
+        relationTo: 'guests';
+        value: number | Guest;
+      } | null)
+    | ({
+        relationTo: 'submissions';
+        value: number | Submission;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -325,6 +386,52 @@ export interface ProjectsSelect<T extends boolean = true> {
   status?: T;
   magicLinkToken?: T;
   magicLinkEnabled?: T;
+  questions?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  questionnaireDescription?: T;
+  location?:
+    | T
+    | {
+        venue?: T;
+        address?: T;
+        time?: T;
+        notes?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "guests_select".
+ */
+export interface GuestsSelect<T extends boolean = true> {
+  email?: T;
+  name?: T;
+  project?: T;
+  token?: T;
+  role?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "submissions_select".
+ */
+export interface SubmissionsSelect<T extends boolean = true> {
+  project?: T;
+  guest?: T;
+  answers?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
