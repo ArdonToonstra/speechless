@@ -74,9 +74,9 @@ export function ProjectSidebar({ projectId, projectTitle, user }: ProjectSidebar
 
             {/* Project Context (Only visible when expanded) */}
             {!isCollapsed && (
-                <div className="p-4 bg-muted/20 border-b border-border animate-in fade-in slide-in-from-left-2 duration-300">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Project</p>
-                    <p className="font-bold truncate" title={projectTitle}>{projectTitle}</p>
+                <div className="px-4 py-3 animate-in fade-in slide-in-from-left-2 duration-300">
+                    <p className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider mb-1">Project</p>
+                    <p className="font-semibold truncate text-sm" title={projectTitle}>{projectTitle}</p>
                 </div>
             )}
 

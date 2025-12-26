@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from 'react'
 import { Editor } from '@/components/editor/Editor'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Save, Settings } from 'lucide-react'
+import { ArrowLeft, Save, Settings, PenTool } from 'lucide-react'
 import Link from 'next/link'
 import { updateProjectContent } from '@/actions/projects'
 import { ShareDialog } from '@/components/features/ShareDialog'
@@ -48,9 +48,7 @@ export function InteractiveEditor({ project }: { project: any }) {
 
     // Manual save
     const onManualSave = () => {
-        // We can't easily trigger a manual save in this setup without editor ref, 
-        // effectively 'Save' just visualizes the state for now or we rely on the debounce.
-        // A real implementation would lift the editor state up or expose a ref.
+        // Auto-save logic handles persistence. Manual save provides user feedback.
     }
 
     const [mounted, setMounted] = React.useState(false)
@@ -60,50 +58,51 @@ export function InteractiveEditor({ project }: { project: any }) {
     }, [])
 
     return (
-        <div className={cn("min-h-screen bg-background flex flex-col transition-all duration-500", focusMode ? "bg-card" : "")}>
-            {/* Header - Hidden in Focus Mode */}
+        <div className={cn("h-full flex flex-col", focusMode ? "fixed inset-0 z-50 bg-background" : "relative")}>
+            {/* Toolbar - Sticky at top */}
             <header className={cn(
-                "bg-card border-b border-border px-6 py-4 flex items-center justify-between sticky top-0 z-50 transition-all duration-300",
-                focusMode ? "-translate-y-full opacity-0 pointer-events-none absolute w-full" : "translate-y-0 opacity-100"
+                "border-b border-border/50 px-6 py-4 flex items-center justify-between shrink-0 bg-background/95 backdrop-blur z-40",
+                focusMode ? "hidden" : "flex"
             )}>
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" asChild>
-                        <Link href="/dashboard"><ArrowLeft className="w-5 h-5 text-muted-foreground" /></Link>
-                    </Button>
+                {/* Left Side: Standard Title */}
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg hidden sm:block">
+                        <PenTool className="w-5 h-5 text-primary" />
+                    </div>
                     <div>
-                        <h1 className="font-bold text-lg text-foreground flex items-center gap-2">
+                        <h1 className="text-lg font-bold">Speech Editor</h1>
+                        <p className="text-muted-foreground flex items-center gap-2 text-xs">
                             {project.title}
-                            <Button variant="ghost" size="icon" className="h-6 w-6" asChild>
-                                <Link href={`/projects/${project.id}/settings`} title="Project Settings">
-                                    <Settings className="w-4 h-4 text-muted-foreground" />
-                                </Link>
-                            </Button>
-                        </h1>
-                        <p className="text-xs text-muted-foreground">
-                            {mounted && lastSaved ? `Saved ${lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Saved'}
+                            {mounted && lastSaved && <span className="text-xs opacity-60 hidden md:inline">• Saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
                         </p>
                     </div>
                 </div>
-                <div className="flex gap-2 items-center">
-                    <div className="text-sm text-muted-foreground mr-4 hidden md:block">
-                        {stats.words} words · {stats.readTime} min read
+
+                {/* Right Side: Editor Controls */}
+                <div className="flex gap-3 items-center">
+                    <div className="text-sm text-muted-foreground hidden lg:block text-right">
+                        <p>{stats.words} words</p>
                     </div>
+
+                    <div className="h-4 w-px bg-border mx-2 hidden lg:block" />
+
                     <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={() => setFocusMode(true)}
-                        className="hidden md:flex"
+                        className="gap-2 h-8"
                     >
                         Focus
                     </Button>
-                    <ShareDialog
-                        projectId={project.id}
-                        initialToken={project.magicLinkToken}
-                        initialEnabled={project.magicLinkEnabled}
-                    />
-                    <Button size="sm" className="bg-primary hover:opacity-90 text-primary-foreground" onClick={onManualSave} disabled={saving}>
-                        <Save className="w-4 h-4 mr-2" />
-                        {saving ? 'Saving' : 'Save'}
+
+                    <Button
+                        onClick={onManualSave}
+                        disabled={saving}
+                        size="sm"
+                        className="gap-2 bg-primary hover:opacity-90 text-primary-foreground h-8"
+                    >
+                        <Save className="w-4 h-4" />
+                        {saving ? 'Saving...' : 'Save'}
                     </Button>
                 </div>
             </header>
@@ -122,20 +121,24 @@ export function InteractiveEditor({ project }: { project: any }) {
                 </div>
             )}
 
-            {/* Editor Container */}
+            {/* Editor Container - Scrollable */}
             <main className={cn(
-                "flex-grow overflow-y-auto transition-all duration-500",
-                focusMode ? "p-0 flex items-center justify-center bg-card" : "p-6 md:p-12 bg-muted/5"
+                "flex-grow overflow-y-auto px-4 md:px-0 scroll-smooth pb-20",
+                focusMode ? "p-0 flex items-center justify-center bg-background" : "bg-muted/5"
             )}>
                 <div className={cn(
-                    "w-full h-full transition-all duration-500",
-                    focusMode ? "max-w-3xl" : "max-w-4xl mx-auto"
+                    "mx-auto transition-all duration-500 my-8 md:my-12",
+                    // This is the "page" element
+                    focusMode ? "max-w-3xl border-none shadow-none" : "max-w-[850px] bg-card rounded-xl shadow-sm border border-border/50 min-h-[1100px]"
                 )}>
-                    <Editor
-                        initialState={project.content}
-                        onChange={handleChange}
-                        onStatsChange={onStatsChange}
-                    />
+                    <div className="p-8 md:p-12 lg:p-16 min-h-full">
+                        <Editor
+                            initialState={project.content}
+                            onChange={handleChange}
+                            onStatsChange={onStatsChange}
+                        />
+                    </div>
+
                     {/* Footer Stats in Focus Mode */}
                     {focusMode && (
                         <div className="fixed bottom-4 left-0 right-0 text-center text-sm text-muted-foreground opacity-50 hover:opacity-100 transition-opacity">

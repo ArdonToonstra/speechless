@@ -4,6 +4,7 @@ import config from '@payload-config'
 import { notFound, redirect } from 'next/navigation'
 import { LayoutDashboard } from 'lucide-react'
 import { ProjectOverview } from '@/components/features/ProjectOverview'
+import { StandardPageShell } from '@/components/layout/StandardPageShell'
 
 export default async function OverviewPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -26,18 +27,20 @@ export default async function OverviewPage({ params }: { params: Promise<{ id: s
     if (!project) notFound()
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8">
-            <div className="flex items-center gap-3 pb-6 border-b">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                    <LayoutDashboard className="w-6 h-6 text-primary" />
+        <StandardPageShell>
+            <div className="max-w-4xl mx-auto space-y-8">
+                <div className="flex items-center gap-3 pb-6 border-b">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                        <LayoutDashboard className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-bold">Overview</h1>
+                        <p className="text-muted-foreground">Manage the basic details of your speech.</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 className="text-2xl font-bold">Overview</h1>
-                    <p className="text-muted-foreground">Manage the basic details of your speech.</p>
-                </div>
-            </div>
 
-            <ProjectOverview project={project as any} />
-        </div>
+                <ProjectOverview project={project as any} />
+            </div>
+        </StandardPageShell>
     )
 }

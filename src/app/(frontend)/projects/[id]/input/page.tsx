@@ -2,8 +2,9 @@ import React from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { notFound, redirect } from 'next/navigation'
-import { QuestionnaireEditor } from '@/components/features/QuestionnaireEditor'
 import { MessageSquareQuote } from 'lucide-react'
+import { QuestionnaireEditor } from '@/components/features/QuestionnaireEditor'
+import { StandardPageShell } from '@/components/layout/StandardPageShell'
 
 export default async function InputPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -26,24 +27,32 @@ export default async function InputPage({ params }: { params: Promise<{ id: stri
     if (!project) notFound()
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8">
-            <div className="flex items-center gap-3 pb-6 border-b">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                    <MessageSquareQuote className="w-6 h-6 text-primary" />
+        <StandardPageShell>
+            <div className="max-w-4xl mx-auto space-y-8">
+                <div className="flex items-center gap-3 pb-6 border-b">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                        <MessageSquareQuote className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-bold">Input Gathering</h1>
+                        <p className="text-muted-foreground">Customize the questions for your guests.</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 className="text-2xl font-bold">Input Gathering</h1>
-                    <p className="text-muted-foreground">Design your questionnaire and collect answers.</p>
+
+                <QuestionnaireEditor
+                    projectId={projectId}
+                    initialQuestions={project.questions || []}
+                    initialDescription={project.questionnaireDescription}
+                />
+
+                <div className="mt-8 pt-8 border-t">
+                    <h2 className="text-xl font-bold mb-4">Submissions</h2>
+                    {/* Placeholder for Submissions View */}
+                    <div className="bg-muted/30 border border-dashed rounded-lg p-8 text-center text-muted-foreground">
+                        <p>No submissions yet. Invite guests to start gathering stories!</p>
+                    </div>
                 </div>
             </div>
-
-            <QuestionnaireEditor
-                projectId={project.id}
-                initialQuestions={project.questions as any}
-                initialDescription={project.questionnaireDescription as string}
-            />
-
-            {/* TODO: Add Submissions View here */}
-        </div>
+        </StandardPageShell>
     )
 }
