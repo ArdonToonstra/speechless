@@ -43,6 +43,15 @@ export const Projects: CollectionConfig = {
             label: 'Speech Title',
         },
         {
+            name: 'speechReceiverName',
+            type: 'text',
+            required: false,
+            label: 'Speech Receiver Name',
+            admin: {
+                description: 'The person who will receive this speech (e.g., "Sarah", "John and Mary")',
+            },
+        },
+        {
             name: 'type',
             type: 'select',
             options: [
@@ -103,6 +112,19 @@ export const Projects: CollectionConfig = {
                 readOnly: true,
                 position: 'sidebar',
             },
+            hooks: {
+                beforeChange: [
+                    ({ value, operation }) => {
+                        if (operation === 'create' && !value) {
+                            // Generate a random token (32 characters)
+                            const array = new Uint8Array(16)
+                            crypto.getRandomValues(array)
+                            return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('')
+                        }
+                        return value
+                    },
+                ],
+            },
         },
         {
             name: 'magicLinkEnabled',
@@ -126,8 +148,9 @@ export const Projects: CollectionConfig = {
                 },
             ],
             defaultValue: [
-                { text: 'What is your favorite memory with the couple?' },
-                { text: 'Do you have any advice for them?' },
+                { text: 'What is your favorite memory with {speechReceiverName}?' },
+                { text: 'Share your best anecdotes about {speechReceiverName}' },
+                { text: 'What advice would you give to {speechReceiverName}?' },
             ],
         },
         {

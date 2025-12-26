@@ -175,6 +175,10 @@ export interface Media {
 export interface Project {
   id: number;
   title: string;
+  /**
+   * The person who will receive this speech (e.g., "Sarah", "John and Mary")
+   */
+  speechReceiverName?: string | null;
   type: 'wedding' | 'birthday' | 'funeral' | 'other';
   date: string;
   owner: number | User;
@@ -250,6 +254,10 @@ export interface Submission {
   id: number;
   project: number | Project;
   guest: number | Guest;
+  /**
+   * Name of the person who submitted this response
+   */
+  submitterName: string;
   answers?:
     | {
         question: string;
@@ -419,6 +427,7 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface ProjectsSelect<T extends boolean = true> {
   title?: T;
+  speechReceiverName?: T;
   type?: T;
   date?: T;
   owner?: T;
@@ -473,6 +482,7 @@ export interface GuestsSelect<T extends boolean = true> {
 export interface SubmissionsSelect<T extends boolean = true> {
   project?: T;
   guest?: T;
+  submitterName?: T;
   answers?:
     | T
     | {

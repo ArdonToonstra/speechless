@@ -25,6 +25,15 @@ export const Submissions: CollectionConfig = {
             required: true,
         },
         {
+            name: 'submitterName',
+            type: 'text',
+            required: true,
+            label: 'Submitter Name',
+            admin: {
+                description: 'Name of the person who submitted this response',
+            },
+        },
+        {
             name: 'answers',
             type: 'array',
             fields: [

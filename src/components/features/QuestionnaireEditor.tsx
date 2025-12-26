@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Trash2, Plus, GripVertical, Save, Loader2 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Trash2, Plus, GripVertical, Save, Loader2, Copy, Check, Link2, Mail } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
@@ -20,13 +21,27 @@ interface QuestionnaireEditorProps {
     projectId: number
     initialQuestions: Question[]
     initialDescription: string
+    speechReceiverName?: string
+    magicLinkToken?: string
 }
 
-export function QuestionnaireEditor({ projectId, initialQuestions, initialDescription }: QuestionnaireEditorProps) {
+export function QuestionnaireEditor({ projectId, initialQuestions, initialDescription, speechReceiverName, magicLinkToken }: QuestionnaireEditorProps) {
     const [questions, setQuestions] = useState<Question[]>(initialQuestions || [])
     const [description, setDescription] = useState(initialDescription || '')
     const [isSaving, setIsSaving] = useState(false)
+    const [linkCopied, setLinkCopied] = useState(false)
     const router = useRouter()
+
+    // Generate shareable link using magic token (non-guessable)
+    const shareableLink = magicLinkToken
+        ? `${typeof window !== 'undefined' ? window.location.origin : ''}/questionnaire/${magicLinkToken}`
+        : `${typeof window !== 'undefined' ? window.location.origin : ''}/questionnaire/${projectId}`
+
+    const copyLink = () => {
+        navigator.clipboard.writeText(shareableLink)
+        setLinkCopied(true)
+        setTimeout(() => setLinkCopied(false), 2000)
+    }
 
     const addQuestion = () => {
         setQuestions([...questions, { text: '' }])
@@ -56,64 +71,130 @@ export function QuestionnaireEditor({ projectId, initialQuestions, initialDescri
         if (result?.error) {
             alert('Failed to save questionnaire') // Replace with toast if available
         } else {
-            // Success feedback could go here
+            toast.success('Questionnaire saved successfully!')
         }
     }
 
+    // Helper to replace placeholder in displayed questions
+    const renderQuestionText = (text: string) => {
+        if (speechReceiverName) {
+            return text.replace(/{speechReceiverName}/g, speechReceiverName)
+        }
+        return text
+    }
+
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Questionnaire</CardTitle>
-                <CardDescription>Customize the questions your guests will answer.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-                <div className="space-y-2">
-                    <Label htmlFor="description">Greeting / Instructions</Label>
-                    <Textarea
-                        id="description"
-                        placeholder="Welcome! We'd love your input..."
-                        value={description}
-                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
-                        className="min-h-[80px]"
-                    />
-                </div>
+        <div className="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Questionnaire</CardTitle>
+                    <CardDescription>Customize the questions your guests will answer.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="description">Greeting / Instructions</Label>
+                        <Textarea
+                            id="description"
+                            placeholder="Welcome! We'd love your input..."
+                            value={description}
+                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
+                            className="min-h-[80px]"
+                        />
+                    </div>
 
-                <div className="space-y-4">
-                    <Label>Questions</Label>
-                    {questions.map((q, index) => (
-                        <div key={index} className="flex items-start gap-2 group">
-                            <div className="mt-3 text-muted-foreground/30 cursor-move">
-                                <GripVertical className="w-4 h-4" />
-                            </div>
-                            <div className="flex-1">
-                                <Input
-                                    value={q.text}
-                                    onChange={(e) => updateQuestion(index, e.target.value)}
-                                    placeholder={`Question ${index + 1}`}
-                                />
-                            </div>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => removeQuestion(index)}
-                                className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                            </Button>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <Label>Questions</Label>
+                            {speechReceiverName && (
+                                <p className="text-xs text-muted-foreground">
+                                    Use <code className="bg-muted px-1 rounded text-xs">{'{speechReceiverName}'}</code> to personalize
+                                </p>
+                            )}
                         </div>
-                    ))}
-                    <Button variant="outline" size="sm" onClick={addQuestion} className="w-full border-dashed">
-                        <Plus className="w-4 h-4 mr-2" /> Add Question
-                    </Button>
-                </div>
+                        {questions.map((q, index) => (
+                            <div key={index} className="flex items-start gap-2 group">
+                                <div className="mt-3 text-muted-foreground/30 cursor-move">
+                                    <GripVertical className="w-4 h-4" />
+                                </div>
+                                <div className="flex-1 space-y-1">
+                                    <Input
+                                        value={q.text}
+                                        onChange={(e) => updateQuestion(index, e.target.value)}
+                                        placeholder={`Question ${index + 1}`}
+                                    />
+                                    {speechReceiverName && q.text.includes('{speechReceiverName}') && (
+                                        <p className="text-xs text-muted-foreground italic">
+                                            Preview: {renderQuestionText(q.text)}
+                                        </p>
+                                    )}
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => removeQuestion(index)}
+                                    className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </Button>
+                            </div>
+                        ))}
+                        <Button variant="outline" size="sm" onClick={addQuestion} className="w-full border-dashed">
+                            <Plus className="w-4 h-4 mr-2" /> Add Question
+                        </Button>
+                    </div>
 
-                <div className="flex justify-end pt-4 border-t">
-                    <Button onClick={handleSave} disabled={isSaving}>
-                        {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-                        Save Changes
-                    </Button>
-                </div>
-            </CardContent>
-        </Card>
+                    <div className="flex justify-end pt-4 border-t">
+                        <Button onClick={handleSave} disabled={isSaving}>
+                            {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                            Save Changes
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Shareable Link Section */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Link2 className="w-5 h-5" />
+                        Share Questionnaire
+                    </CardTitle>
+                    <CardDescription>Share this link with guests to collect their responses</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex gap-2">
+                        <Input
+                            value={shareableLink}
+                            readOnly
+                            className="font-mono text-sm"
+                        />
+                        <Button
+                            onClick={copyLink}
+                            variant={linkCopied ? "default" : "outline"}
+                            className="shrink-0"
+                        >
+                            {linkCopied ? (
+                                <>
+                                    <Check className="w-4 h-4 mr-2" />
+                                    Copied!
+                                </>
+                            ) : (
+                                <>
+                                    <Copy className="w-4 h-4 mr-2" />
+                                    Copy Link
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Mail className="w-4 h-4" />
+                        <span>Email sending:</span>
+                        <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+                            Coming Soon
+                        </Badge>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
     )
 }

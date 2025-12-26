@@ -5,7 +5,7 @@ import configPromise from '@payload-config'
 import { Project, User } from '@/payload-types'
 import { redirect } from 'next/navigation'
 
-export async function createProject(data: { title: string; type: string; date: string }) {
+export async function createProject(data: { title: string; speechReceiverName: string; type: string; date: string }) {
     const payload = await getPayload({ config: configPromise })
 
     // Create project using local API
@@ -31,6 +31,7 @@ export async function createProject(data: { title: string; type: string; date: s
             collection: 'projects',
             data: {
                 title: data.title,
+                speechReceiverName: data.speechReceiverName,
                 type: data.type as Project['type'],
                 date: data.date,
                 owner: user.id,

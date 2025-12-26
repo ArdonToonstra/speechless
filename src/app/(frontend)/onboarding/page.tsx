@@ -21,6 +21,7 @@ export default function OnboardingPage() {
         type: '',
         date: undefined as Date | undefined,
         title: '',
+        speechReceiverName: '',
     })
     const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -32,6 +33,7 @@ export default function OnboardingPage() {
         setIsSubmitting(true)
         const res = await createProject({
             title: formData.title,
+            speechReceiverName: formData.speechReceiverName,
             type: formData.type,
             date: formData.date?.toISOString() || new Date().toISOString(),
         })
@@ -105,6 +107,28 @@ export default function OnboardingPage() {
                 </div>
             ),
         },
+        {
+            title: "Who's Receiving the Speech?",
+            description: "This helps personalize the questionnaire.",
+            isValid: formData.speechReceiverName.length > 1,
+            content: (
+                <div className="mt-12 max-w-md mx-auto">
+                    <div className="space-y-2">
+                        <Label htmlFor="speechReceiverName" className="text-foreground">Speech Receiver Name</Label>
+                        <Input
+                            id="speechReceiverName"
+                            placeholder="e.g. Sarah, John and Mary"
+                            value={formData.speechReceiverName}
+                            onChange={(e) => updateField('speechReceiverName', e.target.value)}
+                            className="text-lg py-6 bg-card border-border"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            This will be used in default questions like "Share your best anecdotes about {formData.speechReceiverName || 'them'}"
+                        </p>
+                    </div>
+                </div>
+            ),
+        },
     ]
 
     return (
@@ -112,7 +136,7 @@ export default function OnboardingPage() {
             <div className="w-full">
                 <div className="text-center mb-10">
                     <h1 className="text-4xl font-serif font-bold text-foreground mb-2">Let&apos;s Get Started</h1>
-                    <p className="text-muted-foreground">Create your first speech project in 3 simple steps.</p>
+                    <p className="text-muted-foreground">Create your first speech project in 4 simple steps.</p>
                 </div>
                 <Wizard steps={steps} onComplete={handleSubmit} isSubmitting={isSubmitting} />
             </div>

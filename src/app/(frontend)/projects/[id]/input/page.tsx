@@ -4,7 +4,9 @@ import config from '@payload-config'
 import { notFound, redirect } from 'next/navigation'
 import { MessageSquareQuote } from 'lucide-react'
 import { QuestionnaireEditor } from '@/components/features/QuestionnaireEditor'
+import { SubmissionsList } from '@/components/features/SubmissionsList'
 import { StandardPageShell } from '@/components/layout/StandardPageShell'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default async function InputPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -26,6 +28,18 @@ export default async function InputPage({ params }: { params: Promise<{ id: stri
 
     if (!project) notFound()
 
+    // Fetch Submissions
+    const submissions = await payload.find({
+        collection: 'submissions',
+        where: {
+            project: {
+                equals: projectId,
+            },
+        },
+        depth: 1,
+        sort: '-createdAt',
+    })
+
     return (
         <StandardPageShell>
             <div className="max-w-4xl mx-auto space-y-8">
@@ -35,23 +49,35 @@ export default async function InputPage({ params }: { params: Promise<{ id: stri
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold">Input Gathering</h1>
-                        <p className="text-muted-foreground">Customize the questions for your guests.</p>
+                        <p className="text-muted-foreground">Manage questions and view submissions</p>
                     </div>
                 </div>
 
-                <QuestionnaireEditor
-                    projectId={projectId}
-                    initialQuestions={project.questions || []}
-                    initialDescription={project.questionnaireDescription}
-                />
+                <Tabs defaultValue="questions" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-8 bg-card border border-border">
+                        <TabsTrigger value="questions">Questions</TabsTrigger>
+                        <TabsTrigger value="submissions">
+                            Submissions ({submissions.totalDocs})
+                        </TabsTrigger>
+                    </TabsList>
 
-                <div className="mt-8 pt-8 border-t">
-                    <h2 className="text-xl font-bold mb-4">Submissions</h2>
-                    {/* Placeholder for Submissions View */}
-                    <div className="bg-muted/30 border border-dashed rounded-lg p-8 text-center text-muted-foreground">
-                        <p>No submissions yet. Invite guests to start gathering stories!</p>
-                    </div>
-                </div>
+                    <TabsContent value="questions" className="mt-0">
+                        <QuestionnaireEditor
+                            projectId={projectId}
+                            initialQuestions={(project.questions as any) || []}
+                            initialDescription={project.questionnaireDescription || ''}
+                            speechReceiverName={project.speechReceiverName || undefined}
+                            magicLinkToken={project.magicLinkToken || undefined}
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="submissions" className="mt-0">
+                        <SubmissionsList
+                            submissions={submissions.docs as any}
+                            project={project as any}
+                        />
+                    </TabsContent>
+                </Tabs>
             </div>
         </StandardPageShell>
     )
