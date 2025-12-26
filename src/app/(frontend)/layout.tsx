@@ -7,7 +7,7 @@ const newsreader = Newsreader({ subsets: ['latin'], variable: '--font-serif', st
 
 export default function Layout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="en">
+        <html lang="en" suppressHydrationWarning>
             <body className={cn(inter.variable, newsreader.variable, "font-sans antialiased bg-background text-foreground")}>
                 {children}
             </body>

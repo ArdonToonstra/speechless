@@ -25,13 +25,13 @@ export default async function Page() {
             </p>
             <div className="flex gap-4">
                 <a
-                    href="/admin/login?redirect=/dashboard"
+                    href="/signup"
                     className="px-8 py-4 bg-primary hover:opacity-90 text-primary-foreground font-bold rounded-full text-lg transition-all transform hover:scale-105"
                 >
                     Get Started
                 </a>
                 <a
-                    href="/admin"
+                    href="/login"
                     className="px-8 py-4 bg-secondary/20 hover:bg-secondary/30 text-foreground font-semibold rounded-full text-lg backdrop-blur-sm transition-all"
                 >
                     Log In

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { User } from '@/payload-types'
+import { logout } from '@/actions/auth'
 
 export default async function DashboardPage() {
     const payload = await getPayload({ config: configPromise })
@@ -40,14 +41,24 @@ export default async function DashboardPage() {
                 <div className="flex justify-between items-end mb-12">
                     <div>
                         <h1 className="text-3xl font-serif font-bold text-foreground">Your Speeches</h1>
-                        <p className="text-muted-foreground mt-2">Welcome back, {user?.email}</p>
+                        <p className="text-muted-foreground mt-2">Welcome back, {(user as any)?.name || user?.email}</p>
                     </div>
-                    <Button asChild className="rounded-full px-6 bg-primary hover:opacity-90">
-                        <Link href="/onboarding">
-                            <Plus className="w-4 h-4 mr-2" />
-                            New Project
-                        </Link>
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button asChild variant="ghost" className="rounded-full text-muted-foreground hover:text-foreground">
+                            <Link href="/settings">Settings</Link>
+                        </Button>
+                        <form action={logout}>
+                            <Button variant="ghost" type="submit" className="rounded-full text-muted-foreground hover:text-foreground">
+                                Log Out
+                            </Button>
+                        </form>
+                        <Button asChild className="rounded-full px-6 bg-primary hover:opacity-90">
+                            <Link href="/onboarding">
+                                <Plus className="w-4 h-4 mr-2" />
+                                New Project
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Grid */}
