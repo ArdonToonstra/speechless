@@ -24,7 +24,8 @@ export default async function DashboardPage() {
         redirect('/admin/login')
     }
 
-    const projects = await payload.find({
+    // Get projects where user is owner
+    const ownedProjects = await payload.find({
         collection: 'projects',
         where: {
             owner: {
@@ -33,6 +34,43 @@ export default async function DashboardPage() {
         },
         depth: 1,
     })
+
+    // Get projects where user is invited as a guest
+    const guestRecords = await payload.find({
+        collection: 'guests',
+        where: {
+            email: {
+                equals: user!.email
+            },
+            status: {
+                equals: 'active'
+            }
+        },
+        depth: 2, // Need depth 2 to get the full project
+    })
+
+    // Extract unique projects from guest records
+    const guestProjects = guestRecords.docs
+        .map(guest => guest.project)
+        .filter((project): project is any => typeof project === 'object' && project !== null)
+
+    // Combine and deduplicate projects
+    const allProjectsMap = new Map()
+
+    ownedProjects.docs.forEach(project => {
+        allProjectsMap.set(project.id, project)
+    })
+
+    guestProjects.forEach(project => {
+        if (!allProjectsMap.has(project.id)) {
+            allProjectsMap.set(project.id, project)
+        }
+    })
+
+    const projects = {
+        docs: Array.from(allProjectsMap.values()),
+        totalDocs: allProjectsMap.size,
+    }
 
     return (
         <div className="min-h-screen bg-background p-6 md:p-12">
