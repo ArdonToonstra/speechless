@@ -110,15 +110,17 @@ export function ProjectSidebar({ projectId, projectTitle, user }: ProjectSidebar
 
                 {/* User Info (Only expanded) */}
                 {!isCollapsed && (
-                    <div className="flex items-center gap-3 px-2 py-2 mb-2 rounded-md bg-muted/30">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">
-                            {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                    <Link href="/settings" className="block w-full">
+                        <div className="flex items-center gap-3 px-2 py-2 mb-2 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0 group-hover:bg-primary/20 transition-colors">
+                                {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                            </div>
+                            <div className="overflow-hidden text-left">
+                                <p className="text-sm font-medium truncate">{user.name || 'User'}</p>
+                                <p className="text-xs text-muted-foreground truncate opacity-70">Logged in</p>
+                            </div>
                         </div>
-                        <div className="overflow-hidden">
-                            <p className="text-sm font-medium truncate">{user.name || 'User'}</p>
-                            <p className="text-xs text-muted-foreground truncate opacity-70">Logged in</p>
-                        </div>
-                    </div>
+                    </Link>
                 )}
 
                 <Button
