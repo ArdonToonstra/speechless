@@ -123,15 +123,20 @@ export function InteractiveEditor({ project }: { project: any }) {
 
             {/* Editor Container - Scrollable */}
             <main className={cn(
-                "flex-grow overflow-y-auto px-4 md:px-0 scroll-smooth pb-20",
-                focusMode ? "p-0 flex items-center justify-center bg-background" : "bg-muted/5"
+                "flex-grow overflow-y-auto scroll-smooth",
+                focusMode ? "p-0 flex items-center justify-center bg-background" : "p-4 md:p-6 bg-muted/5"
             )}>
                 <div className={cn(
-                    "mx-auto transition-all duration-500 my-8 md:my-12",
-                    // This is the "page" element
-                    focusMode ? "max-w-3xl border-none shadow-none" : "max-w-[850px] bg-card rounded-xl shadow-sm border border-border/50 min-h-[1100px]"
+                    "mx-auto transition-all duration-500",
+                    focusMode ? "max-w-4xl" : "max-w-4xl"
                 )}>
-                    <div className="p-8 md:p-12 lg:p-16 min-h-full">
+                    {/* Single "Paper" Container */}
+                    <div className={cn(
+                        "transition-all duration-500",
+                        focusMode
+                            ? "bg-transparent border-none shadow-none"
+                            : "bg-card rounded-xl shadow-sm border border-border/50 min-h-[1100px] my-8"
+                    )}>
                         <Editor
                             initialState={project.content}
                             onChange={handleChange}

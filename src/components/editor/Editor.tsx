@@ -158,7 +158,7 @@ function ToolbarPlugin() {
     )
 
     return (
-        <div className="flex gap-2 p-2 border-b border-border bg-muted/20 rounded-t-xl sticky top-0 z-10 items-center flex-wrap">
+        <div className="flex gap-2 p-3 border-b border-border bg-card items-center flex-wrap">
             <div className="flex gap-1">
                 <ButtonBase active={blockType === 'h1'} onClick={() => formatHeading('h1')} label="Heading 1">
                     <Heading1 className="w-4 h-4" />
@@ -245,7 +245,7 @@ export function Editor({ initialState, onChange, readOnly = false, onStatsChange
     }
 
     return (
-        <div className="relative w-full max-w-4xl mx-auto min-h-[600px] bg-card rounded-xl shadow-sm border border-border flex flex-col transition-all duration-500">
+        <div className="relative w-full flex flex-col">
             <LexicalComposer initialConfig={initialConfig}>
                 {!readOnly && <ToolbarPlugin />}
                 <div className="relative flex-grow">
