@@ -39,7 +39,7 @@ export default async function LocationPage({ params }: { params: Promise<{ id: s
                     </div>
                 </div>
 
-                <LocationManager project={project} />
+                <LocationManager projectId={project.id} location={project.location || {}} />
             </div>
         </StandardPageShell>
     )

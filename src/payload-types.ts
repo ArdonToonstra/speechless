@@ -218,6 +218,10 @@ export interface Project {
     receiverMessage?: string | null;
   };
   location?: {
+    /**
+     * The slug of the selected mock location
+     */
+    slug?: string | null;
     venue?: string | null;
     address?: string | null;
     /**
@@ -451,6 +455,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   location?:
     | T
     | {
+        slug?: T;
         venue?: T;
         address?: T;
         time?: T;

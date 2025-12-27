@@ -267,6 +267,15 @@ See you there!`,
             label: 'Location & Practicalities',
             fields: [
                 {
+                    name: 'slug',
+                    type: 'text',
+                    label: 'Mock Location Slug',
+                    admin: {
+                        description: 'The slug of the selected mock location',
+                        readOnly: true,
+                    },
+                },
+                {
                     name: 'venue',
                     type: 'text',
                     label: 'Venue Name',
