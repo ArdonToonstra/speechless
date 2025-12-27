@@ -1,4 +1,4 @@
-import { CollectionConfig } from 'payload'
+import { CollectionConfig, Where } from 'payload'
 
 export const Projects: CollectionConfig = {
     slug: 'projects',
@@ -10,16 +10,79 @@ export const Projects: CollectionConfig = {
         create: ({ req: { user } }) => {
             return Boolean(user)
         },
-        read: ({ req: { user } }) => {
+        read: async ({ req: { user, payload } }) => {
             if (!user) return false
+
+            // Find all projects where the user is a guest
+            const guests = await payload.find({
+                collection: 'guests',
+                where: {
+                    email: { equals: user.email },
+                },
+                depth: 0,
+                limit: 1000, // Reasonable limit
+            })
+
+            const guestProjectIds = guests.docs.map((g) => (typeof g.project === 'object' ? g.project.id : g.project))
+
+            if (guestProjectIds.length > 0) {
+                return {
+                    or: [
+                        {
+                            owner: {
+                                equals: user.id,
+                            },
+                        },
+                        {
+                            id: {
+                                in: guestProjectIds,
+                            },
+                        },
+                    ] as Where[],
+                }
+            }
+
             return {
                 owner: {
                     equals: user.id,
                 },
             }
         },
-        update: ({ req: { user } }) => {
+        update: async ({ req: { user, payload } }) => {
             if (!user) return false
+
+            // Find all projects where the user is a guest with role 'collaborator'
+            // Contributors probably shouldn't edit the project settings, maybe just input?
+            // For now, let's match the roadmap: collaborators can work on the project.
+
+            const guests = await payload.find({
+                collection: 'guests',
+                where: {
+                    email: { equals: user.email },
+                    role: { equals: 'collaborator' }, // Only full collaborators can edit
+                },
+                depth: 0,
+            })
+
+            const guestProjectIds = guests.docs.map((g) => (typeof g.project === 'object' ? g.project.id : g.project))
+
+            if (guestProjectIds.length > 0) {
+                return {
+                    or: [
+                        {
+                            owner: {
+                                equals: user.id,
+                            },
+                        },
+                        {
+                            id: {
+                                in: guestProjectIds,
+                            },
+                        },
+                    ] as Where[],
+                }
+            }
+
             return {
                 owner: {
                     equals: user.id,

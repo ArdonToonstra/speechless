@@ -7,7 +7,15 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Trash2, Plus, Mail, Copy, Check } from 'lucide-react'
+import { Trash2, Plus, Mail, Copy, Check, Loader2 } from 'lucide-react'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 import { Guest } from '@/payload-types'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -15,15 +23,18 @@ import { cn } from '@/lib/utils'
 interface GuestManagementProps {
     projectId: number
     guests: Guest[]
+    currentUserEmail?: string
 }
 
-export function GuestManagement({ projectId, guests }: GuestManagementProps) {
+export function GuestManagement({ projectId, guests, currentUserEmail }: GuestManagementProps) {
     const [email, setEmail] = useState('')
     const [name, setName] = useState('')
     const [role, setRole] = useState<'contributor' | 'collaborator'>('contributor')
     const [isLoading, setIsLoading] = useState(false)
     const [copiedToken, setCopiedToken] = useState<string | null>(null)
     const [successMessage, setSuccessMessage] = useState<string | null>(null)
+    const [errorMessage, setErrorMessage] = useState<string | null>(null)
+    const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
     const router = useRouter()
 
     const handleInvite = async (e: React.FormEvent) => {
@@ -47,10 +58,36 @@ export function GuestManagement({ projectId, guests }: GuestManagementProps) {
         }
     }
 
-    const handleDelete = async (guestId: number) => {
-        if (confirm('Are you sure you want to remove this guest?')) {
-            await deleteGuest(guestId, projectId)
+    const handleDeleteClick = (guestId: number) => {
+        setConfirmDeleteId(guestId)
+    }
+
+    const confirmDeletion = async () => {
+        if (!confirmDeleteId) return
+
+        // Close dialog immediately or keep open with loading?
+        // Let's keep open with loading state on button
+        setIsLoading(true)
+        setErrorMessage(null)
+
+        const result = await deleteGuest(confirmDeleteId, projectId)
+
+        if (result?.success) {
+            setSuccessMessage('Guest removed successfully')
+            setTimeout(() => setSuccessMessage(null), 3000)
+            router.refresh()
+            // Close dialog only on success (or always?)
+            setConfirmDeleteId(null)
+        } else {
+            setErrorMessage(result?.error || 'Failed to remove guest')
+            setTimeout(() => setErrorMessage(null), 5000)
+            // Keep dialog open if error? Or close?
+            // Usually close if error is generic, keep open if we want user to retry.
+            // But let's close for now to avoid stuck state if ID is bad.
+            setConfirmDeleteId(null)
         }
+
+        setIsLoading(false)
     }
 
     const copyLink = (token: string) => {
@@ -61,106 +98,134 @@ export function GuestManagement({ projectId, guests }: GuestManagementProps) {
     }
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Guest List ({guests.length})</CardTitle>
-                <CardDescription>Invite friends and family to contribute to your speech.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-                {successMessage && (
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800 flex items-center gap-2">
-                        <Check className="w-4 h-4" />
-                        {successMessage}
-                    </div>
-                )}
+        <>
+            <Dialog open={!!confirmDeleteId} onOpenChange={(open) => !open && !isLoading && setConfirmDeleteId(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Remove Collaborator</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to remove this collaborator? They will no longer have access to this project.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setConfirmDeleteId(null)} disabled={isLoading}>
+                            Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={confirmDeletion} disabled={isLoading}>
+                            {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                            Remove
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
-                <form onSubmit={handleInvite} className="flex flex-col gap-4 p-4 border rounded-lg bg-muted/20">
-                    <h3 className="font-semibold text-sm">Add Collaborator</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="name">Name</Label>
-                            <Input
-                                id="name"
-                                placeholder="e.g. Aunt May"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                            />
+            <Card>
+                <CardHeader>
+                    <CardTitle>Guest List ({guests.length})</CardTitle>
+                    <CardDescription>Invite friends and family to contribute to your speech.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    {successMessage && (
+                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800 flex items-center gap-2">
+                            <Check className="w-4 h-4" />
+                            {successMessage}
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                placeholder="name@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="role">Role</Label>
-                            <Select value={role} onValueChange={(v: any) => setRole(v)}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="contributor">Contributor (Input only)</SelectItem>
-                                    <SelectItem value="collaborator">Collaborator (Edit speech)</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                    <Button type="submit" disabled={isLoading} className="w-full md:w-auto self-end">
-                        {isLoading ? 'Adding...' : <><Plus className="w-4 h-4 mr-2" /> Add Collaborator</>}
-                    </Button>
-                </form>
-
-                <div className="space-y-2">
-                    {guests.length === 0 ? (
-                        <p className="text-muted-foreground text-center py-4">No collaborators invited yet.</p>
-                    ) : (
-                        guests.map((guest) => (
-                            <div key={guest.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/10 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                                        {guest.name ? guest.name.charAt(0).toUpperCase() : guest.email.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <p className="font-medium">{guest.name || 'Unnamed Guest'}</p>
-                                        <p className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
-                                            <span className="flex items-center gap-1">
-                                                <Mail className="w-3 h-3" /> {guest.email}
-                                            </span>
-                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground capitalize">
-                                                {guest.role}
-                                            </span>
-                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                                                Email: Coming Soon
-                                            </span>
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    {guest.token && (
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => copyLink(guest.token!)}
-                                            className={cn("text-xs", copiedToken === guest.token && "text-green-600")}
-                                        >
-                                            {copiedToken === guest.token ? <Check className="w-4 h-4 mr-1" /> : <Copy className="w-4 h-4 mr-1" />}
-                                            {copiedToken === guest.token ? 'Copied' : 'Copy Link'}
-                                        </Button>
-                                    )}
-                                    <Button variant="ghost" size="icon" onClick={() => handleDelete(guest.id)} className="text-destructive hover:text-destructive/80 hover:bg-destructive/10">
-                                        <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                </div>
-                            </div>
-                        ))
                     )}
-                </div>
-            </CardContent>
-        </Card>
+
+                    {errorMessage && (
+                        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm text-destructive flex items-center gap-2">
+                            <span className="font-bold">Error:</span> {errorMessage}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleInvite} className="flex flex-col gap-4 p-4 border rounded-lg bg-muted/20">
+                        <h3 className="font-semibold text-sm">Add Collaborator</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="name">Name</Label>
+                                <Input
+                                    id="name"
+                                    placeholder="e.g. Aunt May"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="email">Email</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="name@example.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="role">Role</Label>
+                                <Select value={role} onValueChange={(v: any) => setRole(v)}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="contributor">Contributor (Input only)</SelectItem>
+                                        <SelectItem value="collaborator">Collaborator (Edit speech)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <Button type="submit" disabled={isLoading} className="w-full md:w-auto self-end">
+                            {isLoading ? 'Adding...' : <><Plus className="w-4 h-4 mr-2" /> Add Collaborator</>}
+                        </Button>
+                    </form>
+
+                    <div className="space-y-2">
+                        {guests.length === 0 ? (
+                            <p className="text-muted-foreground text-center py-4">No collaborators invited yet.</p>
+                        ) : (
+                            guests.map((guest) => (
+                                <div key={guest.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/10 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                                            {guest.name ? guest.name.charAt(0).toUpperCase() : guest.email.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <p className="font-medium">{guest.name || 'Unnamed Guest'}</p>
+                                            <p className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
+                                                <span className="flex items-center gap-1">
+                                                    <Mail className="w-3 h-3" /> {guest.email}
+                                                </span>
+                                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground capitalize">
+                                                    {guest.role}
+                                                </span>
+                                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                                    Email: Coming Soon
+                                                </span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {guest.token && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => copyLink(guest.token!)}
+                                                className={cn("text-xs", copiedToken === guest.token && "text-green-600")}
+                                            >
+                                                {copiedToken === guest.token ? <Check className="w-4 h-4 mr-1" /> : <Copy className="w-4 h-4 mr-1" />}
+                                                {copiedToken === guest.token ? 'Copied' : 'Copy Link'}
+                                            </Button>
+                                        )}
+                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(guest.id)} className="text-destructive hover:text-destructive/80 hover:bg-destructive/10">
+                                            <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+        </>
     )
 }
