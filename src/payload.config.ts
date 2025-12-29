@@ -33,6 +33,12 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URI || process.env.POSTGRES_URL || '',
+      ssl:
+        process.env.NODE_ENV === 'production'
+          ? {
+            rejectUnauthorized: false,
+          }
+          : undefined,
     },
   }),
   sharp,
