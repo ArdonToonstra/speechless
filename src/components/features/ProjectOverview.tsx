@@ -68,14 +68,14 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
                                 onClick={() => setOccasionType('gift')}
                             >
                                 <div className="font-semibold text-sm mb-1">🎁 Guest Speaker (Present)</div>
-                                <div className="text-xs text-muted-foreground">I'm giving this speech as a surprise/gift. I need to organize the moment and invites.</div>
+                                <div className="text-xs text-muted-foreground">I&apos;m giving this speech as a surprise/gift. I need to organize the moment and invites.</div>
                             </div>
                             <div
                                 className={`cursor-pointer border rounded-lg p-4 transition-all hover:bg-muted/50 ${occasionType === 'standard' ? 'border-primary ring-1 ring-primary bg-primary/5' : 'border-border'}`}
                                 onClick={() => setOccasionType('standard')}
                             >
                                 <div className="font-semibold text-sm mb-1">🎤 Event Host (Standard)</div>
-                                <div className="text-xs text-muted-foreground">I'm hosting or just speaking. Logistics/invites are handled separately.</div>
+                                <div className="text-xs text-muted-foreground">I&apos;m hosting or just speaking. Logistics/invites are handled separately.</div>
                             </div>
                         </div>
                     </div>
