@@ -39,14 +39,14 @@ export const Projects: CollectionConfig = {
                             },
                         },
                     ] as Where[],
-                }
+                } as Where
             }
 
             return {
                 owner: {
                     equals: user.id,
                 },
-            }
+            } as Where
         },
         update: async ({ req: { user, payload } }) => {
             if (!user) return false
@@ -80,14 +80,14 @@ export const Projects: CollectionConfig = {
                             },
                         },
                     ] as Where[],
-                }
+                } as Where
             }
 
             return {
                 owner: {
                     equals: user.id,
                 },
-            }
+            } as Where
         },
         delete: ({ req: { user } }) => {
             if (!user) return false
@@ -95,7 +95,7 @@ export const Projects: CollectionConfig = {
                 owner: {
                     equals: user.id,
                 },
-            }
+            } as Where
         },
     },
     fields: [
