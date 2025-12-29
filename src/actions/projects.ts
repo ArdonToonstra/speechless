@@ -37,7 +37,7 @@ export async function createProject(data: { title: string; speechReceiverName: s
                 owner: user.id,
                 status: 'draft',
             },
-        })
+        } as any)
 
         return { success: true, projectId: project.id, redirectUrl: `/projects/${project.id}/editor` }
     } catch (error) {
