@@ -63,3 +63,27 @@ The app will be available at [http://localhost:3000](http://localhost:3000).
 - `pnpm start`: Starts the production server.
 - `pnpm generate:types`: Generates Payload TypeScript types.
 - `pnpm generate:importmap`: Generates the Payload import map.
+
+## Testing
+
+This project uses Playwright for end-to-end testing.
+
+### Running Tests
+
+- Run all tests:
+  ```bash
+  pnpm test
+  ```
+
+- Run tests with UI mode:
+  ```bash
+  pnpm test:ui
+  ```
+
+### Test Artifacts
+
+All test results, including the HTML report and traces, are output to the `test-results` directory.
+- **HTML Report**: `test-results/report/index.html`
+- **Artifacts**: `test-results/artifacts`
+
+The `test-results` directory is git-ignored to keep the repository clean.
