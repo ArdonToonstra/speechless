@@ -26,9 +26,15 @@ interface QuestionnaireEditorProps {
 }
 
 export function QuestionnaireEditor({ projectId, initialQuestions, initialDescription, speechReceiverName, magicLinkToken }: QuestionnaireEditorProps) {
-    const [questions, setQuestions] = useState<Question[]>(initialQuestions || [])
+    // Replace placeholder in initial questions
+    const processedInitialQuestions = initialQuestions?.map(q => ({
+        text: speechReceiverName ? q.text.replace(/\{speechReceiverName\}/g, speechReceiverName) : q.text
+    })) || []
+
+    const [questions, setQuestions] = useState<Question[]>(processedInitialQuestions)
     const [description, setDescription] = useState(initialDescription || '')
     const [isSaving, setIsSaving] = useState(false)
+    const [lastSaved, setLastSaved] = useState<Date | null>(null)
     const [linkCopied, setLinkCopied] = useState(false)
     const router = useRouter()
 
@@ -69,11 +75,20 @@ export function QuestionnaireEditor({ projectId, initialQuestions, initialDescri
 
         setIsSaving(false)
         if (result?.error) {
-            alert('Failed to save questionnaire') // Replace with toast if available
+            // Silent fail for auto-save
         } else {
-            toast.success('Questionnaire saved successfully!')
+            setLastSaved(new Date())
         }
     }
+
+    // Auto-save effect
+    React.useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            handleSave()
+        }, 1000) // 1s debounce
+
+        return () => clearTimeout(timeoutId)
+    }, [questions, description])
 
     // Helper to replace placeholder in displayed questions
     const renderQuestionText = (text: string) => {
@@ -105,9 +120,9 @@ export function QuestionnaireEditor({ projectId, initialQuestions, initialDescri
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <Label className="text-sm font-medium text-slate-700">Questions</Label>
-                            {speechReceiverName && (
-                                <p className="text-xs text-slate-500">
-                                    Use <code className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-xs font-mono">{'{speechReceiverName}'}</code> to personalize
+                            {lastSaved && (
+                                <p className="text-xs text-slate-400">
+                                    Saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </p>
                             )}
                         </div>
@@ -117,18 +132,13 @@ export function QuestionnaireEditor({ projectId, initialQuestions, initialDescri
                                     <div className="mt-3.5 text-slate-300 cursor-move hover:text-slate-500 transition-colors">
                                         <GripVertical className="w-5 h-5" />
                                     </div>
-                                    <div className="flex-1 space-y-1.5">
+                                    <div className="flex-1">
                                         <Input
                                             value={q.text}
                                             onChange={(e) => updateQuestion(index, e.target.value)}
                                             placeholder={`Question ${index + 1}`}
                                             className="bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm h-11 rounded-xl"
                                         />
-                                        {speechReceiverName && q.text.includes('{speechReceiverName}') && (
-                                            <p className="text-xs text-emerald-600 flex items-center gap-1.5 pl-1">
-                                                <span className="font-semibold">Preview:</span> {renderQuestionText(q.text)}
-                                            </p>
-                                        )}
                                     </div>
                                     <Button
                                         variant="ghost"
@@ -146,12 +156,7 @@ export function QuestionnaireEditor({ projectId, initialQuestions, initialDescri
                         </Button>
                     </div>
 
-                    <div className="flex justify-end pt-6 border-t border-slate-100">
-                        <Button onClick={handleSave} disabled={isSaving} className="rounded-xl px-6 shadow-sm">
-                            {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-                            Save Changes
-                        </Button>
-                    </div>
+
                 </CardContent>
             </Card>
 

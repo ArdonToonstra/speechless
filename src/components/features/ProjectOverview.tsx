@@ -25,6 +25,7 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
     const [type, setType] = useState<string>(project.type)
     const [occasionType, setOccasionType] = useState<string>((project as any).occasionType || 'gift')
     const [speechDescription, setSpeechDescription] = useState<string>((project as any).speechDescription || '')
+    const [speechReceiverName, setSpeechReceiverName] = useState<string>((project as any).speechReceiverName || '')
 
     const [isSaving, setIsSaving] = useState(false)
     const [lastSaved, setLastSaved] = useState<Date | null>(null)
@@ -45,6 +46,7 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
             formData.append('type', type)
             formData.append('occasionType', occasionType)
             formData.append('speechDescription', speechDescription)
+            formData.append('speechReceiverName', speechReceiverName)
 
             const result = await updateProjectMetadata(project.id, formData)
 
@@ -57,7 +59,7 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
         }, 1000) // 1s debounce
 
         return () => clearTimeout(timeoutId)
-    }, [title, date, type, occasionType, speechDescription, project.id])
+    }, [title, date, type, occasionType, speechDescription, speechReceiverName, project.id])
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
@@ -106,6 +108,18 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
                                 placeholder="e.g. A funny and heartwarming speech about our childhood adventures..."
                             />
                         </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="speechReceiverName" className="text-sm font-medium text-slate-700">Speech Receiver Name</Label>
+                            <p className="text-xs text-slate-500 pb-2">Who is this speech for? This will personalize questions.</p>
+                            <Input
+                                id="speechReceiverName"
+                                value={speechReceiverName}
+                                onChange={(e) => setSpeechReceiverName(e.target.value)}
+                                className="h-12 rounded-xl bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm transition-all placeholder:text-slate-300"
+                                placeholder="e.g. John Smith"
+                            />
+                        </div>
                     </div>
 
                     {/* Context Divider */}
@@ -127,7 +141,7 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
                             >
                                 <div className="font-semibold text-lg mb-2 flex items-center gap-2 text-slate-900">
                                     <span className="text-2xl">🎁</span>
-                                    <span>Guest Speaker</span>
+                                    <span>Event Host</span>
                                 </div>
                                 <div className="text-sm text-slate-500 leading-relaxed">I&apos;m giving this speech as a surprise/gift. I need to organize the moment and invites.</div>
                             </button>
@@ -144,9 +158,9 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
                             >
                                 <div className="font-semibold text-lg mb-2 flex items-center gap-2 text-slate-900">
                                     <span className="text-2xl">🎤</span>
-                                    <span>Event Host</span>
+                                    <span>Guest Speaker</span>
                                 </div>
-                                <div className="text-sm text-slate-500 leading-relaxed">I&apos;m hosting or just speaking. Logistics/invites are handled separately.</div>
+                                <div className="text-sm text-slate-500 leading-relaxed">I&apos;m hosting myself or speaking at someone else&apos;s event. Logistics/invites are handled separately.</div>
                             </button>
                         </div>
                     </div>
