@@ -47,7 +47,7 @@ export default async function LocationDetailPage({ params, searchParams }: { par
                                 Back to Locations
                             </Link>
                             <div className="flex flex-wrap gap-3 mb-4">
-                                <Badge className="bg-indigo-600 text-white border-none text-base px-3 py-1">
+                                <Badge className="bg-primary hover:bg-primary/90 text-white border-none text-base px-3 py-1">
                                     <MapPin className="w-4 h-4 mr-1" /> {location.city}
                                 </Badge>
                                 <Badge variant="outline" className="text-white border-white/30 text-base px-3 py-1">
@@ -82,7 +82,7 @@ export default async function LocationDetailPage({ params, searchParams }: { par
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             {location.details.amenities.map((amenity) => (
                                                 <div key={amenity} className="flex items-center text-slate-600 bg-slate-50 p-3 rounded-lg">
-                                                    <CheckCircle2 className="w-5 h-5 text-indigo-600 mr-3" />
+                                                    <CheckCircle2 className="w-5 h-5 text-primary mr-3" />
                                                     {amenity}
                                                 </div>
                                             ))}
@@ -100,8 +100,8 @@ export default async function LocationDetailPage({ params, searchParams }: { par
                                         <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-3">Key Details</h3>
                                         <div className="space-y-4">
                                             <div className="flex items-start">
-                                                <div className="p-2 bg-indigo-50 rounded-lg mr-3">
-                                                    <Users className="w-5 h-5 text-indigo-600" />
+                                                <div className="p-2 bg-primary/10 rounded-lg mr-3">
+                                                    <Users className="w-5 h-5 text-primary" />
                                                 </div>
                                                 <div>
                                                     <p className="text-sm text-slate-500">Capacity</p>
@@ -109,8 +109,8 @@ export default async function LocationDetailPage({ params, searchParams }: { par
                                                 </div>
                                             </div>
                                             <div className="flex items-start">
-                                                <div className="p-2 bg-indigo-50 rounded-lg mr-3">
-                                                    <Building2 className="w-5 h-5 text-indigo-600" />
+                                                <div className="p-2 bg-primary/10 rounded-lg mr-3">
+                                                    <Building2 className="w-5 h-5 text-primary" />
                                                 </div>
                                                 <div>
                                                     <p className="text-sm text-slate-500">Venue Type</p>
@@ -118,8 +118,8 @@ export default async function LocationDetailPage({ params, searchParams }: { par
                                                 </div>
                                             </div>
                                             <div className="flex items-start">
-                                                <div className="p-2 bg-indigo-50 rounded-lg mr-3">
-                                                    <MapPin className="w-5 h-5 text-indigo-600" />
+                                                <div className="p-2 bg-primary/10 rounded-lg mr-3">
+                                                    <MapPin className="w-5 h-5 text-primary" />
                                                 </div>
                                                 <div>
                                                     <p className="text-sm text-slate-500">Address</p>
@@ -156,7 +156,7 @@ export default async function LocationDetailPage({ params, searchParams }: { par
                                             </form>
                                         ) : (
                                             <>
-                                                <Button className="w-full h-12 text-lg bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20">
+                                                <Button className="w-full h-12 text-lg bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">
                                                     <Calendar className="w-4 h-4 mr-2" />
                                                     Check Availability
                                                 </Button>

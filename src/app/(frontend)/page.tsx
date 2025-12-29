@@ -25,7 +25,7 @@ export default async function Page() {
                     <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-10">
                         Draft, refine, and deliver your speech with confidence. <br className="hidden md:block" />
                         Give the warmest and most personal present. <br className="hidden md:block" />
-                        Let them become speechless.
+                        Leave them speechless.
                     </p>
 
                     <div className="flex gap-4 justify-center mb-16">
@@ -39,12 +39,12 @@ export default async function Page() {
 
                     {/* Hero Product Peek: Project Hub */}
                     <div className="relative mx-auto w-full max-w-3xl perspective-1000 group">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                        <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
                         <div className="relative bg-card rounded-xl border border-border/50 shadow-2xl overflow-hidden transform transition-all hover:scale-[1.01] hover:-rotate-1 flex flex-col md:flex-row">
                             {/* Project Overview Side */}
                             <div className="flex-1 p-6 md:p-8 text-left space-y-6">
                                 <div>
-                                    <div className="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-2">Active Project</div>
+                                    <div className="text-xs font-bold text-primary uppercase tracking-widest mb-2">Active Project</div>
                                     <h3 className="text-2xl font-serif font-bold text-foreground">Sarah&apos;s Wedding Toast</h3>
                                     <p className="text-sm text-muted-foreground mt-1">Last edited 2 mins ago</p>
                                 </div>
@@ -62,7 +62,7 @@ export default async function Page() {
                                 <div className="space-y-3">
                                     <div className="text-xs font-semibold text-muted-foreground uppercase">Linked Venue</div>
                                     <div className="flex items-center gap-3 bg-muted/30 p-2 rounded-lg border border-border/50">
-                                        <div className="w-10 h-10 rounded bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-500">📍</div>
+                                        <div className="w-10 h-10 rounded bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary">📍</div>
                                         <div>
                                             <div className="text-sm font-semibold text-foreground">The Grand Hotel</div>
                                             <div className="text-xs text-muted-foreground">Ballroom B • 150 Guests</div>
@@ -105,7 +105,7 @@ export default async function Page() {
                     {/* Step 1: Gather & Invite */}
                     <div className="relative flex flex-col md:flex-row items-center gap-8 md:gap-16 mb-32 group">
                         <div className="md:w-1/2 text-left md:text-right md:pr-12 relative z-10 order-2 md:order-1">
-                            <div className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-bold mb-3 tracking-wider uppercase">Invite</div>
+                            <div className="inline-block px-3 py-1 bg-primary/10 dark:bg-primary/20 text-primary rounded-full text-xs font-bold mb-3 tracking-wider uppercase">Invite</div>
                             <h3 className="text-3xl font-serif font-bold mb-4 text-foreground">Gather Your Team</h3>
                             <p className="text-muted-foreground text-lg leading-relaxed">
                                 Speeches are better with friends. Bring your inner circle together to share stories, fact-check memories, and brainstorm ideas.
@@ -113,7 +113,7 @@ export default async function Page() {
                         </div>
 
                         {/* Center Node */}
-                        <div className="absolute left-4 md:left-1/2 -ml-[9px] w-5 h-5 rounded-full border-4 border-background bg-blue-500 z-20"></div>
+                        <div className="absolute left-4 md:left-1/2 -ml-[9px] w-5 h-5 rounded-full border-4 border-background bg-primary z-20"></div>
 
                         {/* Step 1 Visual: Invite Card */}
                         <div className="md:w-1/2 w-full pl-12 md:pl-0 order-1 md:order-2">
@@ -125,7 +125,7 @@ export default async function Page() {
                                 </div>
                                 <div className="pt-2">
                                     <div className="text-xs text-muted-foreground mb-2">Anyone with the link can edit</div>
-                                    <div className="flex items-center gap-2 text-indigo-500 font-semibold text-sm cursor-default">
+                                    <div className="flex items-center gap-2 text-primary font-semibold text-sm cursor-default">
                                         <span>🔗</span> Copy Invite Link
                                     </div>
                                 </div>
@@ -178,7 +178,7 @@ export default async function Page() {
                     {/* Step 3: Location */}
                     <div className="relative flex flex-col md:flex-row items-center gap-8 md:gap-16 mb-32 group">
                         <div className="md:w-1/2 text-left md:text-right md:pr-12 relative z-10 order-2 md:order-1">
-                            <div className="inline-block px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-bold mb-3 tracking-wider uppercase">Organize</div>
+                            <div className="inline-block px-3 py-1 bg-primary/10 dark:bg-primary/20 text-primary rounded-full text-xs font-bold mb-3 tracking-wider uppercase">Organize</div>
                             <h3 className="text-3xl font-serif font-bold mb-4 text-foreground">The Perfect Stage</h3>
                             <p className="text-muted-foreground text-lg leading-relaxed">
                                 Usually, the speech is a surprise present. The receiver doesn&apos;t know what&apos;s coming. We help you find a venue that matches the moment—whether it&apos;s an intimate dinner or a grand hall.
@@ -186,7 +186,7 @@ export default async function Page() {
                         </div>
 
                         {/* Center Node */}
-                        <div className="absolute left-4 md:left-1/2 -ml-[9px] w-5 h-5 rounded-full border-4 border-background bg-purple-500 z-20"></div>
+                        <div className="absolute left-4 md:left-1/2 -ml-[9px] w-5 h-5 rounded-full border-4 border-background bg-primary z-20"></div>
 
                         {/* Step 3 Visual: Location Card */}
                         <div className="md:w-1/2 w-full pl-12 md:pl-0 order-1 md:order-2">

@@ -95,7 +95,7 @@ export function LocationCatalog() {
                             setTypeFilter(null)
                             setSearch('')
                         }}
-                        className="mt-2 text-indigo-600"
+                        className="mt-2 text-primary"
                     >
                         Clear all filters
                     </Button>
@@ -134,7 +134,7 @@ function LocationCard({ location }: { location: Location }) {
                     />
                     <div className="absolute top-4 left-4 flex gap-2">
                         <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm text-slate-900 shadow-sm border-none">
-                            <MapPin className="w-3 h-3 mr-1 text-indigo-500" />
+                            <MapPin className="w-3 h-3 mr-1 text-primary" />
                             {location.city}
                         </Badge>
                     </div>
@@ -149,13 +149,13 @@ function LocationCard({ location }: { location: Location }) {
                             {location.capacity} Guests
                         </Badge>
                     </div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors">
+                    <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-primary transition-colors">
                         {location.name}
                     </h3>
                     <p className="text-slate-500 text-sm line-clamp-2 mb-6 flex-grow">
                         {location.description}
                     </p>
-                    <div className="flex items-center text-indigo-600 font-semibold text-sm mt-auto">
+                    <div className="flex items-center text-primary font-semibold text-sm mt-auto">
                         View Details <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
                     </div>
                 </div>
