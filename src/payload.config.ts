@@ -36,6 +36,7 @@ export default buildConfig({
         ? `${process.env.POSTGRES_URL}${process.env.POSTGRES_URL.includes('?') ? '&' : '?'}sslmode=no-verify`
         : process.env.DATABASE_URI || '',
     },
+    push: true,
   }),
   sharp,
   plugins: [
