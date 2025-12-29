@@ -4,6 +4,8 @@ import config from '@payload-config'
 import { redirect, notFound } from 'next/navigation'
 import { ProjectSidebar } from '@/components/features/ProjectSidebar'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ProjectLayout({
     children,
     params,

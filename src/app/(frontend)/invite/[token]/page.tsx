@@ -4,6 +4,8 @@ import config from '@payload-config'
 import { notFound, redirect } from 'next/navigation'
 import { InviteAcceptance } from '@/components/features/InviteAcceptance'
 
+export const dynamic = 'force-dynamic'
+
 export default async function InvitePage({ params }: { params: Promise<{ token: string }> }) {
     const { token } = await params
 

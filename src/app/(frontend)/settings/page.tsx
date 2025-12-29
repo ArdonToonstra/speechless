@@ -8,6 +8,8 @@ import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
+export const dynamic = 'force-dynamic'
+
 export default async function SettingsPage() {
     const payload = await getPayload({ config: configPromise })
     const headersList = await headers()

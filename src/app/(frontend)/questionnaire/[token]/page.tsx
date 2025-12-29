@@ -4,6 +4,8 @@ import config from '@payload-config'
 import { notFound } from 'next/navigation'
 import { QuestionnaireForm } from '@/components/features/QuestionnaireForm'
 
+export const dynamic = 'force-dynamic'
+
 export default async function QuestionnairePage({ params }: { params: Promise<{ token: string }> }) {
     const { token } = await params
 

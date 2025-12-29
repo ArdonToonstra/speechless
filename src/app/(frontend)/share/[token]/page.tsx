@@ -4,6 +4,8 @@ import configPromise from '@payload-config'
 import { notFound } from 'next/navigation'
 import { Editor } from '@/components/editor/Editor'
 
+export const dynamic = 'force-dynamic'
+
 export default async function SharedProjectPage({ params }: { params: any }) {
     const { token } = await params
     const payload = await getPayload({ config: configPromise })
