@@ -119,39 +119,40 @@ export function GuestManagement({ projectId, guests, currentUserEmail }: GuestMa
                 </DialogContent>
             </Dialog>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Guest List ({guests.length})</CardTitle>
-                    <CardDescription>Invite friends and family to contribute to your speech.</CardDescription>
+            <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
+                <CardHeader className="border-b border-slate-100 bg-white/50 px-8 py-6">
+                    <CardTitle className="text-xl font-semibold text-slate-800">Guest List ({guests.length})</CardTitle>
+                    <CardDescription className="text-slate-500">Invite friends and family to contribute to your speech.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="p-8 space-y-8">
                     {successMessage && (
-                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800 flex items-center gap-2">
-                            <Check className="w-4 h-4" />
+                        <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-sm text-emerald-800 flex items-center gap-3 shadow-sm">
+                            <Check className="w-5 h-5 text-emerald-600" />
                             {successMessage}
                         </div>
                     )}
 
                     {errorMessage && (
-                        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm text-destructive flex items-center gap-2">
+                        <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-800 flex items-center gap-3 shadow-sm">
                             <span className="font-bold">Error:</span> {errorMessage}
                         </div>
                     )}
 
-                    <form onSubmit={handleInvite} className="flex flex-col gap-4 p-4 border rounded-lg bg-muted/20">
-                        <h3 className="font-semibold text-sm">Add Collaborator</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <form onSubmit={handleInvite} className="flex flex-col gap-6 p-6 border border-slate-100 rounded-2xl bg-slate-50/50">
+                        <h3 className="font-semibold text-sm text-slate-900 uppercase tracking-wider">Add Collaborator</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="space-y-2">
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="name" className="text-sm font-medium text-slate-700">Name</Label>
                                 <Input
                                     id="name"
                                     placeholder="e.g. Aunt May"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
+                                    className="bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm h-11 rounded-xl"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email" className="text-sm font-medium text-slate-700">Email</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -159,12 +160,13 @@ export function GuestManagement({ projectId, guests, currentUserEmail }: GuestMa
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
+                                    className="bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm h-11 rounded-xl"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="role">Role</Label>
+                                <Label htmlFor="role" className="text-sm font-medium text-slate-700">Role</Label>
                                 <Select value={role} onValueChange={(v: any) => setRole(v)}>
-                                    <SelectTrigger>
+                                    <SelectTrigger className="bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm h-11 rounded-xl">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -174,34 +176,33 @@ export function GuestManagement({ projectId, guests, currentUserEmail }: GuestMa
                                 </Select>
                             </div>
                         </div>
-                        <Button type="submit" disabled={isLoading} className="w-full md:w-auto self-end">
+                        <Button type="submit" disabled={isLoading} className="w-full md:w-auto self-end rounded-xl shadow-sm px-6">
                             {isLoading ? 'Adding...' : <><Plus className="w-4 h-4 mr-2" /> Add Collaborator</>}
                         </Button>
                     </form>
 
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                         {guests.length === 0 ? (
-                            <p className="text-muted-foreground text-center py-4">No collaborators invited yet.</p>
+                            <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                <p className="text-slate-500">No collaborators invited yet.</p>
+                            </div>
                         ) : (
                             guests.map((guest) => (
-                                <div key={guest.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/10 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                                <div key={guest.id} className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl hover:bg-slate-50/80 transition-all bg-white shadow-sm">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
                                             {guest.name ? guest.name.charAt(0).toUpperCase() : guest.email.charAt(0).toUpperCase()}
                                         </div>
                                         <div>
-                                            <p className="font-medium">{guest.name || 'Unnamed Guest'}</p>
-                                            <p className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
-                                                <span className="flex items-center gap-1">
-                                                    <Mail className="w-3 h-3" /> {guest.email}
+                                            <p className="font-semibold text-slate-900">{guest.name || 'Unnamed Guest'}</p>
+                                            <div className="text-sm text-slate-500 flex items-center gap-3 flex-wrap mt-1">
+                                                <span className="flex items-center gap-1.5">
+                                                    <Mail className="w-3.5 h-3.5" /> {guest.email}
                                                 </span>
-                                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground capitalize">
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 capitalize border border-slate-200">
                                                     {guest.role}
                                                 </span>
-                                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                                                    Email: Coming Soon
-                                                </span>
-                                            </p>
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -210,13 +211,13 @@ export function GuestManagement({ projectId, guests, currentUserEmail }: GuestMa
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => copyLink(guest.token!)}
-                                                className={cn("text-xs", copiedToken === guest.token && "text-green-600")}
+                                                className={cn("text-xs h-9 px-3 rounded-lg hover:bg-slate-100", copiedToken === guest.token && "text-emerald-600 bg-emerald-50 hover:bg-emerald-100")}
                                             >
-                                                {copiedToken === guest.token ? <Check className="w-4 h-4 mr-1" /> : <Copy className="w-4 h-4 mr-1" />}
+                                                {copiedToken === guest.token ? <Check className="w-3.5 h-3.5 mr-1.5" /> : <Copy className="w-3.5 h-3.5 mr-1.5" />}
                                                 {copiedToken === guest.token ? 'Copied' : 'Copy Link'}
                                             </Button>
                                         )}
-                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(guest.id)} className="text-destructive hover:text-destructive/80 hover:bg-destructive/10">
+                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(guest.id)} className="h-9 w-9 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50">
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
                                     </div>

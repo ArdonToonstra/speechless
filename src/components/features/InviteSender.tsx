@@ -166,28 +166,29 @@ See you there!`
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             {/* Recipient Selection */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Select Recipients</CardTitle>
-                    <CardDescription>Choose collaborators or add additional email addresses</CardDescription>
+            <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
+                <CardHeader className="border-b border-slate-100 bg-white/50 px-8 py-6">
+                    <CardTitle className="text-xl font-semibold text-slate-800">Select Recipients</CardTitle>
+                    <CardDescription className="text-slate-500">Choose collaborators or add additional email addresses</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="p-8 space-y-6">
                     {/* Existing Guests */}
                     {guests.length > 0 && (
                         <div>
-                            <Label className="text-sm font-medium mb-2 block">Collaborators ({guests.length})</Label>
-                            <div className="space-y-2 max-h-64 overflow-y-auto border rounded-lg p-3">
+                            <Label className="text-sm font-medium text-slate-700 mb-3 block">Collaborators ({guests.length})</Label>
+                            <div className="space-y-2 max-h-64 overflow-y-auto border border-slate-200 rounded-xl p-2 bg-slate-50/50">
                                 {guests.map((guest) => (
-                                    <div key={guest.id} className="flex items-center gap-3 p-2 hover:bg-muted/50 rounded">
+                                    <div key={guest.id} className="flex items-center gap-3 p-3 hover:bg-white hover:shadow-sm rounded-lg transition-all cursor-pointer" onClick={() => toggleGuest(guest.id)}>
                                         <Checkbox
                                             checked={selectedGuestIds.includes(guest.id)}
                                             onCheckedChange={() => toggleGuest(guest.id)}
+                                            className="data-[state=checked]:bg-primary data-[state=checked]:border-primary border-slate-300"
                                         />
                                         <div className="flex-1">
-                                            <p className="text-sm font-medium">{guest.name || 'Unnamed'}</p>
-                                            <p className="text-xs text-muted-foreground">{guest.email}</p>
+                                            <p className="text-sm font-semibold text-slate-900">{guest.name || 'Unnamed'}</p>
+                                            <p className="text-xs text-slate-500">{guest.email}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -197,37 +198,38 @@ See you there!`
 
                     {/* Additional Recipients */}
                     <div>
-                        <Label className="text-sm font-medium mb-2 block">Additional Recipients</Label>
-                        <div className="flex gap-2 mb-2">
+                        <Label className="text-sm font-medium text-slate-700 mb-3 block">Additional Recipients</Label>
+                        <div className="flex gap-3 mb-3">
                             <Input
                                 placeholder="Name (optional)"
                                 value={newName}
                                 onChange={(e) => setNewName(e.target.value)}
-                                className="flex-1"
+                                className="flex-1 bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm h-11 rounded-xl"
                             />
                             <Input
                                 type="email"
                                 placeholder="email@example.com"
                                 value={newEmail}
                                 onChange={(e) => setNewEmail(e.target.value)}
-                                className="flex-1"
+                                className="flex-1 bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm h-11 rounded-xl"
                             />
-                            <Button onClick={addRecipient} variant="outline" size="icon">
-                                <Plus className="w-4 h-4" />
+                            <Button onClick={addRecipient} variant="outline" size="icon" className="h-11 w-11 rounded-xl border-slate-200 hover:bg-slate-50">
+                                <Plus className="w-5 h-5 text-slate-600" />
                             </Button>
                         </div>
                         {additionalRecipients.length > 0 && (
-                            <div className="space-y-1">
+                            <div className="space-y-2">
                                 {additionalRecipients.map((recipient, index) => (
-                                    <div key={index} className="flex items-center justify-between p-2 bg-muted/30 rounded">
+                                    <div key={index} className="flex items-center justify-between p-3 bg-white border border-slate-100 shadow-sm rounded-xl">
                                         <div>
-                                            <p className="text-sm font-medium">{recipient.name || 'Unnamed'}</p>
-                                            <p className="text-xs text-muted-foreground">{recipient.email}</p>
+                                            <p className="text-sm font-medium text-slate-900">{recipient.name || 'Unnamed'}</p>
+                                            <p className="text-xs text-slate-500">{recipient.email}</p>
                                         </div>
                                         <Button
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => removeRecipient(index)}
+                                            className="h-8 w-8 rounded-lg hover:bg-red-50 hover:text-red-600"
                                         >
                                             <X className="w-4 h-4" />
                                         </Button>
@@ -237,40 +239,46 @@ See you there!`
                         )}
                     </div>
 
-                    <div className="pt-2 border-t">
-                        <p className="text-sm text-muted-foreground">
-                            Total recipients: <strong>{totalRecipients}</strong>
+                    <div className="pt-4 border-t border-slate-100">
+                        <p className="text-sm text-slate-500">
+                            Total recipients: <strong className="text-slate-900">{totalRecipients}</strong>
                         </p>
                     </div>
                 </CardContent>
             </Card>
 
             {/* Message Type & Template */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Message & Template</CardTitle>
-                    <CardDescription>Customize your invitation message</CardDescription>
+            <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
+                <CardHeader className="border-b border-slate-100 bg-white/50 px-8 py-6">
+                    <CardTitle className="text-xl font-semibold text-slate-800">Message & Template</CardTitle>
+                    <CardDescription className="text-slate-500">Customize your invitation message</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="p-8 space-y-8">
                     {/* Message Type */}
                     <div>
-                        <Label className="text-sm font-medium mb-3 block">Message Type</Label>
-                        <RadioGroup value={messageType} onValueChange={(v: any) => setMessageType(v)}>
-                            <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/30 cursor-pointer">
-                                <RadioGroupItem value="attendee" id="attendee" />
+                        <Label className="text-sm font-medium text-slate-700 mb-4 block">Message Type</Label>
+                        <RadioGroup value={messageType} onValueChange={(v: any) => setMessageType(v)} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className={cn(
+                                "flex items-start space-x-3 p-4 border rounded-xl cursor-pointer transition-all",
+                                messageType === 'attendee' ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-slate-200 hover:bg-slate-50 hover:border-slate-300"
+                            )}>
+                                <RadioGroupItem value="attendee" id="attendee" className="mt-1" />
                                 <Label htmlFor="attendee" className="flex-1 cursor-pointer">
-                                    Attendee Message
-                                    <span className="block text-xs text-muted-foreground mt-1">
-                                        For guests attending the event
+                                    <span className="font-semibold text-slate-900">Attendee Message</span>
+                                    <span className="block text-xs text-slate-500 mt-1 leading-relaxed">
+                                        For guests attending the event. Includes venue details.
                                     </span>
                                 </Label>
                             </div>
-                            <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/30 cursor-pointer">
-                                <RadioGroupItem value="receiver" id="receiver" />
+                            <div className={cn(
+                                "flex items-start space-x-3 p-4 border rounded-xl cursor-pointer transition-all",
+                                messageType === 'receiver' ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-slate-200 hover:bg-slate-50 hover:border-slate-300"
+                            )}>
+                                <RadioGroupItem value="receiver" id="receiver" className="mt-1" />
                                 <Label htmlFor="receiver" className="flex-1 cursor-pointer">
-                                    Speech Receiver Message
-                                    <span className="block text-xs text-muted-foreground mt-1">
-                                        For the person receiving the speech
+                                    <span className="font-semibold text-slate-900">Receiver Message</span>
+                                    <span className="block text-xs text-slate-500 mt-1 leading-relaxed">
+                                        For the person receiving the speech. Focuses on the surprise.
                                     </span>
                                 </Label>
                             </div>
@@ -278,10 +286,10 @@ See you there!`
                     </div>
 
                     {/* Message Editor */}
-                    <div>
-                        <div className="flex items-center justify-between mb-2">
-                            <Label className="text-sm font-medium">Message Template</Label>
-                            <Button variant="ghost" size="sm" onClick={resetTemplate}>
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <Label className="text-sm font-medium text-slate-700">Message Template</Label>
+                            <Button variant="ghost" size="sm" onClick={resetTemplate} className="text-xs h-8 text-primary hover:text-primary/80 hover:bg-primary/5">
                                 Reset to Default
                             </Button>
                         </div>
@@ -289,33 +297,33 @@ See you there!`
                             value={customMessage}
                             onChange={(e) => setCustomMessage(e.target.value)}
                             rows={10}
-                            className="font-mono text-sm"
+                            className="font-mono text-sm bg-slate-50 border-slate-200 focus:border-primary focus:ring-primary shadow-inner rounded-xl leading-relaxed p-4"
                         />
-                        <p className="text-xs text-muted-foreground mt-2">
-                            Use placeholders: <code className="bg-muted px-1 rounded">{'{name}'}</code>,{' '}
-                            <code className="bg-muted px-1 rounded">{'{date}'}</code>,{' '}
-                            <code className="bg-muted px-1 rounded">{'{venue}'}</code>,{' '}
-                            <code className="bg-muted px-1 rounded">{'{time}'}</code>,{' '}
-                            <code className="bg-muted px-1 rounded">{'{address}'}</code>
+                        <p className="text-xs text-slate-500">
+                            Available placeholders: <code className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">{'{name}'}</code>,{' '}
+                            <code className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">{'{date}'}</code>,{' '}
+                            <code className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">{'{venue}'}</code>,{' '}
+                            <code className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">{'{time}'}</code>,{' '}
+                            <code className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">{'{address}'}</code>
                         </p>
                     </div>
 
                     {/* Preview Button */}
                     <Dialog open={showPreview} onOpenChange={setShowPreview}>
                         <DialogTrigger asChild>
-                            <Button variant="outline" className="w-full">
+                            <Button variant="outline" className="w-full h-11 rounded-xl border-slate-200 hover:bg-slate-50 text-slate-700">
                                 <Eye className="w-4 h-4 mr-2" />
                                 Preview Message
                             </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="sm:max-w-md rounded-2xl">
                             <DialogHeader>
                                 <DialogTitle>Message Preview</DialogTitle>
                                 <DialogDescription>
                                     This is how your message will appear to recipients
                                 </DialogDescription>
                             </DialogHeader>
-                            <div className="bg-muted/30 p-4 rounded-lg whitespace-pre-wrap font-serif">
+                            <div className="bg-slate-50 p-6 rounded-xl border border-slate-100 whitespace-pre-wrap font-serif text-slate-800 leading-relaxed shadow-inner">
                                 {renderPreview()}
                             </div>
                         </DialogContent>
@@ -324,41 +332,41 @@ See you there!`
             </Card>
 
             {/* Postcard Option */}
-            <Card className="relative overflow-hidden">
-                <div className="absolute top-3 right-3 z-10">
-                    <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+            <Card className="relative overflow-hidden border-none shadow-sm rounded-2xl bg-white">
+                <div className="absolute top-4 right-4 z-10">
+                    <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-100 border-amber-200">
                         <Sparkles className="w-3 h-3 mr-1" />
                         Coming Soon
                     </Badge>
                 </div>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Package className="w-5 h-5" />
-                        Postcard Delivery (Paid Feature)
+                <CardHeader className="border-b border-slate-100 bg-white/50 px-8 py-6">
+                    <CardTitle className="flex items-center gap-2 text-xl font-semibold text-slate-800">
+                        <Package className="w-5 h-5 text-slate-400" />
+                        Postcard Delivery
                     </CardTitle>
-                    <CardDescription>Send a physical postcard in addition to email</CardDescription>
+                    <CardDescription className="text-slate-500">Send a physical postcard in addition to email</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3 opacity-60">
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center gap-3">
+                <CardContent className="p-8 opacity-60 pointer-events-none select-none grayscale-[0.5]">
+                    <div className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-slate-50/50">
+                        <div className="flex items-center gap-4">
                             <Checkbox
                                 disabled
                                 checked={sendViaPostcard}
                                 onCheckedChange={(checked) => setSendViaPostcard(checked as boolean)}
                             />
                             <div>
-                                <Label className="font-medium">Send via Physical Postcard</Label>
-                                <p className="text-xs text-muted-foreground mt-1">$2.99 per postcard</p>
+                                <Label className="font-semibold text-slate-900">Send via Physical Postcard</Label>
+                                <p className="text-xs text-slate-500 mt-1">$2.99 per postcard • Worldwide shipping</p>
                             </div>
                         </div>
                     </div>
 
                     {postcardEligibility && !postcardEligibility.eligible && (
-                        <Alert variant="destructive">
+                        <Alert variant="destructive" className="mt-4 rounded-xl">
                             <AlertCircle className="h-4 w-4" />
                             <AlertDescription>
                                 <Clock className="w-3 h-3 inline mr-1" />
-                                Postcards require at least  5 days before the event. You have {postcardEligibility.daysUntilEvent} days remaining.
+                                Postcards require at least 5 days before the event. You have {postcardEligibility.daysUntilEvent} days remaining.
                             </AlertDescription>
                         </Alert>
                     )}
@@ -369,15 +377,15 @@ See you there!`
             <Button
                 onClick={handleSend}
                 disabled={isSending || totalRecipients === 0}
-                className="w-full"
+                className="w-full rounded-xl shadow-lg shadow-primary/20 h-12 text-lg font-medium"
                 size="lg"
             >
-                <Mail className="w-4 h-4 mr-2" />
+                <Mail className="w-5 h-5 mr-2" />
                 {isSending ? 'Preparing...' : `Prepare ${totalRecipients} Invite${totalRecipients !== 1 ? 's' : ''}`}
             </Button>
 
             {totalRecipients === 0 && (
-                <p className="text-sm text-center text-muted-foreground">
+                <p className="text-sm text-center text-slate-400 animate-pulse">
                     Select at least one recipient to prepare invites
                 </p>
             )}

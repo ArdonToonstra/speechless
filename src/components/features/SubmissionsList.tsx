@@ -28,52 +28,56 @@ export function SubmissionsList({ submissions, project }: SubmissionsListProps) 
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                    {submissions.length} submission{submissions.length !== 1 ? 's' : ''}
+                <p className="text-sm text-slate-500 font-medium">
+                    {submissions.length} submission{submissions.length !== 1 ? 's' : ''} received
                 </p>
             </div>
 
-            <div className="grid gap-4">
+            <div className="grid gap-6">
                 {submissions.map((submission) => (
-                    <Card key={submission.id}>
-                        <CardHeader>
+                    <Card key={submission.id} className="border-none shadow-sm rounded-2xl bg-white overflow-hidden hover:shadow-md transition-all">
+                        <CardHeader className="bg-slate-50/50 border-b border-slate-100 px-6 py-4">
                             <div className="flex items-start justify-between">
                                 <div className="space-y-1">
-                                    <CardTitle className="flex items-center gap-2 text-lg">
-                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
                                             {submission.submitterName?.charAt(0).toUpperCase() || '?'}
                                         </div>
-                                        {submission.submitterName || 'Anonymous'}
-                                    </CardTitle>
-                                    <CardDescription className="flex items-center gap-3 text-xs">
-                                        <span className="flex items-center gap-1">
-                                            <Calendar className="w-3 h-3" />
-                                            {submission.createdAt
-                                                ? format(new Date(submission.createdAt), 'MMM d, yyyy \'at\' h:mm a')
-                                                : 'Unknown date'}
-                                        </span>
-                                    </CardDescription>
+                                        <div>
+                                            <CardTitle className="text-base font-semibold text-slate-900">
+                                                {submission.submitterName || 'Anonymous'}
+                                            </CardTitle>
+                                            <CardDescription className="flex items-center gap-3 text-xs text-slate-500 mt-0.5">
+                                                <span className="flex items-center gap-1.5">
+                                                    <Calendar className="w-3.5 h-3.5" />
+                                                    {submission.createdAt
+                                                        ? format(new Date(submission.createdAt), 'MMM d, yyyy \'at\' h:mm a')
+                                                        : 'Unknown date'}
+                                                </span>
+                                            </CardDescription>
+                                        </div>
+                                    </div>
                                 </div>
-                                <Badge variant="secondary" className="ml-2">
-                                    <MessageSquare className="w-3 h-3 mr-1" />
+                                <Badge variant="secondary" className="bg-white border border-slate-200 text-slate-700 shadow-sm">
+                                    <MessageSquare className="w-3 h-3 mr-1.5 text-slate-400" />
                                     {submission.answers?.length || 0} answers
                                 </Badge>
                             </div>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="p-6 space-y-6">
                             {submission.answers && submission.answers.length > 0 ? (
                                 submission.answers.map((answer, index) => (
-                                    <div key={index} className="space-y-2 pb-4 border-b last:border-0 last:pb-0">
-                                        <p className="text-sm font-medium text-muted-foreground">
+                                    <div key={index} className="space-y-2 pb-6 border-b border-slate-100 last:border-0 last:pb-0">
+                                        <p className="text-sm font-semibold text-slate-700">
                                             {answer.question}
                                         </p>
-                                        <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                                        <div className="text-sm leading-relaxed whitespace-pre-wrap text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100">
                                             {answer.answer}
-                                        </p>
+                                        </div>
                                     </div>
                                 ))
                             ) : (
-                                <p className="text-sm text-muted-foreground italic">No answers provided</p>
+                                <p className="text-sm text-slate-400 italic text-center py-4">No answers provided</p>
                             )}
                         </CardContent>
                     </Card>

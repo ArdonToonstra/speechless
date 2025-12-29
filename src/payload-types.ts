@@ -179,6 +179,10 @@ export interface Project {
    * The person who will receive this speech (e.g., "Sarah", "John and Mary")
    */
   speechReceiverName?: string | null;
+  /**
+   * High level information about what the speech will be about. Useful for collaborators.
+   */
+  speechDescription?: string | null;
   type: 'wedding' | 'birthday' | 'funeral' | 'other';
   /**
    * Determines which steps are shown in the progress bar.
@@ -429,6 +433,7 @@ export interface MediaSelect<T extends boolean = true> {
 export interface ProjectsSelect<T extends boolean = true> {
   title?: T;
   speechReceiverName?: T;
+  speechDescription?: T;
   type?: T;
   occasionType?: T;
   date?: T;

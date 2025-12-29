@@ -85,66 +85,69 @@ export function QuestionnaireEditor({ projectId, initialQuestions, initialDescri
 
     return (
         <div className="space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Questionnaire</CardTitle>
-                    <CardDescription>Customize the questions your guests will answer.</CardDescription>
+            <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
+                <CardHeader className="border-b border-slate-100 bg-white/50 px-8 py-6">
+                    <CardTitle className="text-xl font-semibold text-slate-800">Questionnaire</CardTitle>
+                    <CardDescription className="text-slate-500">Customize the questions your guests will answer.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="description">Greeting / Instructions</Label>
+                <CardContent className="p-8 space-y-8">
+                    <div className="space-y-3">
+                        <Label htmlFor="description" className="text-sm font-medium text-slate-700">Greeting / Instructions</Label>
                         <Textarea
                             id="description"
                             placeholder="Welcome! We'd love your input..."
                             value={description}
                             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
-                            className="min-h-[80px]"
+                            className="min-h-[100px] bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm rounded-xl resize-y"
                         />
                     </div>
 
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <Label>Questions</Label>
+                            <Label className="text-sm font-medium text-slate-700">Questions</Label>
                             {speechReceiverName && (
-                                <p className="text-xs text-muted-foreground">
-                                    Use <code className="bg-muted px-1 rounded text-xs">{'{speechReceiverName}'}</code> to personalize
+                                <p className="text-xs text-slate-500">
+                                    Use <code className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-xs font-mono">{'{speechReceiverName}'}</code> to personalize
                                 </p>
                             )}
                         </div>
-                        {questions.map((q, index) => (
-                            <div key={index} className="flex items-start gap-2 group">
-                                <div className="mt-3 text-muted-foreground/30 cursor-move">
-                                    <GripVertical className="w-4 h-4" />
+                        <div className="space-y-3">
+                            {questions.map((q, index) => (
+                                <div key={index} className="flex items-start gap-3 group">
+                                    <div className="mt-3.5 text-slate-300 cursor-move hover:text-slate-500 transition-colors">
+                                        <GripVertical className="w-5 h-5" />
+                                    </div>
+                                    <div className="flex-1 space-y-1.5">
+                                        <Input
+                                            value={q.text}
+                                            onChange={(e) => updateQuestion(index, e.target.value)}
+                                            placeholder={`Question ${index + 1}`}
+                                            className="bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm h-11 rounded-xl"
+                                        />
+                                        {speechReceiverName && q.text.includes('{speechReceiverName}') && (
+                                            <p className="text-xs text-emerald-600 flex items-center gap-1.5 pl-1">
+                                                <span className="font-semibold">Preview:</span> {renderQuestionText(q.text)}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => removeQuestion(index)}
+                                        className="h-11 w-11 rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
+                                    >
+                                        <Trash2 className="w-5 h-5" />
+                                    </Button>
                                 </div>
-                                <div className="flex-1 space-y-1">
-                                    <Input
-                                        value={q.text}
-                                        onChange={(e) => updateQuestion(index, e.target.value)}
-                                        placeholder={`Question ${index + 1}`}
-                                    />
-                                    {speechReceiverName && q.text.includes('{speechReceiverName}') && (
-                                        <p className="text-xs text-muted-foreground italic">
-                                            Preview: {renderQuestionText(q.text)}
-                                        </p>
-                                    )}
-                                </div>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => removeQuestion(index)}
-                                    className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </Button>
-                            </div>
-                        ))}
-                        <Button variant="outline" size="sm" onClick={addQuestion} className="w-full border-dashed">
+                            ))}
+                        </div>
+                        <Button variant="outline" size="sm" onClick={addQuestion} className="w-full border-dashed border-slate-300 rounded-xl h-11 hover:bg-slate-50 hover:border-slate-400 text-slate-600">
                             <Plus className="w-4 h-4 mr-2" /> Add Question
                         </Button>
                     </div>
 
-                    <div className="flex justify-end pt-4 border-t">
-                        <Button onClick={handleSave} disabled={isSaving}>
+                    <div className="flex justify-end pt-6 border-t border-slate-100">
+                        <Button onClick={handleSave} disabled={isSaving} className="rounded-xl px-6 shadow-sm">
                             {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
                             Save Changes
                         </Button>

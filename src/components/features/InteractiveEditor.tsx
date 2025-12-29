@@ -61,17 +61,17 @@ export function InteractiveEditor({ project }: { project: any }) {
         <div className={cn("h-full flex flex-col", focusMode ? "fixed inset-0 z-50 bg-background" : "relative")}>
             {/* Toolbar - Sticky at top */}
             <header className={cn(
-                "border-b border-border/50 px-6 py-4 flex items-center justify-between shrink-0 bg-background/95 backdrop-blur z-40",
+                "border-b border-slate-200 px-8 py-5 flex items-center justify-between shrink-0 bg-white/95 backdrop-blur-sm shadow-sm z-40",
                 focusMode ? "hidden" : "flex"
             )}>
                 {/* Left Side: Standard Title */}
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-lg hidden sm:block">
+                <div className="flex items-center gap-4">
+                    <div className="p-2.5 bg-primary/10 rounded-xl hidden sm:block">
                         <PenTool className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-lg font-bold">Speech Editor</h1>
-                        <p className="text-muted-foreground flex items-center gap-2 text-xs">
+                        <h1 className="text-lg font-bold text-slate-900">Speech Editor</h1>
+                        <p className="text-slate-500 flex items-center gap-2 text-xs mt-0.5">
                             {project.title}
                             {mounted && lastSaved && <span className="text-xs opacity-60 hidden md:inline">• Saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
                         </p>
@@ -79,18 +79,16 @@ export function InteractiveEditor({ project }: { project: any }) {
                 </div>
 
                 {/* Right Side: Editor Controls */}
-                <div className="flex gap-3 items-center">
-                    <div className="text-sm text-muted-foreground hidden lg:block text-right">
-                        <p>{stats.words} words</p>
+                <div className="flex gap-4 items-center">
+                    <div className="text-sm text-slate-600 hidden lg:block text-right bg-slate-50 px-4 py-2 rounded-xl border border-slate-100">
+                        <p className="font-semibold">{stats.words} <span className="font-normal text-slate-500">words</span></p>
                     </div>
-
-                    <div className="h-4 w-px bg-border mx-2 hidden lg:block" />
 
                     <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setFocusMode(true)}
-                        className="gap-2 h-8"
+                        className="gap-2 h-9 px-4 rounded-lg hover:bg-slate-100 text-slate-700"
                     >
                         Focus
                     </Button>
@@ -99,7 +97,7 @@ export function InteractiveEditor({ project }: { project: any }) {
                         onClick={onManualSave}
                         disabled={saving}
                         size="sm"
-                        className="gap-2 bg-primary hover:opacity-90 text-primary-foreground h-8"
+                        className="gap-2 bg-primary hover:opacity-90 text-primary-foreground h-9 px-5 rounded-lg shadow-sm"
                     >
                         <Save className="w-4 h-4" />
                         {saving ? 'Saving...' : 'Save'}

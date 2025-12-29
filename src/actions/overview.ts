@@ -12,6 +12,7 @@ export async function updateProjectMetadata(projectId: number, formData: FormDat
     const date = formData.get('date') as string
     const type = formData.get('type') as Project['type']
     const occasionType = formData.get('occasionType') as Project['occasionType']
+    const speechDescription = formData.get('speechDescription') as string
 
     try {
         await payload.update({
@@ -22,6 +23,7 @@ export async function updateProjectMetadata(projectId: number, formData: FormDat
                 date,
                 type,
                 occasionType,
+                speechDescription,
             },
         })
 

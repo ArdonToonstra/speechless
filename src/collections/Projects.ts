@@ -115,6 +115,15 @@ export const Projects: CollectionConfig = {
             },
         },
         {
+            name: 'speechDescription',
+            type: 'textarea',
+            required: false,
+            label: 'Speech Description',
+            admin: {
+                description: 'High level information about what the speech will be about. Useful for collaborators.',
+            },
+        },
+        {
             name: 'type',
             type: 'select',
             options: [
