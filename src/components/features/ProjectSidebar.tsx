@@ -81,8 +81,8 @@ export function ProjectSidebar({ projectId, projectTitle, user }: ProjectSidebar
                         className={cn(
                             "absolute bg-primary text-white rounded-full p-0.5 shadow-lg hover:scale-110 transition-transform",
                             isCollapsed
-                                ? "bottom-[-6px] left-1/2 -translate-x-1/2"
-                                : "right-4 bottom-[-6px]"
+                                ? "top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2"
+                                : "top-1/2 -translate-y-1/2 right-4"
                         )}
                         title="Show Header"
                     >

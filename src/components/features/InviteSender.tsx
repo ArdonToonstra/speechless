@@ -118,9 +118,12 @@ See you there!`
         preview = preview.replace(/{name}/g, sampleRecipient?.name || 'Guest')
         preview = preview.replace(/{projectTitle}/g, project.title)
         preview = preview.replace(/{date}/g, project.date ? new Date(project.date).toLocaleDateString() : 'TBD')
-        preview = preview.replace(/{venue}/g, project.location?.venue || 'TBD')
-        preview = preview.replace(/{time}/g, project.location?.time || 'TBD')
-        preview = preview.replace(/{address}/g, project.location?.address || 'TBD')
+        // Type cast needed since we removed venue/time/address from schema but logic still wants them
+        // TODO: Re-add these fields to schema or fetch from location slug
+        const loc = project.location as any
+        preview = preview.replace(/{venue}/g, loc?.venue || 'TBD')
+        preview = preview.replace(/{time}/g, loc?.time || 'TBD')
+        preview = preview.replace(/{address}/g, loc?.address || 'TBD')
 
         return preview
     }
