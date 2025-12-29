@@ -34,11 +34,12 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI || process.env.POSTGRES_URL || '',
       ssl:
-        process.env.NODE_ENV === 'production'
-          ? {
-            rejectUnauthorized: false,
-          }
-          : undefined,
+        (process.env.DATABASE_URI && process.env.DATABASE_URI.includes('127.0.0.1')) ||
+          (process.env.DATABASE_URI && process.env.DATABASE_URI.includes('localhost')) ||
+          (process.env.POSTGRES_URL && process.env.POSTGRES_URL.includes('127.0.0.1')) ||
+          (process.env.POSTGRES_URL && process.env.POSTGRES_URL.includes('localhost'))
+          ? undefined
+          : { rejectUnauthorized: false },
     },
   }),
   sharp,
