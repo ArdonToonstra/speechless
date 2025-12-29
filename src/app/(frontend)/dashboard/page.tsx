@@ -8,6 +8,8 @@ import { Plus } from 'lucide-react'
 import { User } from '@/payload-types'
 import { logout } from '@/actions/auth'
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
     const payload = await getPayload({ config: configPromise })
 
