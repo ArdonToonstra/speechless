@@ -3,6 +3,8 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { redirect, notFound } from 'next/navigation'
 import { ProjectSidebar } from '@/components/features/ProjectSidebar'
+import { ProjectHeader } from '@/components/features/ProjectHeader'
+import { ProjectLayoutProvider } from '@/components/layout/ProjectLayoutProvider'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,18 +33,21 @@ export default async function ProjectLayout({
     if (!project) notFound()
 
     return (
-        <div className="flex h-screen bg-background overflow-hidden">
-            {/* Collapsible Sidebar */}
-            <ProjectSidebar
-                projectId={project.id}
-                projectTitle={project.title}
-                user={user}
-            />
+        <ProjectLayoutProvider>
+            <div className="flex h-screen bg-background overflow-hidden">
+                {/* Collapsible Sidebar */}
+                <ProjectSidebar
+                    projectId={project.id}
+                    projectTitle={project.title}
+                    user={user}
+                />
 
-            {/* Main Content Area - Header Removed */}
-            <main className="flex-1 flex flex-col overflow-hidden relative">
-                {children}
-            </main>
-        </div>
+                {/* Main Content Area */}
+                <main className="flex-1 flex flex-col overflow-hidden relative">
+                    <ProjectHeader project={project as any} />
+                    {children}
+                </main>
+            </div>
+        </ProjectLayoutProvider>
     )
 }

@@ -18,6 +18,8 @@ import {
     Home
 } from 'lucide-react'
 import { User } from '@/payload-types'
+import { useProjectLayout } from '@/components/layout/ProjectLayoutProvider'
+import { ChevronDown } from 'lucide-react'
 
 // Define the navigation items
 const navItems = [
@@ -37,6 +39,7 @@ interface ProjectSidebarProps {
 
 export function ProjectSidebar({ projectId, projectTitle, user }: ProjectSidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false)
+    const { isHeaderCollapsed, setHeaderCollapsed } = useProjectLayout()
     const pathname = usePathname()
 
     // Optional: Persist collapse state
@@ -60,7 +63,7 @@ export function ProjectSidebar({ projectId, projectTitle, user }: ProjectSidebar
         >
             {/* Header / Logo Area */}
             <div className={cn(
-                "h-16 flex items-center border-b border-border",
+                "h-16 flex items-center border-b border-border relative",
                 isCollapsed ? "justify-center" : "px-4 justify-between"
             )}>
                 <Link href="/dashboard" className="flex items-center gap-2 font-bold text-lg overflow-hidden whitespace-nowrap" title="Back to Dashboard">
@@ -70,6 +73,22 @@ export function ProjectSidebar({ projectId, projectTitle, user }: ProjectSidebar
                         <Home className="w-5 h-5 text-primary" />
                     )}
                 </Link>
+
+                {/* Header Expand Trigger (subtle point down) */}
+                {isHeaderCollapsed && (
+                    <button
+                        onClick={() => setHeaderCollapsed(false)}
+                        className={cn(
+                            "absolute bg-primary text-white rounded-full p-0.5 shadow-lg hover:scale-110 transition-transform",
+                            isCollapsed
+                                ? "bottom-[-6px] left-1/2 -translate-x-1/2"
+                                : "right-4 bottom-[-6px]"
+                        )}
+                        title="Show Header"
+                    >
+                        <ChevronDown className="w-3 h-3" />
+                    </button>
+                )}
             </div>
 
             {/* Project Context (Only visible when expanded) */}

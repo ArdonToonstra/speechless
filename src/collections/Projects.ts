@@ -126,6 +126,20 @@ export const Projects: CollectionConfig = {
             required: true,
         },
         {
+            name: 'occasionType',
+            type: 'select',
+            label: 'Occasion Context',
+            defaultValue: 'gift',
+            options: [
+                { label: 'I am giving this speech as a present (Surprise)', value: 'gift' },
+                { label: 'I am speaking at an event (Standard)', value: 'standard' },
+            ],
+            required: true,
+            admin: {
+                description: 'Determines which steps are shown in the progress bar.',
+            },
+        },
+        {
             name: 'date',
             type: 'date',
             required: true,
@@ -274,29 +288,6 @@ See you there!`,
                         description: 'The slug of the selected mock location',
                         readOnly: true,
                     },
-                },
-                {
-                    name: 'venue',
-                    type: 'text',
-                    label: 'Venue Name',
-                },
-                {
-                    name: 'address',
-                    type: 'text',
-                    label: 'Address',
-                },
-                {
-                    name: 'time',
-                    type: 'text',
-                    label: 'Time',
-                    admin: {
-                        description: 'e.g. 14:00 or 2:00 PM',
-                    },
-                },
-                {
-                    name: 'notes',
-                    type: 'textarea',
-                    label: 'Notes / Logistics',
                 },
             ],
         },

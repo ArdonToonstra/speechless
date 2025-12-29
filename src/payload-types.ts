@@ -180,6 +180,10 @@ export interface Project {
    */
   speechReceiverName?: string | null;
   type: 'wedding' | 'birthday' | 'funeral' | 'other';
+  /**
+   * Determines which steps are shown in the progress bar.
+   */
+  occasionType: 'gift' | 'standard';
   date: string;
   owner: number | User;
   content?: {
@@ -222,13 +226,6 @@ export interface Project {
      * The slug of the selected mock location
      */
     slug?: string | null;
-    venue?: string | null;
-    address?: string | null;
-    /**
-     * e.g. 14:00 or 2:00 PM
-     */
-    time?: string | null;
-    notes?: string | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -433,6 +430,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   title?: T;
   speechReceiverName?: T;
   type?: T;
+  occasionType?: T;
   date?: T;
   owner?: T;
   content?: T;
@@ -456,10 +454,6 @@ export interface ProjectsSelect<T extends boolean = true> {
     | T
     | {
         slug?: T;
-        venue?: T;
-        address?: T;
-        time?: T;
-        notes?: T;
       };
   updatedAt?: T;
   createdAt?: T;
