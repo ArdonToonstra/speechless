@@ -123,7 +123,7 @@ export default function OnboardingPage() {
                             className="text-lg py-6 bg-card border-border"
                         />
                         <p className="text-xs text-muted-foreground">
-                            This will be used in default questions like "Share your best anecdotes about {formData.speechReceiverName || 'them'}"
+                            This will be used in default questions like &quot;Share your best anecdotes about {formData.speechReceiverName || 'them'}&quot;
                         </p>
                     </div>
                 </div>

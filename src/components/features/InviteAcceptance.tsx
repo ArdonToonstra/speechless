@@ -21,7 +21,7 @@ export function InviteAcceptance({ guest, project, token }: InviteAcceptanceProp
             <div className="max-w-lg w-full space-y-8">
                 {/* Header */}
                 <div className="text-center space-y-3">
-                    <h1 className="text-3xl font-bold">You're Invited</h1>
+                    <h1 className="text-3xl font-bold">You&apos;re Invited</h1>
                     <p className="text-muted-foreground">
                         Join as a collaborator on this speech project
                     </p>

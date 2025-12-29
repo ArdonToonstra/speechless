@@ -45,7 +45,7 @@ export default async function Page() {
                             <div className="flex-1 p-6 md:p-8 text-left space-y-6">
                                 <div>
                                     <div className="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-2">Active Project</div>
-                                    <h3 className="text-2xl font-serif font-bold text-foreground">Sarah's Wedding Toast</h3>
+                                    <h3 className="text-2xl font-serif font-bold text-foreground">Sarah&apos;s Wedding Toast</h3>
                                     <p className="text-sm text-muted-foreground mt-1">Last edited 2 mins ago</p>
                                 </div>
 
@@ -84,7 +84,7 @@ export default async function Page() {
                                     <div className="space-y-3">
                                         <div className="flex gap-2 text-xs">
                                             <span className="font-bold text-foreground">JD</span>
-                                            <span className="text-muted-foreground">added a comment on "Opening"</span>
+                                            <span className="text-muted-foreground">added a comment on &quot;Opening&quot;</span>
                                         </div>
                                         <div className="flex gap-2 text-xs">
                                             <span className="font-bold text-foreground">AS</span>
@@ -149,7 +149,7 @@ export default async function Page() {
                                 </div>
 
                                 <div className="my-4 p-3 bg-amber-50 dark:bg-amber-900/10 border-l-4 border-amber-400 rounded-r-lg relative">
-                                    <p className="text-sm text-foreground font-serif italic mb-2">"Remember that time at the lake house? We should include that here."</p>
+                                    <p className="text-sm text-foreground font-serif italic mb-2">&quot;Remember that time at the lake house? We should include that here.&quot;</p>
                                     <div className="flex items-center gap-2 mt-1">
                                         <div className="w-5 h-5 rounded-full bg-primary/20"></div>
                                         <span className="text-xs font-bold text-muted-foreground">Reviewer</span>
@@ -170,7 +170,7 @@ export default async function Page() {
                             <div className="inline-block px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full text-xs font-bold mb-3 tracking-wider uppercase">Collaborate</div>
                             <h3 className="text-3xl font-serif font-bold mb-4 text-foreground">Co-Write & Refine</h3>
                             <p className="text-muted-foreground text-lg leading-relaxed">
-                                It's not just about writing alone. Get and bundle input, precise feedback, and suggestions from your team to shape the perfect narrative.
+                                It&apos;s not just about writing alone. Get and bundle input, precise feedback, and suggestions from your team to shape the perfect narrative.
                             </p>
                         </div>
                     </div>
@@ -181,7 +181,7 @@ export default async function Page() {
                             <div className="inline-block px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-bold mb-3 tracking-wider uppercase">Organize</div>
                             <h3 className="text-3xl font-serif font-bold mb-4 text-foreground">The Perfect Stage</h3>
                             <p className="text-muted-foreground text-lg leading-relaxed">
-                                Usually, the speech is a surprise present. The receiver doesn't know what's coming. We help you find a venue that matches the moment—whether it's an intimate dinner or a grand hall.
+                                Usually, the speech is a surprise present. The receiver doesn&apos;t know what&apos;s coming. We help you find a venue that matches the moment—whether it&apos;s an intimate dinner or a grand hall.
                             </p>
                         </div>
 
@@ -257,7 +257,7 @@ export default async function Page() {
                             <div className="inline-block px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full text-xs font-bold mb-3 tracking-wider uppercase">Invite</div>
                             <h3 className="text-3xl font-serif font-bold mb-4 text-foreground">The Golden Ticket</h3>
                             <p className="text-muted-foreground text-lg leading-relaxed">
-                                Make it official. Send a secret "Golden Ticket" to the guest of honor, and "Silver Tickets" to all your attendees. Coordinate the date, location, and dress code in style.
+                                Make it official. Send a secret &quot;Golden Ticket&quot; to the guest of honor, and &quot;Silver Tickets&quot; to all your attendees. Coordinate the date, location, and dress code in style.
                             </p>
                         </div>
                     </div>
