@@ -37,6 +37,7 @@ export async function createProject(data: { title: string; speechReceiverName: s
                 owner: user.id,
                 status: 'draft',
             },
+            user, // Pass the authenticated user context
         } as any)
 
         return { success: true, projectId: project.id, redirectUrl: `/projects/${project.id}/editor` }
@@ -68,6 +69,7 @@ export async function updateProjectContent(projectId: string, content: any) {
             collection: 'projects',
             id: projectId,
             depth: 0,
+            user, // Pass user context for access control
         })
 
         if (!project || (typeof project.owner === 'object' ? project.owner.id : project.owner) !== user.id) {
@@ -80,6 +82,7 @@ export async function updateProjectContent(projectId: string, content: any) {
             data: {
                 content,
             },
+            user, // Pass user context for access control
         })
 
         return { success: true }
