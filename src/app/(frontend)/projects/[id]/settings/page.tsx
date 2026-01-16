@@ -1,8 +1,9 @@
 import React from 'react'
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import { notFound, redirect } from 'next/navigation'
+import { eq } from 'drizzle-orm'
 import { Settings } from 'lucide-react'
+import { db, projects } from '@/db'
+import { getSession } from '@/actions/auth'
 // We might reuse the Wizard or a simpler form for updating settings
 // For now, I'll create a placeholder that reuses the idea of the "Project Settings"
 // but strictly for Phase 1: Basics (Title, Type, Date).
@@ -12,20 +13,16 @@ export default async function SettingsPage({ params }: { params: Promise<{ id: s
     const projectId = parseInt(id)
     if (isNaN(projectId)) notFound()
 
-    const payload = await getPayload({ config })
-
     // Auth check
-    const { user } = await payload.auth({ headers: await (await import('next/headers')).headers() })
-    if (!user) return redirect('/login')
+    const session = await getSession()
+    if (!session?.user) return redirect('/login')
 
     // Fetch Project
-    const project = await payload.findByID({
-        collection: 'projects',
-        id: projectId,
-        user,
+    const project = await db.query.projects.findFirst({
+        where: eq(projects.id, projectId),
     })
 
-    if (!project) notFound()
+    if (!project || project.ownerId !== session.user.id) notFound()
 
     return (
         <div className="max-w-4xl mx-auto space-y-8">
@@ -46,9 +43,9 @@ export default async function SettingsPage({ params }: { params: Promise<{ id: s
                    Currently keeping it simple to focus on structure.
                 */}
                 <div className="space-y-2 mt-4">
-                    <p><strong>Title:</strong> {project.title}</p>
-                    <p><strong>Type:</strong> {project.type}</p>
-                    <p><strong>Date:</strong> {new Date(project.date).toLocaleDateString()}</p>
+                    <p><strong>Title:</strong> {project.name}</p>
+                    <p><strong>Type:</strong> {project.occasionType}</p>
+                    <p><strong>Date:</strong> {project.occasionDate ? new Date(project.occasionDate).toLocaleDateString() : 'Not set'}</p>
                 </div>
             </div>
         </div>

@@ -2,6 +2,8 @@
 
 This document outlines the planned features and improvements for the Speechless application, organized by priority and development phase.
 
+- [ ] **JWT implementaion**
+  - Secure user sessions with JSON Web Tokens for authentication.
 - [ ] **OAuth Integration**
   - Implement Google authentication providers via Payload's auth strategies.
 - [ ] **Email services**

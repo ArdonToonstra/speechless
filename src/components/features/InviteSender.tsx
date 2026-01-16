@@ -12,9 +12,29 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Mail, Plus, X, Eye, Clock, Package, AlertCircle, Sparkles } from 'lucide-react'
-import { Guest, Project } from '@/payload-types'
 import { prepareSpeechInvites, validatePostcardOption } from '@/actions/invites'
 import { useRouter } from 'next/navigation'
+
+interface Project {
+    id: number
+    name: string
+    occasionDate: Date | null
+    emailTemplates: {
+        attendeeMessage?: string
+        receiverMessage?: string
+    } | null
+    locationSettings?: {
+        venue?: string
+        time?: string
+        address?: string
+    } | null
+}
+
+interface Guest {
+    id: number
+    email: string
+    name: string | null
+}
 import { cn } from '@/lib/utils'
 
 interface InviteSenderProps {
@@ -48,7 +68,7 @@ export function InviteSender({ project, guests }: InviteSenderProps) {
         if (messageType === 'attendee') {
             return templates.attendeeMessage || `Hi {name},
 
-You're invited to ${project.title} on {date}!
+You're invited to ${project.name} on {date}!
 
 Location: {venue}
 Time: {time}
@@ -116,11 +136,9 @@ See you there!`
 
         let preview = customMessage
         preview = preview.replace(/{name}/g, sampleRecipient?.name || 'Guest')
-        preview = preview.replace(/{projectTitle}/g, project.title)
-        preview = preview.replace(/{date}/g, project.date ? new Date(project.date).toLocaleDateString() : 'TBD')
-        // Type cast needed since we removed venue/time/address from schema but logic still wants them
-        // TODO: Re-add these fields to schema or fetch from location slug
-        const loc = project.location as any
+        preview = preview.replace(/{projectTitle}/g, project.name)
+        preview = preview.replace(/{date}/g, project.occasionDate ? new Date(project.occasionDate).toLocaleDateString() : 'TBD')
+        const loc = project.locationSettings
         preview = preview.replace(/{venue}/g, loc?.venue || 'TBD')
         preview = preview.replace(/{time}/g, loc?.time || 'TBD')
         preview = preview.replace(/{address}/g, loc?.address || 'TBD')

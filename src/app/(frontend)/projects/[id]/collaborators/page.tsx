@@ -1,8 +1,9 @@
 import React from 'react'
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import { notFound, redirect } from 'next/navigation'
+import { eq } from 'drizzle-orm'
 import { Users } from 'lucide-react'
+import { db, projects, guests } from '@/db'
+import { getSession } from '@/actions/auth'
 import { GuestManagement } from '@/components/features/GuestManagement'
 import { StandardPageShell } from '@/components/layout/StandardPageShell'
 
@@ -11,29 +12,20 @@ export default async function CollaboratorsPage({ params }: { params: Promise<{ 
     const projectId = parseInt(id)
     if (isNaN(projectId)) notFound()
 
-    const payload = await getPayload({ config })
-
     // Auth check
-    const { user } = await payload.auth({ headers: await (await import('next/headers')).headers() })
-    if (!user) return redirect('/login')
+    const session = await getSession()
+    if (!session?.user) return redirect('/login')
 
     // Fetch Project
-    const project = await payload.findByID({
-        collection: 'projects',
-        id: projectId,
-        user,
+    const project = await db.query.projects.findFirst({
+        where: eq(projects.id, projectId),
     })
 
-    if (!project) notFound()
+    if (!project || project.ownerId !== session.user.id) notFound()
 
     // Fetch Guests
-    const guests = await payload.find({
-        collection: 'guests',
-        where: {
-            project: {
-                equals: projectId,
-            },
-        },
+    const guestList = await db.query.guests.findMany({
+        where: eq(guests.projectId, projectId),
     })
 
     return (
@@ -51,8 +43,8 @@ export default async function CollaboratorsPage({ params }: { params: Promise<{ 
 
                 <GuestManagement
                     projectId={projectId}
-                    guests={guests.docs}
-                    currentUserEmail={user.email}
+                    guests={guestList}
+                    currentUserEmail={session.user.email}
                 />
             </div>
         </StandardPageShell>

@@ -5,7 +5,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { updateProfile, changePassword } from '@/actions/profile'
-import { User } from '@/payload-types'
+
+interface User {
+    id: string
+    name: string
+    email: string
+    image?: string | null
+}
 
 export function ProfileForms({ user }: { user: User }) {
     const [profileLoading, setProfileLoading] = useState(false)

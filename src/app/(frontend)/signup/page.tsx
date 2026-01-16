@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { signup } from '@/actions/auth'
+import { signUp } from '@/lib/auth-client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -19,12 +19,27 @@ export default function SignupPage() {
         setLoading(true)
 
         const formData = new FormData(e.currentTarget)
-        const res = await signup(formData)
+        const name = formData.get('name') as string
+        const email = formData.get('email') as string
+        const password = formData.get('password') as string
+        const confirmPassword = formData.get('confirmPassword') as string
 
-        if (res && 'error' in res && res.error) {
-            setError(res.error)
+        if (password !== confirmPassword) {
+            setError('Passwords do not match')
             setLoading(false)
-        } else if (res && 'success' in res && res.success) {
+            return
+        }
+
+        const result = await signUp.email({
+            name,
+            email,
+            password,
+        })
+
+        if (result.error) {
+            setError(result.error.message || 'Failed to create account')
+            setLoading(false)
+        } else {
             router.push('/dashboard')
             router.refresh()
         }

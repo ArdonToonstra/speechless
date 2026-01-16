@@ -22,10 +22,10 @@ interface QuestionnaireEditorProps {
     initialQuestions: Question[]
     initialDescription: string
     speechReceiverName?: string
-    magicLinkToken?: string
+    shareToken?: string
 }
 
-export function QuestionnaireEditor({ projectId, initialQuestions, initialDescription, speechReceiverName, magicLinkToken }: QuestionnaireEditorProps) {
+export function QuestionnaireEditor({ projectId, initialQuestions, initialDescription, speechReceiverName, shareToken }: QuestionnaireEditorProps) {
     // Replace placeholder in initial questions
     const processedInitialQuestions = initialQuestions?.map(q => ({
         text: speechReceiverName ? q.text.replace(/\{speechReceiverName\}/g, speechReceiverName) : q.text
@@ -38,9 +38,9 @@ export function QuestionnaireEditor({ projectId, initialQuestions, initialDescri
     const [linkCopied, setLinkCopied] = useState(false)
     const router = useRouter()
 
-    // Generate shareable link using magic token (non-guessable)
-    const shareableLink = magicLinkToken
-        ? `${typeof window !== 'undefined' ? window.location.origin : ''}/questionnaire/${magicLinkToken}`
+    // Generate shareable link using share token (non-guessable)
+    const shareableLink = shareToken
+        ? `${typeof window !== 'undefined' ? window.location.origin : ''}/questionnaire/${shareToken}`
         : `${typeof window !== 'undefined' ? window.location.origin : ''}/questionnaire/${projectId}`
 
     const copyLink = () => {

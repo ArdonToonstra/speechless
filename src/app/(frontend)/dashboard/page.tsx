@@ -1,65 +1,50 @@
 import React from 'react'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
+import { db, projects, guests } from '@/db'
+import { eq, and } from 'drizzle-orm'
 import { ProjectCard } from '@/components/features/ProjectCard'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
-import { User } from '@/payload-types'
-import { logout } from '@/actions/auth'
+import { logout, getSession } from '@/actions/auth'
+import { redirect } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
-    const payload = await getPayload({ config: configPromise })
+    const session = await getSession()
 
-    // Need to handle Auth here properly in a real scenario
-    // For MVP, we fetch all projects, or if we had user context, filter by it.
-    // Since authentication is handled by Payload, we check for the user.
-    const { headers } = await import('next/headers')
-    const headersList = await headers()
-    const authResult = await payload.auth({ headers: headersList })
-    const user = authResult.user
-
-    if (!user || !user.id || String(user.id) === 'NaN' || Number.isNaN(Number(user.id))) {
-        const { redirect } = await import('next/navigation')
-        redirect('/admin/login')
+    if (!session) {
+        redirect('/login')
     }
 
+    const user = session.user
+
     // Get projects where user is owner
-    const ownedProjects = await payload.find({
-        collection: 'projects',
-        where: {
-            owner: {
-                equals: user!.id
-            }
-        },
-        depth: 1,
+    const ownedProjects = await db.query.projects.findMany({
+        where: eq(projects.ownerId, user.id),
+        orderBy: (projects, { desc }) => [desc(projects.createdAt)],
     })
 
-    // Get projects where user is invited as a guest
-    const guestRecords = await payload.find({
-        collection: 'guests',
-        where: {
-            email: {
-                equals: user!.email
-            },
-            status: {
-                equals: 'active'
-            }
-        },
-        depth: 2, // Need depth 2 to get the full project
+    // Get projects where user is invited as a guest (by email)
+    const guestRecords = await db.query.guests.findMany({
+        where: and(
+            eq(guests.email, user.email),
+            eq(guests.status, 'accepted')
+        ),
     })
 
-    // Extract unique projects from guest records
-    const guestProjects = guestRecords.docs
-        .map(guest => guest.project)
-        .filter((project): project is any => typeof project === 'object' && project !== null)
+    // Get projects for guest records
+    const guestProjectIds = guestRecords.map(g => g.projectId)
+    const guestProjects = guestProjectIds.length > 0
+        ? await db.query.projects.findMany({
+            where: (projects, { inArray }) => inArray(projects.id, guestProjectIds),
+        })
+        : []
 
     // Combine and deduplicate projects
     const allProjectsMap = new Map()
 
-    ownedProjects.docs.forEach(project => {
+    ownedProjects.forEach(project => {
         allProjectsMap.set(project.id, project)
     })
 
@@ -69,10 +54,7 @@ export default async function DashboardPage() {
         }
     })
 
-    const projects = {
-        docs: Array.from(allProjectsMap.values()),
-        totalDocs: allProjectsMap.size,
-    }
+    const allProjects = Array.from(allProjectsMap.values())
 
     return (
         <div className="min-h-screen bg-background p-6 md:p-12">
@@ -81,7 +63,7 @@ export default async function DashboardPage() {
                 <div className="flex justify-between items-end mb-12">
                     <div>
                         <h1 className="text-3xl font-serif font-bold text-foreground">Your Speeches</h1>
-                        <p className="text-muted-foreground mt-2">Welcome back, {(user as any)?.name || user?.email}</p>
+                        <p className="text-muted-foreground mt-2">Welcome back, {user.name || user.email}</p>
                     </div>
                     <div className="flex gap-2">
                         <Button asChild variant="ghost" className="rounded-full text-muted-foreground hover:text-foreground">
@@ -102,9 +84,9 @@ export default async function DashboardPage() {
                 </div>
 
                 {/* Grid */}
-                {projects.docs.length > 0 ? (
+                {allProjects.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {projects.docs.map((project: any) => (
+                        {allProjects.map((project: any) => (
                             <ProjectCard key={project.id} project={project} />
                         ))}
                     </div>

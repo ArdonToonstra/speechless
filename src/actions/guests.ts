@@ -1,18 +1,13 @@
 'use server'
 
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { db, guests, projects } from '@/db'
+import { eq, and } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
+import { requireAuth } from './auth'
+import { generateToken } from '@/lib/tokens'
 
 export async function inviteGuest(projectId: number, formData: FormData) {
-    const payload = await getPayload({ config })
-    const headersList = await (await import('next/headers')).headers()
-    const { user } = await payload.auth({ headers: headersList })
-
-    if (!user) {
-        return { error: 'Unauthorized' }
-    }
+    const session = await requireAuth()
 
     const email = formData.get('email') as string
     const name = formData.get('name') as string
@@ -23,17 +18,29 @@ export async function inviteGuest(projectId: number, formData: FormData) {
     }
 
     try {
-        const guest = await payload.create({
-            collection: 'guests',
-            data: {
-                email,
-                name,
-                project: projectId,
-                role: role || 'contributor',
-                status: 'invited',
-                inviteEmailStatus: 'pending',
-            },
+        // Verify user owns the project
+        const project = await db.query.projects.findFirst({
+            where: and(
+                eq(projects.id, projectId),
+                eq(projects.ownerId, session.user.id)
+            ),
         })
+
+        if (!project) {
+            return { error: 'Project not found or unauthorized' }
+        }
+
+        const token = generateToken()
+
+        const [guest] = await db.insert(guests).values({
+            email,
+            name,
+            projectId,
+            role: role || 'contributor',
+            status: 'invited',
+            emailStatus: 'pending',
+            token,
+        }).returning()
 
         // Mock email sending (console log for now)
         console.log(`[INVITE SYSTEM] Collaborator invite prepared for ${email}`)
@@ -49,22 +56,29 @@ export async function inviteGuest(projectId: number, formData: FormData) {
 }
 
 export async function deleteGuest(guestId: number, projectId: number) {
-    const payload = await getPayload({ config })
-    const headersList = await (await import('next/headers')).headers()
-    const { user } = await payload.auth({ headers: headersList })
-
-    if (!user) {
-        return { error: 'Unauthorized' }
-    }
+    const session = await requireAuth()
 
     try {
-        console.log(`[DELETE GUEST] Attempting to delete guest ${guestId} from project ${projectId} by user ${user.email}`)
+        console.log(`[DELETE GUEST] Attempting to delete guest ${guestId} from project ${projectId} by user ${session.user.email}`)
 
-        // Ensure guest belongs to project before deleting (security check)
-        // Although access control might handle it, checking here is safer if we override access
-        const guest = await payload.findByID({
-            collection: 'guests',
-            id: guestId,
+        // Verify user owns the project
+        const project = await db.query.projects.findFirst({
+            where: and(
+                eq(projects.id, projectId),
+                eq(projects.ownerId, session.user.id)
+            ),
+        })
+
+        if (!project) {
+            return { error: 'Project not found or unauthorized' }
+        }
+
+        // Verify guest belongs to project
+        const guest = await db.query.guests.findFirst({
+            where: and(
+                eq(guests.id, guestId),
+                eq(guests.projectId, projectId)
+            ),
         })
 
         if (!guest) {
@@ -72,17 +86,7 @@ export async function deleteGuest(guestId: number, projectId: number) {
             return { error: 'Guest not found' }
         }
 
-        if (guest.project !== projectId && (guest.project as any)?.id !== projectId) {
-            console.error(`[DELETE GUEST] Mismatch: Guest ${guestId} is in project ${guest.project} but requested for ${projectId}`)
-            // return { error: 'Guest does not belong to this project' } 
-            // Temporarily allow if payload normalized IDs vary, but warning is strict.
-            // Actually, 'guest.project' will be the ID or object.
-        }
-
-        await payload.delete({
-            collection: 'guests',
-            id: guestId,
-        })
+        await db.delete(guests).where(eq(guests.id, guestId))
 
         console.log(`[DELETE GUEST] Successfully deleted guest ${guestId}`)
         revalidatePath(`/projects/${projectId}/collaborators`)
@@ -94,27 +98,52 @@ export async function deleteGuest(guestId: number, projectId: number) {
 }
 
 export async function updateGuestRole(guestId: number, projectId: number, newRole: 'contributor' | 'collaborator') {
-    const payload = await getPayload({ config })
-    const headersList = await (await import('next/headers')).headers()
-    const { user } = await payload.auth({ headers: headersList })
-
-    if (!user) {
-        return { error: 'Unauthorized' }
-    }
+    const session = await requireAuth()
 
     try {
-        await payload.update({
-            collection: 'guests',
-            id: guestId,
-            data: {
-                role: newRole,
-            },
+        // Verify user owns the project
+        const project = await db.query.projects.findFirst({
+            where: and(
+                eq(projects.id, projectId),
+                eq(projects.ownerId, session.user.id)
+            ),
         })
+
+        if (!project) {
+            return { error: 'Project not found or unauthorized' }
+        }
+
+        await db.update(guests)
+            .set({ role: newRole, updatedAt: new Date() })
+            .where(and(eq(guests.id, guestId), eq(guests.projectId, projectId)))
 
         revalidatePath(`/projects/${projectId}/collaborators`)
         return { success: true }
     } catch (error) {
-        console.error('Failed to update guest:', error)
-        return { error: 'Failed to update guest' }
+        console.error('Failed to update guest role:', error)
+        return { error: 'Failed to update role' }
     }
+}
+
+export async function getProjectGuests(projectId: number) {
+    const session = await requireAuth()
+
+    // Verify user owns the project
+    const project = await db.query.projects.findFirst({
+        where: and(
+            eq(projects.id, projectId),
+            eq(projects.ownerId, session.user.id)
+        ),
+    })
+
+    if (!project) {
+        return []
+    }
+
+    const projectGuests = await db.query.guests.findMany({
+        where: eq(guests.projectId, projectId),
+        orderBy: (guests, { desc }) => [desc(guests.createdAt)],
+    })
+
+    return projectGuests
 }

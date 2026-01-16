@@ -7,8 +7,18 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle2, Loader2 } from 'lucide-react'
-import { Project } from '@/payload-types'
 import { submitQuestionnaire } from '@/actions/questionnaire'
+
+interface QuestionItem {
+    text: string
+    type?: string
+}
+
+interface Project {
+    id: number
+    questions: QuestionItem[] | null
+    speechReceiverName?: string
+}
 
 interface QuestionnaireFormProps {
     project: Project

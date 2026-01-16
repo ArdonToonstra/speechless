@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { login } from '@/actions/auth'
+import { signIn } from '@/lib/auth-client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -19,12 +19,18 @@ export default function LoginPage() {
         setLoading(true)
 
         const formData = new FormData(e.currentTarget)
-        const res = await login(formData)
+        const email = formData.get('email') as string
+        const password = formData.get('password') as string
 
-        if (res && 'error' in res && res.error) {
-            setError(res.error)
+        const result = await signIn.email({
+            email,
+            password,
+        })
+
+        if (result.error) {
+            setError(result.error.message || 'Invalid email or password')
             setLoading(false)
-        } else if (res && 'success' in res && res.success) {
+        } else {
             router.push('/dashboard')
             router.refresh()
         }

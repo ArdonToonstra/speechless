@@ -1,8 +1,9 @@
 import React from 'react'
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import { notFound, redirect } from 'next/navigation'
+import { eq } from 'drizzle-orm'
 import { MapPin } from 'lucide-react'
+import { db, projects } from '@/db'
+import { getSession } from '@/actions/auth'
 import { LocationManager } from '@/components/features/LocationManager'
 import { StandardPageShell } from '@/components/layout/StandardPageShell'
 
@@ -11,20 +12,16 @@ export default async function LocationPage({ params }: { params: Promise<{ id: s
     const projectId = parseInt(id)
     if (isNaN(projectId)) notFound()
 
-    const payload = await getPayload({ config })
-
     // Auth check
-    const { user } = await payload.auth({ headers: await (await import('next/headers')).headers() })
-    if (!user) return redirect('/login')
+    const session = await getSession()
+    if (!session?.user) return redirect('/login')
 
     // Fetch Project
-    const project = await payload.findByID({
-        collection: 'projects',
-        id: projectId,
-        user,
+    const project = await db.query.projects.findFirst({
+        where: eq(projects.id, projectId),
     })
 
-    if (!project) notFound()
+    if (!project || project.ownerId !== session.user.id) notFound()
 
     return (
         <StandardPageShell>
@@ -39,7 +36,7 @@ export default async function LocationPage({ params }: { params: Promise<{ id: s
                     </div>
                 </div>
 
-                <LocationManager projectId={project.id} location={project.location || {}} />
+                <LocationManager projectId={project.id} location={project.locationSettings || {}} />
             </div>
         </StandardPageShell>
     )

@@ -1,11 +1,14 @@
 'use server'
 
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { db, projects, guests, submissions } from '@/db'
+import { eq, and } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
+import { requireAuth } from './auth'
+import type { QuestionItem, AnswerItem } from '@/db/schema'
 
 export async function updateProjectQuestions(projectId: number, formData: FormData) {
-    const payload = await getPayload({ config })
+    const session = await requireAuth()
+    
     const questionsJson = formData.get('questions') as string
     const description = formData.get('description') as string
 
@@ -14,16 +17,27 @@ export async function updateProjectQuestions(projectId: number, formData: FormDa
     }
 
     try {
-        const questions = JSON.parse(questionsJson)
-
-        await payload.update({
-            collection: 'projects',
-            id: projectId,
-            data: {
-                questions,
-                questionnaireDescription: description,
-            },
+        // Verify ownership
+        const project = await db.query.projects.findFirst({
+            where: and(
+                eq(projects.id, projectId),
+                eq(projects.ownerId, session.user.id)
+            ),
         })
+
+        if (!project) {
+            return { error: 'Project not found or unauthorized' }
+        }
+
+        const questions = JSON.parse(questionsJson) as QuestionItem[]
+
+        await db.update(projects)
+            .set({ 
+                questions, 
+                questionnaireIntro: description,
+                updatedAt: new Date() 
+            })
+            .where(eq(projects.id, projectId))
 
         revalidatePath(`/projects/${projectId}/settings`)
         return { success: true }
@@ -39,74 +53,62 @@ export async function submitQuestionnaire(data: {
     submitterName: string
     answers: { question: string; answer: string }[]
 }) {
-    const payload = await getPayload({ config })
-
     console.log('[submitQuestionnaire] Starting submission...')
     console.log('[submitQuestionnaire] Data:', { projectId: data.projectId, token: data.token, submitterName: data.submitterName })
 
     try {
-        // Verify the project exists with this magic token
+        // Verify the project exists with this share token
         console.log('[submitQuestionnaire] Verifying project...')
-        const projects = await payload.find({
-            collection: 'projects',
-            where: {
-                id: { equals: data.projectId },
-                magicLinkToken: { equals: data.token },
-            },
-            limit: 1,
+        const project = await db.query.projects.findFirst({
+            where: and(
+                eq(projects.id, data.projectId),
+                eq(projects.shareToken, data.token)
+            ),
         })
 
-        console.log('[submitQuestionnaire] Projects found:', projects.docs.length)
+        console.log('[submitQuestionnaire] Project found:', !!project)
 
-        if (!projects.docs.length) {
+        if (!project) {
             console.error('[submitQuestionnaire] Invalid project or token')
             return { error: 'Invalid project or token' }
         }
 
-        // For submissions, we need to associate with a guest
-        // Since this is a public form, we'll create/find guest by the submitter's info
-        // Or we can just create anonymous guest records
-
-        // Find or create a guest for this submission
-        // For now, let's create a temporary guest record
+        // Create a temporary guest record for this submission
         console.log('[submitQuestionnaire] Creating guest record...')
-        const guest = await payload.create({
-            collection: 'guests',
-            data: {
-                email: `${data.submitterName.toLowerCase().replace(/\s+/g, '_')}@anonymous.local`,
-                name: data.submitterName,
-                project: data.projectId,
-                role: 'collaborator',
-                status: 'active',
-            },
-        })
+        const [guest] = await db.insert(guests).values({
+            email: `${data.submitterName.toLowerCase().replace(/\s+/g, '_')}@anonymous.local`,
+            name: data.submitterName,
+            projectId: data.projectId,
+            role: 'contributor',
+            status: 'accepted',
+        }).returning()
 
         console.log('[submitQuestionnaire] Guest created:', guest.id)
 
-        // Create the submission
-        // Filter out empty answers - only submit questions that were actually answered
-        const validAnswers = data.answers.filter(a => a.answer && a.answer.trim().length > 0)
+        // Filter out empty answers
+        const validAnswers: AnswerItem[] = data.answers
+            .filter(a => a.answer && a.answer.trim().length > 0)
+            .map(a => ({
+                questionId: '', // Will be matched by question text
+                question: a.question,
+                answer: a.answer,
+            }))
 
         console.log('[submitQuestionnaire] Creating submission with', validAnswers.length, 'answers...')
-        const submission = await payload.create({
-            collection: 'submissions',
-            data: {
-                project: data.projectId,
-                guest: guest.id,
-                submitterName: data.submitterName,
-                answers: validAnswers,
-            },
-        })
+        
+        const [submission] = await db.insert(submissions).values({
+            projectId: data.projectId,
+            guestId: guest.id,
+            submitterName: data.submitterName,
+            answers: validAnswers,
+        }).returning()
 
         console.log('[submitQuestionnaire] Submission created:', submission.id)
 
-        // Revalidate the input page to show new submission
-        revalidatePath(`/projects/${data.projectId}/input`)
-
-        console.log('[submitQuestionnaire] Success!')
-        return { success: true }
+        revalidatePath(`/projects/${data.projectId}/submissions`)
+        return { success: true, submissionId: submission.id }
     } catch (error) {
-        console.error('[submitQuestionnaire] Error occurred:', error)
+        console.error('[submitQuestionnaire] Error:', error)
         return { error: 'Failed to submit questionnaire' }
     }
 }

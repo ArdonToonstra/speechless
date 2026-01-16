@@ -1,22 +1,17 @@
 import React from 'react'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
-import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { ProfileForms } from '@/components/features/ProfileForms'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { getSession } from '@/actions/auth'
 
 export const dynamic = 'force-dynamic'
 
 export default async function SettingsPage() {
-    const payload = await getPayload({ config: configPromise })
-    const headersList = await headers()
-    const authResult = await payload.auth({ headers: headersList })
-    const user = authResult.user
+    const session = await getSession()
 
-    if (!user) {
+    if (!session) {
         redirect('/login')
     }
 
@@ -34,7 +29,7 @@ export default async function SettingsPage() {
                     <p className="text-muted-foreground mt-2">Manage your account preferences.</p>
                 </div>
 
-                <ProfileForms user={user} />
+                <ProfileForms user={session.user} />
             </div>
         </div>
     )

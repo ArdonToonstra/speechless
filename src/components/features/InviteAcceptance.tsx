@@ -5,9 +5,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { UserPlus, Mail, Calendar } from 'lucide-react'
-import { Guest, Project } from '@/payload-types'
 import Link from 'next/link'
 import { format } from 'date-fns'
+
+interface Guest {
+    id: number
+    email: string
+    name: string | null
+    projectId: number
+    token: string | null
+    role: string
+    status: string
+}
+
+interface Project {
+    id: number
+    name: string
+    occasionType?: string
+    occasionDate?: Date | string | null
+}
 
 interface InviteAcceptanceProps {
     guest: Guest
@@ -31,17 +47,17 @@ export function InviteAcceptance({ guest, project, token }: InviteAcceptanceProp
                 <Card>
                     <CardHeader className="space-y-3">
                         <div>
-                            <CardTitle className="text-2xl">{project.title}</CardTitle>
+                            <CardTitle className="text-2xl">{project.name}</CardTitle>
                             <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
-                                {project.type && (
-                                    <span className="capitalize">{project.type}</span>
+                                {project.occasionType && (
+                                    <span className="capitalize">{project.occasionType}</span>
                                 )}
-                                {project.date && (
+                                {project.occasionDate && (
                                     <>
                                         <span>•</span>
                                         <span className="flex items-center gap-1">
                                             <Calendar className="w-3.5 h-3.5" />
-                                            {format(new Date(project.date), 'MMM d, yyyy')}
+                                            {format(new Date(project.occasionDate), 'MMM d, yyyy')}
                                         </span>
                                     </>
                                 )}

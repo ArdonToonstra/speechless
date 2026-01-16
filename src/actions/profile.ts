@@ -1,11 +1,15 @@
 'use server'
 
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
-import { headers } from 'next/headers'
+import { db, user } from '@/db'
+import { eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
+import { requireAuth } from './auth'
+import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
 
 export async function updateProfile(formData: FormData) {
+    const session = await requireAuth()
+    
     const name = formData.get('name') as string
     const email = formData.get('email') as string
 
@@ -13,23 +17,14 @@ export async function updateProfile(formData: FormData) {
         return { error: 'Email is required' }
     }
 
-    const payload = await getPayload({ config: configPromise })
-    const headersList = await headers()
-    const { user } = await payload.auth({ headers: headersList })
-
-    if (!user) {
-        return { error: 'Unauthorized' }
-    }
-
     try {
-        await payload.update({
-            collection: 'users',
-            id: user.id,
-            data: {
+        await db.update(user)
+            .set({
                 name,
                 email,
-            } as any,
-        })
+                updatedAt: new Date(),
+            })
+            .where(eq(user.id, session.user.id))
 
         revalidatePath('/settings')
         revalidatePath('/dashboard')
@@ -40,6 +35,9 @@ export async function updateProfile(formData: FormData) {
 }
 
 export async function changePassword(formData: FormData) {
+    const session = await requireAuth()
+    
+    const currentPassword = formData.get('currentPassword') as string
     const password = formData.get('password') as string
     const confirmPassword = formData.get('confirmPassword') as string
 
@@ -51,29 +49,23 @@ export async function changePassword(formData: FormData) {
         return { error: 'Passwords do not match' }
     }
 
-    if (password.length < 6) {
-        return { error: 'Password must be at least 6 characters' }
-    }
-
-    const payload = await getPayload({ config: configPromise })
-    const headersList = await headers()
-    const { user } = await payload.auth({ headers: headersList })
-
-    if (!user) {
-        return { error: 'Unauthorized' }
+    if (password.length < 8) {
+        return { error: 'Password must be at least 8 characters' }
     }
 
     try {
-        await payload.update({
-            collection: 'users',
-            id: user.id,
-            data: {
-                password,
+        // Use Better Auth's change password API
+        await auth.api.changePassword({
+            headers: await headers(),
+            body: {
+                currentPassword,
+                newPassword: password,
             },
         })
 
         return { success: 'Password changed successfully' }
     } catch (error: any) {
+        console.error('Change password error:', error)
         return { error: error.message || 'Failed to change password' }
     }
 }

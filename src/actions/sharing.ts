@@ -1,44 +1,35 @@
 'use server'
 
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
-import { User } from '@/payload-types'
-import crypto from 'crypto'
+import { db, projects } from '@/db'
+import { eq, and } from 'drizzle-orm'
+import { requireAuth } from './auth'
+import { generateToken } from '@/lib/tokens'
 
 export async function generateMagicLink(projectId: string) {
-    const payload = await getPayload({ config: configPromise })
-
-    // Auth check
-    const { headers } = await import('next/headers')
-    const headersList = await headers()
-    const authResult = await payload.auth({ headers: headersList })
-    const user = authResult.user
-
-    if (!user || !user.id || String(user.id) === 'NaN' || Number.isNaN(Number(user.id))) {
-        return { error: 'Unauthorized' }
-    }
+    const session = await requireAuth()
 
     try {
         // Verify ownership
-        const project = await payload.findByID({
-            collection: 'projects',
-            id: projectId,
+        const project = await db.query.projects.findFirst({
+            where: and(
+                eq(projects.id, parseInt(projectId)),
+                eq(projects.ownerId, session.user.id)
+            ),
         })
 
-        if (!project || (typeof project.owner === 'object' ? project.owner.id : project.owner) !== user.id) {
+        if (!project) {
             return { error: 'Unauthorized' }
         }
 
-        const token = crypto.randomBytes(32).toString('hex')
+        const token = generateToken()
 
-        await payload.update({
-            collection: 'projects',
-            id: projectId,
-            data: {
-                magicLinkToken: token,
-                magicLinkEnabled: true,
-            },
-        })
+        await db.update(projects)
+            .set({ 
+                shareToken: token, 
+                isPubliclyShared: true,
+                updatedAt: new Date() 
+            })
+            .where(eq(projects.id, parseInt(projectId)))
 
         return { success: true, token }
     } catch (error) {
@@ -48,35 +39,26 @@ export async function generateMagicLink(projectId: string) {
 }
 
 export async function toggleSharing(projectId: string, enabled: boolean) {
-    const payload = await getPayload({ config: configPromise })
-
-    // Auth check
-    const { headers } = await import('next/headers')
-    const headersList = await headers()
-    const authResult = await payload.auth({ headers: headersList })
-    const user = authResult.user
-
-    if (!user || !user.id || String(user.id) === 'NaN' || Number.isNaN(Number(user.id))) {
-        return { error: 'Unauthorized' }
-    }
+    const session = await requireAuth()
 
     try {
-        const project = await payload.findByID({
-            collection: 'projects',
-            id: projectId,
+        const project = await db.query.projects.findFirst({
+            where: and(
+                eq(projects.id, parseInt(projectId)),
+                eq(projects.ownerId, session.user.id)
+            ),
         })
 
-        if (!project || (typeof project.owner === 'object' ? project.owner.id : project.owner) !== user.id) {
+        if (!project) {
             return { error: 'Unauthorized' }
         }
 
-        await payload.update({
-            collection: 'projects',
-            id: projectId,
-            data: {
-                magicLinkEnabled: enabled,
-            },
-        })
+        await db.update(projects)
+            .set({ 
+                isPubliclyShared: enabled,
+                updatedAt: new Date() 
+            })
+            .where(eq(projects.id, parseInt(projectId)))
 
         return { success: true }
     } catch (error) {

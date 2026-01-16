@@ -1,20 +1,14 @@
 import React from 'react'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
-import { User } from '@/payload-types'
+import { getSession } from '@/actions/auth'
+import { redirect } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 
 export default async function Page() {
-    const payload = await getPayload({ config: configPromise })
-    const { headers } = await import('next/headers')
-    const headersList = await headers()
-    const authResult = await payload.auth({ headers: headersList })
-    const user = authResult.user
+    const session = await getSession()
 
-    // Strict check to ensure valid user before redirecting
-    if (user && user.id && String(user.id) !== 'NaN' && !Number.isNaN(Number(user.id))) {
-        const { redirect } = await import('next/navigation')
+    // Redirect authenticated users to dashboard
+    if (session) {
         redirect('/dashboard')
     }
 

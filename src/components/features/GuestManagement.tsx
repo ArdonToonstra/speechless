@@ -16,9 +16,20 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
-import { Guest } from '@/payload-types'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+
+interface Guest {
+    id: number
+    email: string
+    name: string | null
+    projectId: number
+    token: string | null
+    role: string
+    status: string
+    invitedAt?: Date | string | null
+    emailStatus: string
+}
 
 interface GuestManagementProps {
     projectId: number

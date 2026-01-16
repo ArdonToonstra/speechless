@@ -1,8 +1,9 @@
 import React from 'react'
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import { notFound, redirect } from 'next/navigation'
+import { eq, desc } from 'drizzle-orm'
 import { MessageSquareQuote } from 'lucide-react'
+import { db, projects, submissions } from '@/db'
+import { getSession } from '@/actions/auth'
 import { QuestionnaireEditor } from '@/components/features/QuestionnaireEditor'
 import { SubmissionsList } from '@/components/features/SubmissionsList'
 import { StandardPageShell } from '@/components/layout/StandardPageShell'
@@ -13,31 +14,24 @@ export default async function InputPage({ params }: { params: Promise<{ id: stri
     const projectId = parseInt(id)
     if (isNaN(projectId)) notFound()
 
-    const payload = await getPayload({ config })
-
     // Auth check
-    const { user } = await payload.auth({ headers: await (await import('next/headers')).headers() })
-    if (!user) return redirect('/login')
+    const session = await getSession()
+    if (!session?.user) return redirect('/login')
 
     // Fetch Project
-    const project = await payload.findByID({
-        collection: 'projects',
-        id: projectId,
-        user,
+    const project = await db.query.projects.findFirst({
+        where: eq(projects.id, projectId),
     })
 
     if (!project) notFound()
 
     // Fetch Submissions
-    const submissions = await payload.find({
-        collection: 'submissions',
-        where: {
-            project: {
-                equals: projectId,
-            },
+    const projectSubmissions = await db.query.submissions.findMany({
+        where: eq(submissions.projectId, projectId),
+        orderBy: [desc(submissions.createdAt)],
+        with: {
+            guest: true,
         },
-        depth: 1,
-        sort: '-createdAt',
     })
 
     return (
@@ -57,7 +51,7 @@ export default async function InputPage({ params }: { params: Promise<{ id: stri
                     <TabsList className="grid w-full grid-cols-2 mb-8 bg-card border border-border">
                         <TabsTrigger value="questions">Questions</TabsTrigger>
                         <TabsTrigger value="submissions">
-                            Submissions ({submissions.totalDocs})
+                            Submissions ({projectSubmissions.length})
                         </TabsTrigger>
                     </TabsList>
 
@@ -65,15 +59,14 @@ export default async function InputPage({ params }: { params: Promise<{ id: stri
                         <QuestionnaireEditor
                             projectId={projectId}
                             initialQuestions={(project.questions as any) || []}
-                            initialDescription={project.questionnaireDescription || ''}
-                            speechReceiverName={project.speechReceiverName || undefined}
-                            magicLinkToken={project.magicLinkToken || undefined}
+                            initialDescription={project.questionnaireIntro || ''}
+                            shareToken={project.shareToken || undefined}
                         />
                     </TabsContent>
 
                     <TabsContent value="submissions" className="mt-0">
                         <SubmissionsList
-                            submissions={submissions.docs as any}
+                            submissions={projectSubmissions as any}
                             project={project as any}
                         />
                     </TabsContent>

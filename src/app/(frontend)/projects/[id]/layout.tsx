@@ -1,7 +1,8 @@
 import React from 'react'
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import { redirect, notFound } from 'next/navigation'
+import { eq } from 'drizzle-orm'
+import { db, projects } from '@/db'
+import { getSession } from '@/actions/auth'
 import { ProjectSidebar } from '@/components/features/ProjectSidebar'
 import { ProjectHeader } from '@/components/features/ProjectHeader'
 import { ProjectLayoutProvider } from '@/components/layout/ProjectLayoutProvider'
@@ -19,15 +20,12 @@ export default async function ProjectLayout({
     const projectId = parseInt(id)
     if (isNaN(projectId)) notFound()
 
-    const payload = await getPayload({ config })
-    const { user } = await payload.auth({ headers: await (await import('next/headers')).headers() })
-    if (!user) return redirect('/login')
+    const session = await getSession()
+    if (!session?.user) return redirect('/login')
 
-    // Fetch current project to show title/contex
-    const project = await payload.findByID({
-        collection: 'projects',
-        id: projectId,
-        user,
+    // Fetch current project to show title/context
+    const project = await db.query.projects.findFirst({
+        where: eq(projects.id, projectId),
     })
 
     if (!project) notFound()
@@ -38,8 +36,8 @@ export default async function ProjectLayout({
                 {/* Collapsible Sidebar */}
                 <ProjectSidebar
                     projectId={project.id}
-                    projectTitle={project.title}
-                    user={user}
+                    projectTitle={project.name}
+                    user={session.user}
                 />
 
                 {/* Main Content Area */}

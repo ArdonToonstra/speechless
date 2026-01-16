@@ -1,8 +1,10 @@
 'use server'
 
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { db, invitations, projects } from '@/db'
+import { eq, and } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
+import { requireAuth } from './auth'
+import type { EmailTemplates } from '@/db/schema'
 
 /**
  * Prepare speech invites (mock email sending for now)
@@ -15,20 +17,15 @@ export async function prepareSpeechInvites(
     customMessage: string,
     sendViaPostcard: boolean
 ): Promise<{ success: boolean; message: string; recipientCount: number }> {
-    const payload = await getPayload({ config })
+    const session = await requireAuth()
 
     try {
-        // Get auth context
-        const { user } = await payload.auth({ headers: await (await import('next/headers')).headers() })
-        if (!user) {
-            return { success: false, message: 'Not authenticated', recipientCount: 0 }
-        }
-
         // Verify user owns this project
-        const project = await payload.findByID({
-            collection: 'projects',
-            id: projectId,
-            user,
+        const project = await db.query.projects.findFirst({
+            where: and(
+                eq(projects.id, projectId),
+                eq(projects.ownerId, session.user.id)
+            ),
         })
 
         if (!project) {
@@ -37,17 +34,14 @@ export async function prepareSpeechInvites(
 
         // Create invitation records for each recipient
         for (const recipient of recipients) {
-            await payload.create({
-                collection: 'invitations',
-                data: {
-                    email: recipient.email,
-                    name: recipient.name,
-                    project: projectId,
-                    type: messageType,
-                    customMessage,
-                    sendViaPostcard,
-                    status: 'prepared',
-                },
+            await db.insert(invitations).values({
+                email: recipient.email,
+                name: recipient.name,
+                projectId,
+                role: messageType,
+                personalMessage: customMessage,
+                isPremium: sendViaPostcard,
+                emailStatus: 'prepared',
             })
         }
 
@@ -79,28 +73,32 @@ export async function saveInviteTemplate(
     messageType: 'attendee' | 'receiver',
     message: string
 ): Promise<{ success: boolean; message?: string }> {
-    const payload = await getPayload({ config })
+    const session = await requireAuth()
 
     try {
-        const { user } = await payload.auth({ headers: await (await import('next/headers')).headers() })
-        if (!user) {
-            return { success: false, message: 'Not authenticated' }
-        }
-
-        const fieldName = messageType === 'attendee' ? 'emailTemplates.attendeeMessage' : 'emailTemplates.receiverMessage'
-
-        await payload.update({
-            collection: 'projects',
-            id: projectId,
-            data: {
-                emailTemplates: {
-                    [messageType === 'attendee' ? 'attendeeMessage' : 'receiverMessage']: message,
-                },
-            },
+        // Get current project to merge email templates
+        const project = await db.query.projects.findFirst({
+            where: and(
+                eq(projects.id, projectId),
+                eq(projects.ownerId, session.user.id)
+            ),
         })
 
-        revalidatePath(`/projects/${projectId}/invites`)
+        if (!project) {
+            return { success: false, message: 'Project not found' }
+        }
 
+        const currentTemplates = (project.emailTemplates || {}) as EmailTemplates
+        const updatedTemplates: EmailTemplates = {
+            ...currentTemplates,
+            [messageType]: message,
+        }
+
+        await db.update(projects)
+            .set({ emailTemplates: updatedTemplates, updatedAt: new Date() })
+            .where(eq(projects.id, projectId))
+
+        revalidatePath(`/projects/${projectId}/invites`)
         return { success: true }
     } catch (error) {
         console.error('Failed to save template:', error)
@@ -114,19 +112,16 @@ export async function saveInviteTemplate(
 export async function validatePostcardOption(
     projectId: number
 ): Promise<{ eligible: boolean; daysUntilEvent: number }> {
-    const payload = await getPayload({ config })
-
     try {
-        const project = await payload.findByID({
-            collection: 'projects',
-            id: projectId,
+        const project = await db.query.projects.findFirst({
+            where: eq(projects.id, projectId),
         })
 
-        if (!project || !project.date) {
+        if (!project || !project.occasionDate) {
             return { eligible: false, daysUntilEvent: 0 }
         }
 
-        const eventDate = new Date(project.date)
+        const eventDate = new Date(project.occasionDate)
         const today = new Date()
         const diffTime = eventDate.getTime() - today.getTime()
         const daysUntilEvent = Math.ceil(diffTime / (1000 * 60 * 60 * 24))

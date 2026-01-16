@@ -1,8 +1,15 @@
 'use client'
 
 import React from 'react'
-import { Project } from '@/payload-types'
 import Link from 'next/link'
+
+interface Project {
+    id: number
+    name: string
+    projectType: string
+    occasionDate: Date | null
+    status: string
+}
 import { formatDistance, differenceInDays } from 'date-fns'
 
 interface ProjectCardProps {
@@ -10,7 +17,7 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
-    const eventDate = new Date(project.date)
+    const eventDate = project.occasionDate ? new Date(project.occasionDate) : new Date()
     const daysLeft = differenceInDays(eventDate, new Date())
 
     // Format based on proximity
@@ -27,20 +34,20 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 {/* Type Badge */}
                 <div className="absolute top-4 right-4">
                     <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground bg-muted/10 px-3 py-1 rounded-full border border-border/50">
-                        {project.type}
+                        {project.projectType}
                     </span>
                 </div>
 
                 {/* Date / Countdown */}
                 <div className="mb-4">
                     <span className={`text-sm font-medium ${isClose ? 'text-celebration' : 'text-muted-foreground'}`}>
-                        {daysLeft < 0 ? 'Passed' : daysLeft === 0 ? 'Today!' : `${daysLeft} days to go`}
+                        {!project.occasionDate ? 'No date set' : daysLeft < 0 ? 'Passed' : daysLeft === 0 ? 'Today!' : `${daysLeft} days to go`}
                     </span>
                 </div>
 
                 {/* Title */}
                 <h3 className="text-xl font-serif font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
-                    {project.title}
+                    {project.name}
                 </h3>
 
                 {/* Status */}

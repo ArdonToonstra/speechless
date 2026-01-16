@@ -5,8 +5,12 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { ChevronRight, Home, Users, PenTool, MapPin, Send, ChevronUp } from 'lucide-react'
-import { Project } from '@/payload-types'
 import { useProjectLayout } from '@/components/layout/ProjectLayoutProvider'
+
+interface Project {
+    id: number
+    occasionType: string
+}
 
 interface ProjectHeaderProps {
     project: Project
@@ -24,7 +28,7 @@ type Step = {
 export function ProjectHeader({ project }: ProjectHeaderProps) {
     const pathname = usePathname()
     const { isHeaderCollapsed, setHeaderCollapsed } = useProjectLayout()
-    const occasionType = (project as any).occasionType || 'gift' // Default to gift if not set yet
+    const occasionType = project.occasionType || 'gift' // Default to gift if not set yet
 
     // Determine which steps are available
     const isStandardEvent = occasionType === 'standard'

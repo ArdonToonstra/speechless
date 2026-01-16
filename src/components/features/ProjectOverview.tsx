@@ -9,23 +9,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, Check, CalendarIcon } from 'lucide-react'
 import { toast } from 'sonner'
-import { Project } from '@/payload-types'
 import { format } from 'date-fns'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
+
+interface Project {
+    id: number
+    name: string
+    projectType: string
+    occasionType: string
+    occasionDate: Date | null
+    description: string | null
+}
 
 interface ProjectOverviewProps {
     project: Project
 }
 
 export function ProjectOverview({ project }: ProjectOverviewProps) {
-    const [title, setTitle] = useState(project.title)
-    const [date, setDate] = useState<Date | undefined>(project.date ? new Date(project.date) : undefined)
-    const [type, setType] = useState<string>(project.type)
-    const [occasionType, setOccasionType] = useState<string>((project as any).occasionType || 'gift')
-    const [speechDescription, setSpeechDescription] = useState<string>((project as any).speechDescription || '')
-    const [speechReceiverName, setSpeechReceiverName] = useState<string>((project as any).speechReceiverName || '')
+    const [title, setTitle] = useState(project.name)
+    const [date, setDate] = useState<Date | undefined>(project.occasionDate ? new Date(project.occasionDate) : undefined)
+    const [type, setType] = useState<string>(project.projectType)
+    const [occasionType, setOccasionType] = useState<string>(project.occasionType || 'gift')
+    const [speechDescription, setSpeechDescription] = useState<string>(project.description || '')
+    const [speechReceiverName, setSpeechReceiverName] = useState<string>('')
 
     const [isSaving, setIsSaving] = useState(false)
     const [lastSaved, setLastSaved] = useState<Date | null>(null)

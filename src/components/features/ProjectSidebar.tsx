@@ -17,8 +17,14 @@ import {
     LogOut,
     Home
 } from 'lucide-react'
-import { User } from '@/payload-types'
 import { useProjectLayout } from '@/components/layout/ProjectLayoutProvider'
+
+interface User {
+    id: string
+    name: string
+    email: string
+    image?: string | null
+}
 import { ChevronDown } from 'lucide-react'
 
 // Define the navigation items

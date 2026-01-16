@@ -4,8 +4,24 @@ import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { MessageSquare, User, Calendar } from 'lucide-react'
-import { Submission, Project } from '@/payload-types'
 import { format } from 'date-fns'
+
+interface AnswerItem {
+    question: string
+    answer: string
+}
+
+interface Submission {
+    id: number
+    submitterName: string
+    answers: AnswerItem[] | null
+    createdAt: Date | null
+}
+
+interface Project {
+    id: number
+    name: string
+}
 
 interface SubmissionsListProps {
     submissions: Submission[]

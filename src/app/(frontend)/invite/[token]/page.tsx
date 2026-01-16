@@ -1,47 +1,42 @@
 import React from 'react'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { db, guests, projects } from '@/db'
+import { eq } from 'drizzle-orm'
 import { notFound, redirect } from 'next/navigation'
 import { InviteAcceptance } from '@/components/features/InviteAcceptance'
+import { getSession } from '@/actions/auth'
 
 export const dynamic = 'force-dynamic'
 
 export default async function InvitePage({ params }: { params: Promise<{ token: string }> }) {
     const { token } = await params
-
-    const payload = await getPayload({ config })
-
-    // Check if user is already logged in
-    const { headers } = await import('next/headers')
-    const headersList = await headers()
-    const authResult = await payload.auth({ headers: headersList })
-    const currentUser = authResult.user
+    const session = await getSession()
 
     // Find guest by token
-    const guests = await payload.find({
-        collection: 'guests',
-        where: {
-            token: {
-                equals: token,
-            },
-        },
-        limit: 1,
-        depth: 1,
+    const guest = await db.query.guests.findFirst({
+        where: eq(guests.token, token),
     })
 
-    if (!guests.docs.length) {
+    if (!guest) {
         notFound()
     }
 
-    const guest = guests.docs[0]
-    const project = typeof guest.project === 'object' ? guest.project : null
+    // Get the project
+    const project = await db.query.projects.findFirst({
+        where: eq(projects.id, guest.projectId),
+    })
 
     if (!project) {
         notFound()
     }
 
     // If user is logged in and email matches the guest email, grant access
-    if (currentUser && currentUser.email === guest.email) {
+    if (session && session.user.email === guest.email) {
+        // Mark guest as accepted if not already
+        if (guest.status !== 'accepted') {
+            await db.update(guests)
+                .set({ status: 'accepted', updatedAt: new Date() })
+                .where(eq(guests.id, guest.id))
+        }
         // Redirect to the project
         redirect(`/projects/${project.id}/overview`)
     }
