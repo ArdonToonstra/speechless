@@ -2,10 +2,9 @@
 
 ## 1. Authentication & Security
 - [ ] **User Login & Authentication**
-  - [ ] Secure user sessions with JSON Web Tokens (JWT).
   - [ ] OAuth integration with Google for easy sign-in.
 - [ ] **Email Services (Mailjet)**
-  - [ ] Account verification emails.
+  - [X] Account verification emails.
   - [ ] Password reset flows.
   - [ ] Invitation emails (project invites).
   - [ ] System notifications and updates.

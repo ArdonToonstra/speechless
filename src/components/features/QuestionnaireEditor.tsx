@@ -65,7 +65,7 @@ export function QuestionnaireEditor({ projectId, initialQuestions, initialDescri
         setQuestions(newQuestions)
     }
 
-    const handleSave = async () => {
+    const handleSave = React.useCallback(async () => {
         setIsSaving(true)
         const formData = new FormData()
         formData.append('questions', JSON.stringify(questions))
@@ -79,7 +79,7 @@ export function QuestionnaireEditor({ projectId, initialQuestions, initialDescri
         } else {
             setLastSaved(new Date())
         }
-    }
+    }, [questions, description, projectId])
 
     // Auto-save effect
     React.useEffect(() => {
@@ -88,7 +88,7 @@ export function QuestionnaireEditor({ projectId, initialQuestions, initialDescri
         }, 1000) // 1s debounce
 
         return () => clearTimeout(timeoutId)
-    }, [questions, description])
+    }, [handleSave])
 
     // Helper to replace placeholder in displayed questions
     const renderQuestionText = (text: string) => {

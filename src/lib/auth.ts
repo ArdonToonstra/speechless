@@ -46,7 +46,6 @@ export const auth = betterAuth({
         })
       },
       sendVerificationOnSignUp: true,
-      autoSignInAfterVerification: true,
       otpLength: 6,
       expiresIn: 30 * 60, // 30 minutes
     }),

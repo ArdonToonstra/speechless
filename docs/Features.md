@@ -1,7 +1,6 @@
 # Features 
 
 * User login and authentication
-  - Secure user sessions with JSON Web Tokens (JWT).
   - OAuth integration with Google for easy sign-in.
 * Email services using Mailjet 
   - For account verification, password resets, and invitations.

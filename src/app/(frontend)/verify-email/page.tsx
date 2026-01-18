@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { verifyEmail, sendVerificationOtp } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const email = searchParams.get('email')
@@ -165,12 +165,26 @@ export default function VerifyEmailPage() {
                 disabled={resendLoading}
                 className="text-sm text-blue-600 hover:text-blue-800 disabled:opacity-50"
               >
-                {resendLoading ? 'Sending...' : "Didn't receive the code? Resend"}
+                {resendLoading ? 'Sending...' : "Didn&apos;t receive the code? Resend"}
               </button>
             </div>
           </form>
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6">Loading...</CardContent>
+        </Card>
+      </div>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
   )
 }

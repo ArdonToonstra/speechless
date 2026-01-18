@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -8,7 +8,7 @@ import { signIn } from '@/lib/auth-client'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function LoginPage() {
+function LoginContent() {
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
     const router = useRouter()
@@ -103,5 +103,19 @@ export default function LoginPage() {
                 &larr; Back to Home
             </Link>
         </div>
+    )
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="w-full max-w-md bg-card rounded-2xl shadow-xl border border-border p-8">
+                    <div className="text-center">Loading...</div>
+                </div>
+            </div>
+        }>
+            <LoginContent />
+        </Suspense>
     )
 }

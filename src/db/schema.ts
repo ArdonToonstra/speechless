@@ -1,4 +1,5 @@
 import { pgTable, text, serial, timestamp, boolean, jsonb, integer } from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm'
 
 // ============================================================================
 // Better Auth Tables
@@ -154,3 +155,43 @@ export type EmailTemplates = {
 export type LocationSettings = {
   slug?: string
 }
+
+// ============================================================================
+// Relations
+// ============================================================================
+
+export const projectsRelations = relations(projects, ({ one, many }) => ({
+  owner: one(user, {
+    fields: [projects.ownerId],
+    references: [user.id],
+  }),
+  guests: many(guests),
+  invitations: many(invitations),
+  submissions: many(submissions),
+}))
+
+export const guestsRelations = relations(guests, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [guests.projectId],
+    references: [projects.id],
+  }),
+  submissions: many(submissions),
+}))
+
+export const invitationsRelations = relations(invitations, ({ one }) => ({
+  project: one(projects, {
+    fields: [invitations.projectId],
+    references: [projects.id],
+  }),
+}))
+
+export const submissionsRelations = relations(submissions, ({ one }) => ({
+  project: one(projects, {
+    fields: [submissions.projectId],
+    references: [projects.id],
+  }),
+  guest: one(guests, {
+    fields: [submissions.guestId],
+    references: [guests.id],
+  }),
+}))

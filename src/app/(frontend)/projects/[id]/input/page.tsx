@@ -29,9 +29,6 @@ export default async function InputPage({ params }: { params: Promise<{ id: stri
     const projectSubmissions = await db.query.submissions.findMany({
         where: eq(submissions.projectId, projectId),
         orderBy: [desc(submissions.createdAt)],
-        with: {
-            guest: true,
-        },
     })
 
     return (
