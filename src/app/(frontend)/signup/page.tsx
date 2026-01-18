@@ -40,8 +40,9 @@ export default function SignupPage() {
             setError(result.error.message || 'Failed to create account')
             setLoading(false)
         } else {
-            router.push('/dashboard')
-            router.refresh()
+            // With email verification enabled, user is created but not signed in
+            // Redirect to email verification page
+            router.push(`/verify-email?email=${encodeURIComponent(email)}`)
         }
     }
 
@@ -83,7 +84,8 @@ export default function SignupPage() {
                             name="password"
                             type="password"
                             required
-                            placeholder="At least 6 characters"
+                            placeholder="At least 8 characters"
+                            minLength={8}
                             className="bg-background"
                         />
                     </div>

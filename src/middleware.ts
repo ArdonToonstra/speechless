@@ -13,6 +13,15 @@ const PROTECTED_ROUTES = [
 // Routes that should redirect to dashboard if already authenticated
 const AUTH_ROUTES = ['/login', '/signup']
 
+// Public routes that don't require auth check
+const PUBLIC_ROUTES = [
+  '/verify-email',
+  '/forgot-password',
+  '/reset-password',
+  '/share',
+  '/invite',
+]
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -29,6 +38,16 @@ export async function middleware(request: NextRequest) {
   // Better Auth uses 'better-auth.session_token' cookie by default
   const sessionCookie = request.cookies.get('better-auth.session_token')
   const hasSession = !!sessionCookie?.value
+
+  // Check if route is public (no auth required)
+  const isPublicRoute = PUBLIC_ROUTES.some((route) =>
+    pathname.startsWith(route)
+  )
+
+  // Allow access to public routes
+  if (isPublicRoute) {
+    return NextResponse.next()
+  }
 
   // Check if route is protected
   const isProtectedRoute = PROTECTED_ROUTES.some((route) =>

@@ -6,12 +6,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { signIn } from '@/lib/auth-client'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function LoginPage() {
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const resetSuccess = searchParams.get('reset') === 'success'
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -57,7 +59,12 @@ export default function LoginPage() {
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="password">Password</Label>
+                            <Link href="/forgot-password" className="text-xs text-primary hover:underline">
+                                Forgot password?
+                            </Link>
+                        </div>
                         <Input
                             id="password"
                             name="password"
@@ -66,6 +73,12 @@ export default function LoginPage() {
                             className="bg-background"
                         />
                     </div>
+
+                    {resetSuccess && (
+                        <div className="p-3 text-sm text-green-600 bg-green-50 rounded-md">
+                            Password reset successful! Please sign in with your new password.
+                        </div>
+                    )}
 
                     {error && (
                         <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">

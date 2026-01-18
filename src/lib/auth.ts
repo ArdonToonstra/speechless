@@ -1,7 +1,9 @@
 import { betterAuth } from 'better-auth'
+import { emailOTP } from 'better-auth/plugins'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { db } from '@/db'
 import * as schema from '@/db/schema'
+import { sendVerificationEmail, sendPasswordResetEmail, sendEmailChangeVerification } from '@/lib/email'
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -15,7 +17,14 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false, // Set to true when email infrastructure is ready
+    requireEmailVerification: true,
+    minPasswordLength: 8,
+    sendResetPassword: async ({ user, url }) => {
+      await sendPasswordResetEmail({
+        to: user.email,
+        resetUrl: url,
+      })
+    },
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
@@ -27,6 +36,20 @@ export const auth = betterAuth({
   },
   trustedOrigins: [
     process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+  ],
+  plugins: [
+    emailOTP({
+      async sendVerificationOTP({ email, otp }) {
+        await sendVerificationEmail({
+          to: email,
+          code: otp,
+        })
+      },
+      sendVerificationOnSignUp: true,
+      autoSignInAfterVerification: true,
+      otpLength: 6,
+      expiresIn: 30 * 60, // 30 minutes
+    }),
   ],
 })
 
