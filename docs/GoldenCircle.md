@@ -28,7 +28,7 @@
 - Gecurateerde locaties voor speechervaringen
 
 
-
+---- AI summary ----
 
 De Golden Circle: Speechless / Toast
 WHY: Geef iemand de spotlight die het verdient. We vieren de grote mijlpalen, maar de echte vriendschappen en connecties verdienen vaker een podium. Waarom wachten op een officiële reden? Wij geloven dat iemand écht laten stralen het mooiste cadeau is dat er bestaat. In een wereld van snelle consumptie kiezen wij voor woorden die je je leven lang bijblijven.
@@ -39,9 +39,3 @@ WHAT: De ultieme speech-experience. Een intuïtief platform om samen de meest pe
 
 De Elevator Pitch (voor als het nóg korter moet):
 "Wij maken van waardering een feestje. Met ons platform bouw je samen met je crew de ultieme speech-experience: geen saaie praatjes of kille AI, maar een uniek, menselijk cadeau op een locatie die indruk maakt. Omdat de mensen om je heen het verdienen om nu in de spotlight te staan."
-
-
-
-## 
-
-* Type event: roast or
