@@ -6,9 +6,15 @@ import Link from 'next/link'
 interface Project {
     id: number
     name: string
-    projectType: string
+    speechType: string
     occasionDate: Date | null
     occasionType: string
+    customOccasion?: string | null
+    dateKnown: boolean
+    honoree?: string | null
+    eventContext?: string | null
+    city?: string | null
+    guestCount?: number | null
     status: string
     createdAt: Date
     updatedAt: Date
@@ -63,11 +69,20 @@ export function ProjectCard({ project }: ProjectCardProps) {
     const daysLeft = eventDate ? differenceInDays(eventDate, new Date()) : null
 
     // Format date nicely
-    const dateDisplay = eventDate 
-        ? daysLeft !== null && daysLeft >= 0 && daysLeft <= 30
-            ? `${daysLeft} day${daysLeft !== 1 ? 's' : ''} away`
-            : format(eventDate, 'MMM d, yyyy')
-        : 'No date set'
+    const dateDisplay = !project.dateKnown
+        ? 'Date TBD'
+        : eventDate 
+            ? daysLeft !== null && daysLeft >= 0 && daysLeft <= 30
+                ? `${daysLeft} day${daysLeft !== 1 ? 's' : ''} away`
+                : format(eventDate, 'MMM d, yyyy')
+            : 'No date set'
+    
+    // Format occasion display
+    const occasionDisplay = project.occasionType === 'other' && project.customOccasion
+        ? project.customOccasion
+        : project.occasionType
+            ? project.occasionType.charAt(0).toUpperCase() + project.occasionType.slice(1)
+            : 'Speech'
 
     const isUpcoming = daysLeft !== null && daysLeft >= 0 && daysLeft <= 7
     const lastEdited = formatDistance(new Date(project.updatedAt), new Date(), { addSuffix: true })
@@ -104,11 +119,14 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 <div className="flex-1 p-6 md:p-8 text-left space-y-6">
                     <div>
                         <div className="text-xs font-bold text-primary uppercase tracking-widest mb-2">
-                            {project.occasionType || 'Speech'}
+                            {occasionDisplay}
                         </div>
                         <h3 className="text-2xl font-serif font-bold text-foreground group-hover:text-primary transition-colors">
                             {project.name}
                         </h3>
+                        {project.honoree && (
+                            <p className="text-sm text-foreground/80 mt-1">For {project.honoree}</p>
+                        )}
                         <p className="text-sm text-muted-foreground mt-1">Last edited {lastEdited}</p>
                     </div>
 
@@ -164,8 +182,20 @@ export function ProjectCard({ project }: ProjectCardProps) {
                     <div className="pt-4 space-y-2">
                         <div className="text-xs text-muted-foreground">
                             <span className="font-semibold uppercase">Type:</span>
-                            <div className="mt-1 text-foreground capitalize">{project.projectType}</div>
+                            <div className="mt-1 text-foreground capitalize">{project.speechType === 'gift' ? 'Gift' : 'Occasion'}</div>
                         </div>
+                        {project.city && (
+                            <div className="text-xs text-muted-foreground">
+                                <span className="font-semibold uppercase">Location:</span>
+                                <div className="mt-1 text-foreground">{project.city}</div>
+                            </div>
+                        )}
+                        {project.guestCount && (
+                            <div className="text-xs text-muted-foreground">
+                                <span className="font-semibold uppercase">Guests:</span>
+                                <div className="mt-1 text-foreground">~{project.guestCount}</div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

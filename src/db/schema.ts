@@ -65,9 +65,15 @@ export const projects = pgTable('projects', {
   name: text('name').notNull(),
   slug: text('slug'),
   description: text('description'),
-  occasionType: text('occasion_type').notNull().default('other'), // wedding, birthday, funeral, other
-  projectType: text('project_type').notNull().default('standard'), // gift, standard
+  occasionType: text('occasion_type').notNull().default('other'), // wedding, birthday, funeral, retirement, roast, surprise, other
+  customOccasion: text('custom_occasion'), // Used when occasionType is 'other'
+  speechType: text('speech_type').notNull().default('gift'), // gift, occasion
   occasionDate: timestamp('occasion_date'),
+  dateKnown: boolean('date_known').notNull().default(true), // false if user selected "I don't know yet"
+  honoree: text('honoree'), // Name of the person receiving the speech
+  eventContext: text('event_context'), // Additional context about the event (used for invites)
+  city: text('city'), // Optional: location/city for the event
+  guestCount: integer('guest_count'), // Optional: estimated number of guests
   ownerId: text('owner_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),

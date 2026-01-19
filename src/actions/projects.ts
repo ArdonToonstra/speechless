@@ -7,7 +7,19 @@ import { revalidatePath } from 'next/cache'
 import { requireAuth } from './auth'
 import { generateToken } from '@/lib/tokens'
 
-export async function createProject(data: { title: string; speechReceiverName: string; type: string; date: string }) {
+export async function createProject(data: {
+    title: string
+    speechReceiverName: string
+    occasionType: string
+    customOccasion?: string
+    speechType: 'gift' | 'occasion'
+    date?: string
+    dateKnown: boolean
+    honoree: string
+    eventContext?: string
+    city?: string
+    guestCount?: number
+}) {
     const session = await requireAuth()
 
     try {
@@ -16,8 +28,15 @@ export async function createProject(data: { title: string; speechReceiverName: s
         const [project] = await db.insert(projects).values({
             name: data.title,
             slug: data.speechReceiverName,
-            occasionType: data.type,
-            occasionDate: new Date(data.date),
+            occasionType: data.occasionType,
+            customOccasion: data.customOccasion,
+            speechType: data.speechType,
+            occasionDate: data.date ? new Date(data.date) : null,
+            dateKnown: data.dateKnown,
+            honoree: data.honoree,
+            eventContext: data.eventContext,
+            city: data.city,
+            guestCount: data.guestCount,
             ownerId: session.user.id,
             status: 'draft',
             shareToken,
