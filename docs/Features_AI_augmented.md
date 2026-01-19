@@ -20,7 +20,6 @@
 - [ ] **Public Pages**
   - [ ] Home page (Landing) + Process flow visualization (how the product works).
   - [ ] Login & Signup flows.
-  - [ ] 
 
 - [ ] **Onboarding Flow**
   - [ ] **Type Selection**: 

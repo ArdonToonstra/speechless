@@ -7,10 +7,41 @@ import { Label } from '@/components/ui/label'
 import { signUp } from '@/lib/auth-client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { Check, X } from 'lucide-react'
+
+function validatePasswordStrength(password: string) {
+    return {
+        minLength: password.length >= 8,
+        hasUppercase: /[A-Z]/.test(password),
+        hasNumber: /[0-9]/.test(password),
+    }
+}
+
+function PasswordRequirements({ password }: { password: string }) {
+    const validation = validatePasswordStrength(password)
+    
+    const requirements = [
+        { label: 'At least 8 characters', met: validation.minLength },
+        { label: 'One uppercase letter', met: validation.hasUppercase },
+        { label: 'One number', met: validation.hasNumber },
+    ]
+    
+    return (
+        <div className="text-xs space-y-1 mt-2">
+            {requirements.map((req, i) => (
+                <div key={i} className={`flex items-center gap-1.5 ${req.met ? 'text-green-600' : 'text-muted-foreground'}`}>
+                    {req.met ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+                    {req.label}
+                </div>
+            ))}
+        </div>
+    )
+}
 
 export default function SignupPage() {
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
+    const [password, setPassword] = useState('')
     const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -21,8 +52,15 @@ export default function SignupPage() {
         const formData = new FormData(e.currentTarget)
         const name = formData.get('name') as string
         const email = formData.get('email') as string
-        const password = formData.get('password') as string
         const confirmPassword = formData.get('confirmPassword') as string
+
+        // Validate password strength
+        const validation = validatePasswordStrength(password)
+        if (!validation.minLength || !validation.hasUppercase || !validation.hasNumber) {
+            setError('Password does not meet security requirements')
+            setLoading(false)
+            return
+        }
 
         if (password !== confirmPassword) {
             setError('Passwords do not match')
@@ -84,10 +122,12 @@ export default function SignupPage() {
                             name="password"
                             type="password"
                             required
-                            placeholder="At least 8 characters"
-                            minLength={8}
+                            placeholder="Create a strong password"
                             className="bg-background"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                         />
+                        <PasswordRequirements password={password} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="confirmPassword">Confirm Password</Label>
@@ -96,6 +136,7 @@ export default function SignupPage() {
                             name="confirmPassword"
                             type="password"
                             required
+                            placeholder="Confirm your password"
                             className="bg-background"
                         />
                     </div>
