@@ -71,12 +71,12 @@ export function ProjectCard({ project }: ProjectCardProps) {
     // Format date nicely
     const dateDisplay = !project.dateKnown
         ? 'Date TBD'
-        : eventDate 
+        : eventDate
             ? daysLeft !== null && daysLeft >= 0 && daysLeft <= 30
                 ? `${daysLeft} day${daysLeft !== 1 ? 's' : ''} away`
                 : format(eventDate, 'MMM d, yyyy')
             : 'No date set'
-    
+
     // Format occasion display
     const occasionDisplay = project.occasionType === 'other' && project.customOccasion
         ? project.customOccasion
@@ -130,24 +130,14 @@ export function ProjectCard({ project }: ProjectCardProps) {
                         <p className="text-sm text-muted-foreground mt-1">Last edited {lastEdited}</p>
                     </div>
 
-                    <div className="space-y-3">
-                        <div className="text-xs font-semibold text-muted-foreground uppercase">Event Date</div>
-                        <div className={`text-lg font-semibold ${isUpcoming ? 'text-primary' : 'text-foreground'}`}>
-                            {dateDisplay}
-                            {isUpcoming && daysLeft !== null && (
-                                <span className="ml-2 text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">
-                                    Coming Soon!
-                                </span>
-                            )}
-                        </div>
-                    </div>
+
 
                     {collaborators.length > 0 && (
                         <div className="space-y-3">
                             <div className="text-xs font-semibold text-muted-foreground uppercase">Collaborators</div>
                             <div className="flex -space-x-3">
                                 {displayedCollaborators.map((collab, idx) => (
-                                    <div 
+                                    <div
                                         key={idx}
                                         className={`w-10 h-10 rounded-full border-2 border-card flex items-center justify-center text-xs font-bold ${collab.color}`}
                                         title={collab.name}
@@ -168,21 +158,30 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 {/* Right Side - Status */}
                 <div className="w-full md:w-56 bg-muted/10 border-t md:border-t-0 md:border-l border-border/50 p-6 text-left space-y-4">
                     <div className="text-xs font-semibold text-muted-foreground uppercase mb-2">Status</div>
-                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold ${
-                        project.status === 'final'
-                            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
-                            : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
-                    }`}>
-                        <span className={`w-2 h-2 rounded-full ${
-                            project.status === 'final' ? 'bg-emerald-500' : 'bg-amber-500'
-                        }`}></span>
+                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold ${project.status === 'final'
+                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                        : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
+                        }`}>
+                        <span className={`w-2 h-2 rounded-full ${project.status === 'final' ? 'bg-emerald-500' : 'bg-amber-500'
+                            }`}></span>
                         {project.status === 'final' ? 'Ready' : 'Drafting Phase'}
+                    </div>
+
+                    <div className="text-xs text-muted-foreground">
+                        <span className="font-semibold uppercase">Event Date:</span>
+                        <div className={`mt-1 ${isUpcoming ? 'text-primary font-semibold' : 'text-foreground'}`}>
+                            {dateDisplay}
+                        </div>
                     </div>
 
                     <div className="pt-4 space-y-2">
                         <div className="text-xs text-muted-foreground">
-                            <span className="font-semibold uppercase">Type:</span>
-                            <div className="mt-1 text-foreground capitalize">{project.speechType === 'gift' ? 'Gift' : 'Occasion'}</div>
+                            <div className="mt-1 text-foreground font-medium">
+                                {project.speechType === 'gift' ? 'A Speech as a Gift' : 'Speech for the Occasion'}
+                            </div>
+                            <div className="text-muted-foreground/70 text-[10px] mt-0.5">
+                                {project.speechType === 'gift' ? 'Surprise someone special' : "You're giving the speech"}
+                            </div>
                         </div>
                         {project.city && (
                             <div className="text-xs text-muted-foreground">

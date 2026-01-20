@@ -18,13 +18,13 @@
 
 ## 3. Core User Flows
 - [ ] **Public Pages**
-  - [ ] Home page (Landing) + Process flow visualization (how the product works).
-  - [ ] Login & Signup flows.
+  - [X] Home page (Landing) + Process flow visualization (how the product works).
+  - [X] Login & Signup flows.
 
 - [ ] **Onboarding Flow**
   - [ ] **Type Selection**: 
     - Option A: Speech as a gift (Speech als cadeau).
-    - Option B: Speech for the occasion (Speech voor de gelegenheid).
+    - Option B: Speech for the occasion (location/time is set by someone else/speech receiver) (Speech voor de gelegenheid).
   - [ ] **Flow: Speech as a Gift**
     - [ ] Occasion Input: Wedding, retirement, funeral, birthday, roast, surprise, other (text input).
     - [ ] Date Input: Specific date, "Unknown", or "Help me via Date Picker".

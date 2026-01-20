@@ -47,7 +47,7 @@ const OCCASION_TYPES = [
 
 export function ProjectOverview({ project }: ProjectOverviewProps) {
     const router = useRouter()
-    
+
     // Form state
     const [title, setTitle] = useState(project.name)
     const [speechType, setSpeechType] = useState<string>(project.speechType || 'gift')
@@ -106,10 +106,10 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
 
     const handleDelete = async () => {
         if (deleteConfirmation !== project.name) return
-        
+
         setIsDeleting(true)
         const result = await deleteProject(project.id)
-        
+
         if (result.error) {
             toast.error(result.error)
             setIsDeleting(false)
@@ -121,80 +121,32 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
-            {/* Saving Indicator */}
-            <div className="h-6 flex items-center justify-end text-sm text-muted-foreground">
-                {isSaving ? (
-                    <div className="flex items-center gap-2">
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                        <span>Saving...</span>
-                    </div>
-                ) : lastSaved ? (
-                    <div className="flex items-center gap-2 text-emerald-600 animate-in fade-in slide-in-from-bottom-1">
-                        <Check className="w-3 h-3" />
-                        <span>Saved</span>
-                    </div>
-                ) : null}
-            </div>
 
             {/* Project Details Card */}
             <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
                 <CardHeader className="border-b border-slate-100 bg-white/50 px-8 py-6">
-                    <CardTitle className="text-xl font-semibold text-slate-800">Project Details</CardTitle>
-                    <CardDescription className="text-slate-500">Update the core information for your speech.</CardDescription>
-                </CardHeader>
-                <CardContent className="p-8 space-y-8">
-                    {/* Title & Description */}
-                    <div className="space-y-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="title" className="text-sm font-medium text-slate-700">Speech Title</Label>
-                            <Input
-                                id="title"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                className="font-medium text-lg h-12 rounded-xl bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm transition-all placeholder:text-slate-300"
-                                placeholder="e.g. Best Man Speech for John"
-                            />
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <CardTitle className="text-xl font-semibold text-slate-800">Project Details</CardTitle>
+                            <CardDescription className="text-slate-500">Update the core information for your speech.</CardDescription>
                         </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="honoree" className="text-sm font-medium text-slate-700">Who is the speech for?</Label>
-                            <p className="text-xs text-slate-500 pb-2">This will be used in questions like &quot;Share your best anecdote about them&quot;</p>
-                            <Input
-                                id="honoree"
-                                value={honoree}
-                                onChange={(e) => setHonoree(e.target.value)}
-                                className="h-12 rounded-xl bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm transition-all placeholder:text-slate-300"
-                                placeholder="e.g. John, John and Mary"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="speechDescription" className="text-sm font-medium text-slate-700">Speech Description</Label>
-                            <p className="text-xs text-slate-500 pb-2">Provide a high-level summary of what this speech is about. Useful for collaborators.</p>
-                            <textarea
-                                id="speechDescription"
-                                value={speechDescription}
-                                onChange={(e) => setSpeechDescription(e.target.value)}
-                                className="flex w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base ring-offset-background placeholder:text-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50 min-h-[100px] shadow-sm transition-all resize-y"
-                                placeholder="e.g. A funny and heartwarming speech about our childhood adventures..."
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="eventContext" className="text-sm font-medium text-slate-700">Additional Context (optional)</Label>
-                            <p className="text-xs text-slate-500 pb-2">Helps personalize invitations, e.g. &quot;25th wedding anniversary&quot;</p>
-                            <Input
-                                id="eventContext"
-                                value={eventContext}
-                                onChange={(e) => setEventContext(e.target.value)}
-                                className="h-12 rounded-xl bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm transition-all placeholder:text-slate-300"
-                                placeholder="e.g. 25th wedding anniversary, 50th birthday..."
-                            />
+                        {/* Saving Indicator */}
+                        <div className="h-6 flex items-center text-sm text-muted-foreground">
+                            {isSaving ? (
+                                <div className="flex items-center gap-2">
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                    <span>Saving...</span>
+                                </div>
+                            ) : lastSaved ? (
+                                <div className="flex items-center gap-2 text-emerald-600 animate-in fade-in slide-in-from-bottom-1">
+                                    <Check className="w-3 h-3" />
+                                    <span>Saved</span>
+                                </div>
+                            ) : null}
                         </div>
                     </div>
-
-                    {/* Divider */}
-                    <div className="h-px bg-slate-100 w-full"></div>
+                </CardHeader>
+                <CardContent className="p-8 space-y-8">
 
                     {/* Speech Type Selection */}
                     <div className="space-y-4">
@@ -299,6 +251,59 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
                                     Date to be determined
                                 </div>
                             )}
+                        </div>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="h-px bg-slate-100 w-full"></div>
+
+                    {/* Title & Description */}
+                    <div className="space-y-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="title" className="text-sm font-medium text-slate-700">Speech Title</Label>
+                            <Input
+                                id="title"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                className="font-medium text-lg h-12 rounded-xl bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm transition-all placeholder:text-slate-300"
+                                placeholder="e.g. Best Man Speech for John"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="honoree" className="text-sm font-medium text-slate-700">Who is the speech for?</Label>
+                            <p className="text-xs text-slate-500 pb-2">This will be used in questions like &quot;Share your best anecdote about them&quot;</p>
+                            <Input
+                                id="honoree"
+                                value={honoree}
+                                onChange={(e) => setHonoree(e.target.value)}
+                                className="h-12 rounded-xl bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm transition-all placeholder:text-slate-300"
+                                placeholder="e.g. John, John and Mary"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="speechDescription" className="text-sm font-medium text-slate-700">Speech Description</Label>
+                            <p className="text-xs text-slate-500 pb-2">Provide a high-level summary of what this speech is about. Useful for collaborators.</p>
+                            <textarea
+                                id="speechDescription"
+                                value={speechDescription}
+                                onChange={(e) => setSpeechDescription(e.target.value)}
+                                className="flex w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base ring-offset-background placeholder:text-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50 min-h-[100px] shadow-sm transition-all resize-y"
+                                placeholder="e.g. A funny and heartwarming speech about our childhood adventures..."
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="eventContext" className="text-sm font-medium text-slate-700">Additional Context (optional)</Label>
+                            <p className="text-xs text-slate-500 pb-2">Helps personalize invitations, e.g. &quot;25th wedding anniversary&quot;</p>
+                            <Input
+                                id="eventContext"
+                                value={eventContext}
+                                onChange={(e) => setEventContext(e.target.value)}
+                                className="h-12 rounded-xl bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm transition-all placeholder:text-slate-300"
+                                placeholder="e.g. 25th wedding anniversary, 50th birthday..."
+                            />
                         </div>
                     </div>
 

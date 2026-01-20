@@ -11,7 +11,7 @@ export async function inviteGuest(projectId: number, formData: FormData) {
 
     const email = formData.get('email') as string
     const name = formData.get('name') as string
-    const role = formData.get('role') as 'contributor' | 'collaborator'
+    const role = formData.get('role') as 'collaborator' | 'speech-editor'
 
     if (!email || !projectId) {
         return { error: 'Missing required fields' }
@@ -36,7 +36,7 @@ export async function inviteGuest(projectId: number, formData: FormData) {
             email,
             name,
             projectId,
-            role: role || 'contributor',
+            role: role || 'collaborator',
             status: 'invited',
             emailStatus: 'pending',
             token,
@@ -97,7 +97,7 @@ export async function deleteGuest(guestId: number, projectId: number) {
     }
 }
 
-export async function updateGuestRole(guestId: number, projectId: number, newRole: 'contributor' | 'collaborator') {
+export async function updateGuestRole(guestId: number, projectId: number, newRole: 'collaborator' | 'speech-editor') {
     const session = await requireAuth()
 
     try {

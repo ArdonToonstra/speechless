@@ -1,8 +1,8 @@
 import React from 'react'
 import { notFound, redirect } from 'next/navigation'
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { Users } from 'lucide-react'
-import { db, projects, guests } from '@/db'
+import { db, projects, guests, user } from '@/db'
 import { getSession } from '@/actions/auth'
 import { GuestManagement } from '@/components/features/GuestManagement'
 import { StandardPageShell } from '@/components/layout/StandardPageShell'
@@ -16,17 +16,47 @@ export default async function CollaboratorsPage({ params }: { params: Promise<{ 
     const session = await getSession()
     if (!session?.user) return redirect('/login')
 
-    // Fetch Project
+    // Fetch Project with owner info
     const project = await db.query.projects.findFirst({
         where: eq(projects.id, projectId),
+        with: {
+            owner: true,
+        },
     })
 
-    if (!project || project.ownerId !== session.user.id) notFound()
+    if (!project) notFound()
+
+    // Check if user can access (owner or accepted team member)
+    const isOwner = project.ownerId === session.user.id
+    const guestRecord = !isOwner
+        ? await db.query.guests.findFirst({
+            where: and(
+                eq(guests.projectId, projectId),
+                eq(guests.email, session.user.email),
+                eq(guests.status, 'accepted')
+            ),
+        })
+        : null
+
+    const isSpeechEditor = guestRecord?.role === 'speech-editor'
+    const canManage = isOwner || isSpeechEditor
+
+    if (!isOwner && !guestRecord) {
+        notFound()
+    }
 
     // Fetch Guests
     const guestList = await db.query.guests.findMany({
         where: eq(guests.projectId, projectId),
+        orderBy: (guests, { desc }) => [desc(guests.createdAt)],
     })
+
+    // Prepare owner info
+    const owner = {
+        id: project.owner.id,
+        name: project.owner.name,
+        email: project.owner.email,
+    }
 
     return (
         <StandardPageShell>
@@ -36,7 +66,7 @@ export default async function CollaboratorsPage({ params }: { params: Promise<{ 
                         <Users className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold">Collaborators</h1>
+                        <h1 className="text-2xl font-bold">Team</h1>
                         <p className="text-muted-foreground">Manage who contributes to this speech.</p>
                     </div>
                 </div>
@@ -44,7 +74,9 @@ export default async function CollaboratorsPage({ params }: { params: Promise<{ 
                 <GuestManagement
                     projectId={projectId}
                     guests={guestList}
-                    currentUserEmail={session.user.email}
+                    owner={owner}
+                    currentUserId={session.user.id}
+                    canManage={canManage}
                 />
             </div>
         </StandardPageShell>

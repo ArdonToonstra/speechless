@@ -97,7 +97,7 @@ export const guests = pgTable('guests', {
     .notNull()
     .references(() => projects.id, { onDelete: 'cascade' }),
   token: text('token').unique(),
-  role: text('role').notNull().default('contributor'), // contributor, collaborator
+  role: text('role').notNull().default('collaborator'), // collaborator, speech-editor
   status: text('status').notNull().default('invited'), // invited, accepted, declined
   invitedAt: timestamp('invited_at').defaultNow(),
   emailStatus: text('email_status').notNull().default('pending'), // pending, sent, bounced
@@ -134,6 +134,19 @@ export const submissions = pgTable('submissions', {
   answers: jsonb('answers').$type<AnswerItem[]>().default([]),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const magicLinks = pgTable('magic_links', {
+  id: serial('id').primaryKey(),
+  projectId: integer('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
+  token: text('token').notNull().unique(),
+  role: text('role').notNull().default('collaborator'), // collaborator, speech-editor
+  expiresAt: timestamp('expires_at').notNull(),
+  usageLimit: integer('usage_limit').notNull().default(20),
+  usageCount: integer('usage_count').notNull().default(0),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 
 // ============================================================================
@@ -175,6 +188,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   guests: many(guests),
   invitations: many(invitations),
   submissions: many(submissions),
+  magicLinks: many(magicLinks),
 }))
 
 export const guestsRelations = relations(guests, ({ one, many }) => ({
@@ -202,3 +216,11 @@ export const submissionsRelations = relations(submissions, ({ one }) => ({
     references: [guests.id],
   }),
 }))
+
+export const magicLinksRelations = relations(magicLinks, ({ one }) => ({
+  project: one(projects, {
+    fields: [magicLinks.projectId],
+    references: [projects.id],
+  }),
+}))
+
