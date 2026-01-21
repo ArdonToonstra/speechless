@@ -4,6 +4,22 @@ export default {
 	content: [
 		'./src/**/*.{js,ts,jsx,tsx,mdx}',
 	],
+	// Safelist classes used by Hemingway editor highlights (applied dynamically via ProseMirror decorations)
+	safelist: [
+		'bg-blue-200',
+		'dark:bg-blue-900/50',
+		'bg-yellow-200',
+		'dark:bg-yellow-900/50',
+		'bg-red-200',
+		'dark:bg-red-900/50',
+		'bg-purple-200',
+		'dark:bg-purple-900/50',
+		'border-b-2',
+		'border-green-500',
+		'cursor-help',
+		'transition-colors',
+		'duration-200',
+	],
 	theme: {
 		extend: {
 			fontFamily: {

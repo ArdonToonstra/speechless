@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useState, useRef } from 'react'
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, Editor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import Placeholder from '@tiptap/extension-placeholder'
@@ -40,6 +40,42 @@ export function TiptapEditor({
     const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null)
     const [isAnalyzing, setIsAnalyzing] = useState(false)
     const analysisTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+    
+    // Use refs to avoid stale closures in callbacks
+    const hemingwayEnabledRef = useRef(hemingwayEnabled)
+    const editorRef = useRef<Editor | null>(null)
+
+    // Keep refs in sync with state
+    useEffect(() => {
+        hemingwayEnabledRef.current = hemingwayEnabled
+    }, [hemingwayEnabled])
+
+    // Run analysis with debounce
+    const runDebouncedAnalysis = useCallback((text: string) => {
+        if (analysisTimeoutRef.current) {
+            clearTimeout(analysisTimeoutRef.current)
+        }
+
+        setIsAnalyzing(true)
+        analysisTimeoutRef.current = setTimeout(async () => {
+            try {
+                const result = await analyzeText(text)
+                setAnalysisResult(result)
+
+                // Update highlights using the ref
+                const currentEditor = editorRef.current
+                if (currentEditor && !currentEditor.isDestroyed) {
+                    currentEditor.view.dispatch(
+                        currentEditor.view.state.tr.setMeta('hemingwayAnalysis', result)
+                    )
+                }
+            } catch (error) {
+                console.error('Analysis failed:', error)
+            } finally {
+                setIsAnalyzing(false)
+            }
+        }, 500)
+    }, [])
 
     const editor = useEditor({
         extensions: [
@@ -76,9 +112,8 @@ export function TiptapEditor({
             }
         },
         onUpdate: ({ editor }) => {
-            const text = editor.getText()
+            const text = editor.getText({ blockSeparator: '\n' })
             const json = editor.getJSON()
-            const html = editor.getHTML()
 
             // Calculate stats
             const words = text.split(/\s+/).filter(w => w.length > 0).length
@@ -86,38 +121,19 @@ export function TiptapEditor({
             const readTime = Math.ceil(words / 150) // 150 wpm for speeches
 
             onStatsChange?.({ words, chars, readTime })
-            onChange?.(html, json)
+            onChange?.(editor.getHTML(), json)
 
-            // Trigger analysis if Hemingway mode is enabled
-            if (hemingwayEnabled) {
+            // Trigger analysis if Hemingway mode is enabled (use ref for current value)
+            if (hemingwayEnabledRef.current) {
                 runDebouncedAnalysis(text)
             }
         }
     })
 
-    // Run analysis with debounce
-    const runDebouncedAnalysis = useCallback((text: string) => {
-        if (analysisTimeoutRef.current) {
-            clearTimeout(analysisTimeoutRef.current)
-        }
-
-        setIsAnalyzing(true)
-        analysisTimeoutRef.current = setTimeout(async () => {
-            try {
-                const result = await analyzeText(text)
-                setAnalysisResult(result)
-
-                // Update highlights
-                if (editor && !editor.isDestroyed) {
-                    editor.view.dispatch(editor.view.state.tr.setMeta('hemingwayAnalysis', result))
-                }
-            } catch (error) {
-                console.error('Analysis failed:', error)
-            } finally {
-                setIsAnalyzing(false)
-            }
-        }, 500)
-    }, [])
+    // Keep editor ref in sync
+    useEffect(() => {
+        editorRef.current = editor
+    }, [editor])
 
     // Toggle Hemingway mode
     const toggleHemingway = useCallback(() => {
@@ -125,16 +141,22 @@ export function TiptapEditor({
         setHemingwayEnabled(newState)
 
         if (newState && editor) {
-            runDebouncedAnalysis(editor.getText())
+            runDebouncedAnalysis(editor.getText({ blockSeparator: '\n' }))
         } else {
             setAnalysisResult(null)
+            // Clear decorations when disabling Hemingway mode
+            if (editor && !editor.isDestroyed) {
+                editor.view.dispatch(
+                    editor.view.state.tr.setMeta('hemingwayAnalysis', null)
+                )
+            }
         }
     }, [hemingwayEnabled, editor, runDebouncedAnalysis])
 
     // Initial stats calculation
     useEffect(() => {
         if (editor && onStatsChange) {
-            const text = editor.getText()
+            const text = editor.getText({ blockSeparator: '\n' })
             const words = text.split(/\s+/).filter(w => w.length > 0).length
             const chars = text.length
             const readTime = Math.ceil(words / 150)
@@ -287,7 +309,7 @@ export function TiptapEditor({
                 )}>
                     <EditorContent editor={editor} />
 
-                    {/* Placeholder styling */}
+                    {/* Placeholder and Hemingway highlight styling */}
                     <style jsx global>{`
             .ProseMirror p.is-editor-empty:first-child::before {
               content: attr(data-placeholder);
@@ -301,6 +323,51 @@ export function TiptapEditor({
             
             .ProseMirror:focus {
               outline: none;
+            }
+            
+            /* Hemingway highlight styles - ensure they override prose styles */
+            .ProseMirror [data-issue-type="passive"] {
+              background-color: rgb(191 219 254) !important; /* blue-200 */
+              border-radius: 2px;
+              padding: 0 2px;
+              margin: 0 -2px;
+            }
+            .dark .ProseMirror [data-issue-type="passive"] {
+              background-color: rgb(30 58 138 / 0.5) !important; /* blue-900/50 */
+            }
+            
+            .ProseMirror [data-issue-type="hard-sentence"] {
+              background-color: rgb(254 240 138) !important; /* yellow-200 */
+              border-radius: 2px;
+              padding: 0 2px;
+              margin: 0 -2px;
+            }
+            .dark .ProseMirror [data-issue-type="hard-sentence"] {
+              background-color: rgb(113 63 18 / 0.5) !important; /* yellow-900/50 */
+            }
+            
+            .ProseMirror [data-issue-type="very-hard-sentence"] {
+              background-color: rgb(254 202 202) !important; /* red-200 */
+              border-radius: 2px;
+              padding: 0 2px;
+              margin: 0 -2px;
+            }
+            .dark .ProseMirror [data-issue-type="very-hard-sentence"] {
+              background-color: rgb(127 29 29 / 0.5) !important; /* red-900/50 */
+            }
+            
+            .ProseMirror [data-issue-type="adverb"] {
+              background-color: rgb(233 213 255) !important; /* purple-200 */
+              border-radius: 2px;
+              padding: 0 2px;
+              margin: 0 -2px;
+            }
+            .dark .ProseMirror [data-issue-type="adverb"] {
+              background-color: rgb(88 28 135 / 0.5) !important; /* purple-900/50 */
+            }
+            
+            .ProseMirror [data-issue-type="simpler-alternative"] {
+              border-bottom: 2px solid rgb(34 197 94) !important; /* green-500 */
             }
           `}</style>
                 </div>

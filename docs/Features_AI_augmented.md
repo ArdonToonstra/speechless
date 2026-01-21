@@ -63,7 +63,6 @@
   - [ ] Structured questions (memories, anecdotes, stories).
   - [ ] Prefilled with 3 templates per occasion type.
   - [ ] Editing capabilities: Add/Edit questions.
-- [ ] **UX Enhancements**
   - [ ] Magic link + Email sharing option.
 - [ ] **Future (V2.0)**: Set Deadlines & pre set reminders for those who haven't filled in the questionnaire.
 
