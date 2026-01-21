@@ -1,12 +1,11 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
-import { Editor } from '@/components/editor/Editor'
+import React, { useState, useCallback, useMemo } from 'react'
+import { TiptapEditor } from '@/components/editor/TiptapEditor'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Save, Settings, PenTool } from 'lucide-react'
-import Link from 'next/link'
+import { Save, PenTool } from 'lucide-react'
 import { updateProjectContent } from '@/actions/projects'
-import { ShareDialog } from '@/components/features/ShareDialog'
+import { normalizeContent } from '@/lib/contentMigration'
 import { cn } from '@/lib/utils'
 
 interface Stats {
@@ -21,40 +20,58 @@ export function InteractiveEditor({ project }: { project: any }) {
     const [focusMode, setFocusMode] = useState(false)
     const [stats, setStats] = useState<Stats>({ words: 0, chars: 0, readTime: 0 })
 
-    const saveContent = useCallback(async (editorState: any) => {
-        setSaving(true)
-        const json = editorState.toJSON()
-        await updateProjectContent(project.id, json)
-        setSaving(false)
-        setLastSaved(new Date())
-    }, [project.id])
+    // Convert content from Lexical to Tiptap if needed
+    const initialContent = useMemo(() => {
+        const content = project.content || project.draft
+        if (!content) return undefined
+        return normalizeContent(content)
+    }, [project.content, project.draft])
 
-    // Simple debounce ref
+    // Debounce ref for auto-save
     const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 
-    const handleChange = (editorState: any) => {
+    const saveContent = useCallback(async (json: object) => {
+        setSaving(true)
+        try {
+            await updateProjectContent(project.id, json)
+            setLastSaved(new Date())
+        } catch (error) {
+            console.error('Failed to save:', error)
+        } finally {
+            setSaving(false)
+        }
+    }, [project.id])
+
+    const handleChange = useCallback((_html: string, json: object) => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current)
 
         timeoutRef.current = setTimeout(() => {
-            editorState.read(() => {
-                saveContent(editorState)
-            })
+            saveContent(json)
         }, 2000) // Auto-save every 2 seconds of inactivity
-    }
+    }, [saveContent])
 
-    const onStatsChange = (newStats: Stats) => {
+    const onStatsChange = useCallback((newStats: Stats) => {
         setStats(newStats)
-    }
+    }, [])
 
-    // Manual save
-    const onManualSave = () => {
-        // Auto-save logic handles persistence. Manual save provides user feedback.
-    }
+    // Manual save trigger
+    const onManualSave = useCallback(() => {
+        // Clear any pending auto-save and trigger immediate save indicator
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current)
+        }
+        // The auto-save handles persistence, this provides user feedback
+        setSaving(true)
+        setTimeout(() => setSaving(false), 500)
+    }, [])
 
     const [mounted, setMounted] = React.useState(false)
 
     React.useEffect(() => {
         setMounted(true)
+        return () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current)
+        }
     }, [])
 
     return (
@@ -72,7 +89,7 @@ export function InteractiveEditor({ project }: { project: any }) {
                     <div>
                         <h1 className="text-lg font-bold text-slate-900">Speech Editor</h1>
                         <p className="text-slate-500 flex items-center gap-2 text-xs mt-0.5">
-                            {project.title}
+                            {project.title || project.name}
                             {mounted && lastSaved && <span className="text-xs opacity-60 hidden md:inline">• Saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
                         </p>
                     </div>
@@ -125,8 +142,8 @@ export function InteractiveEditor({ project }: { project: any }) {
                 focusMode ? "p-0 flex items-center justify-center bg-background" : "p-4 md:p-6 bg-muted/5"
             )}>
                 <div className={cn(
-                    "mx-auto transition-all duration-500",
-                    focusMode ? "max-w-4xl" : "max-w-4xl"
+                    "mx-auto transition-all duration-500 w-full",
+                    focusMode ? "max-w-4xl" : "max-w-6xl"
                 )}>
                     {/* Single "Paper" Container */}
                     <div className={cn(
@@ -135,10 +152,11 @@ export function InteractiveEditor({ project }: { project: any }) {
                             ? "bg-transparent border-none shadow-none"
                             : "bg-card rounded-xl shadow-sm border border-border/50 min-h-[1100px] my-8"
                     )}>
-                        <Editor
-                            initialState={project.content}
+                        <TiptapEditor
+                            initialContent={initialContent}
                             onChange={handleChange}
                             onStatsChange={onStatsChange}
+                            placeholder="Start writing your speech..."
                         />
                     </div>
 

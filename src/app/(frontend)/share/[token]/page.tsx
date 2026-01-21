@@ -1,7 +1,8 @@
 import React from 'react'
 import { db, projects } from '@/db'
 import { eq, and } from 'drizzle-orm'
-import { Editor } from '@/components/editor/Editor'
+import { TiptapEditor } from '@/components/editor/TiptapEditor'
+import { normalizeContent } from '@/lib/contentMigration'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,6 +29,11 @@ export default async function SharedProjectPage({ params }: { params: any }) {
         )
     }
 
+    // Convert content from Lexical to Tiptap if needed
+    const content = project.draft
+    const normalizedContent = content ? normalizeContent(content) : null
+    const initialContent = normalizedContent || undefined
+
     return (
         <div className="min-h-screen bg-slate-50 p-6 md:p-12">
             <div className="max-w-4xl mx-auto">
@@ -36,10 +42,12 @@ export default async function SharedProjectPage({ params }: { params: any }) {
                     <p className="text-slate-500">Shared via Speechless</p>
                 </div>
 
-                <Editor
-                    initialState={project.draft}
-                    readOnly={true}
-                />
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+                    <TiptapEditor
+                        initialContent={initialContent}
+                        readOnly={true}
+                    />
+                </div>
             </div>
         </div>
     )
