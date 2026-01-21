@@ -8,9 +8,25 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Trash2, Plus, GripVertical, Save, Loader2, Copy, Check, Link2, Mail } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { Trash2, Plus, GripVertical, Copy, Check, Link2, Mail, FileText, ChevronDown } from 'lucide-react'
 import { toast } from 'sonner'
+import { getTemplatesForOccasion, type QuestionTemplate } from '@/data/question-templates'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuSeparator,
+    DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog'
 
 interface Question {
     text: string
@@ -23,9 +39,17 @@ interface QuestionnaireEditorProps {
     initialDescription: string
     speechReceiverName?: string
     shareToken?: string
+    occasionType?: string
 }
 
-export function QuestionnaireEditor({ projectId, initialQuestions, initialDescription, speechReceiverName, shareToken }: QuestionnaireEditorProps) {
+export function QuestionnaireEditor({
+    projectId,
+    initialQuestions,
+    initialDescription,
+    speechReceiverName,
+    shareToken,
+    occasionType = 'other'
+}: QuestionnaireEditorProps) {
     // Replace placeholder in initial questions
     const processedInitialQuestions = initialQuestions?.map(q => ({
         text: speechReceiverName ? q.text.replace(/\{speechReceiverName\}/g, speechReceiverName) : q.text
@@ -36,7 +60,10 @@ export function QuestionnaireEditor({ projectId, initialQuestions, initialDescri
     const [isSaving, setIsSaving] = useState(false)
     const [lastSaved, setLastSaved] = useState<Date | null>(null)
     const [linkCopied, setLinkCopied] = useState(false)
-    const router = useRouter()
+    const [confirmTemplate, setConfirmTemplate] = useState<QuestionTemplate | null>(null)
+
+    // Get available templates for this occasion
+    const templates = getTemplatesForOccasion(occasionType)
 
     // Generate shareable link using share token (non-guessable)
     const shareableLink = shareToken
@@ -65,6 +92,27 @@ export function QuestionnaireEditor({ projectId, initialQuestions, initialDescri
         setQuestions(newQuestions)
     }
 
+    const loadTemplate = (template: QuestionTemplate) => {
+        // If there are existing questions, ask for confirmation
+        if (questions.length > 0 && questions.some(q => q.text.trim())) {
+            setConfirmTemplate(template)
+        } else {
+            applyTemplate(template)
+        }
+    }
+
+    const applyTemplate = (template: QuestionTemplate) => {
+        // Replace placeholder with actual name if available
+        const processedQuestions = template.questions.map(q => ({
+            text: speechReceiverName
+                ? q.text.replace(/\{speechReceiverName\}/g, speechReceiverName)
+                : q.text
+        }))
+        setQuestions(processedQuestions)
+        setConfirmTemplate(null)
+        toast.success(`Loaded "${template.name}" template`)
+    }
+
     const handleSave = React.useCallback(async () => {
         setIsSaving(true)
         const formData = new FormData()
@@ -90,20 +138,41 @@ export function QuestionnaireEditor({ projectId, initialQuestions, initialDescri
         return () => clearTimeout(timeoutId)
     }, [handleSave])
 
-    // Helper to replace placeholder in displayed questions
-    const renderQuestionText = (text: string) => {
-        if (speechReceiverName) {
-            return text.replace(/{speechReceiverName}/g, speechReceiverName)
-        }
-        return text
-    }
-
     return (
         <div className="space-y-6">
             <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
                 <CardHeader className="border-b border-slate-100 bg-white/50 px-8 py-6">
-                    <CardTitle className="text-xl font-semibold text-slate-800">Questionnaire</CardTitle>
-                    <CardDescription className="text-slate-500">Customize the questions your guests will answer.</CardDescription>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle className="text-xl font-semibold text-slate-800">Questionnaire</CardTitle>
+                            <CardDescription className="text-slate-500">Customize the questions your guests will answer.</CardDescription>
+                        </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="gap-2">
+                                    <FileText className="w-4 h-4" />
+                                    Load Template
+                                    <ChevronDown className="w-4 h-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-72">
+                                <DropdownMenuLabel className="text-xs text-slate-500 font-normal">
+                                    Choose a template for {occasionType} speeches
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {templates.map((template) => (
+                                    <DropdownMenuItem
+                                        key={template.id}
+                                        onClick={() => loadTemplate(template)}
+                                        className="flex flex-col items-start py-3 cursor-pointer"
+                                    >
+                                        <span className="font-medium">{template.name}</span>
+                                        <span className="text-xs text-slate-500">{template.description}</span>
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </CardHeader>
                 <CardContent className="p-8 space-y-8">
                     <div className="space-y-3">
@@ -203,6 +272,27 @@ export function QuestionnaireEditor({ projectId, initialQuestions, initialDescri
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Confirmation Dialog for Template Loading */}
+            <Dialog open={!!confirmTemplate} onOpenChange={() => setConfirmTemplate(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Replace existing questions?</DialogTitle>
+                        <DialogDescription>
+                            Loading the &quot;{confirmTemplate?.name}&quot; template will replace your current questions.
+                            This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setConfirmTemplate(null)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={() => confirmTemplate && applyTemplate(confirmTemplate)}>
+                            Load Template
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

@@ -26,7 +26,7 @@
     - Option A: Speech as a gift (Speech als cadeau).
     - Option B: Speech for the occasion (location/time is set by someone else/speech receiver) (Speech voor de gelegenheid).
   - [ ] **Flow: Speech as a Gift**
-    - [ ] Occasion Input: Wedding, retirement, funeral, birthday, roast, surprise, other (text input).
+    - [X] Occasion Input: Wedding, retirement, funeral, birthday, roast, surprise, other (text input).
     - [ ] Date Input: Specific date, "Unknown", or "Help me via Date Picker".
     - [ ] Context: Title of speech, Honoree Name, Event Context (used for invites).
     - [ ] Logistics (Optional): City/Location, Number of guests (used for filters).
@@ -37,22 +37,22 @@
 
 ## 4. Dashboard
 - [ ] **Project Layout**
-  - [ ] Display projects/speeches as cards.
+  - [X] Display projects/speeches as cards.
   - [ ] Card Info: Speech Title, Date, Status (In Progress, Completed, Delivered), Team Count.
-- [ ] **Account Management**: Settings page link.
-- [ ] **Actions**: Log out.
+- [X] **Account Management**: Settings page link.
+- [X] **Actions**: Log out.
 - [ ] **Quick Access**: Quick invite button (Magic project link).
 
 ## 5. Project Workspace (The "Speech" Page)
 
 ### A. Overview Tab
-- [ ] **Basic Info Display**: Title, Occasion, Date, Honoree.
+- [X] **Basic Info Display**: Title, Occasion, Date, Honoree.
 - [ ] **Process Tracker**: Steps to complete the speech creation process.
 
 ### B. Collaboration Tab
 - [ ] **Team Management**
-  - [ ] List team members with roles (Owner, Speech-Editor, Collaborator).
-  - [ ] Owner permissions: Manage roles, delete members, revoke invites.
+  - [x] List team members with roles (Owner, Speech-Editor, Collaborator).
+  - [X] Owner permissions: Manage roles, delete members, revoke invites.
 - [ ] **Invites**
   - [ ] Invite via Email.
   - [ ] Invite via Magic Link.
@@ -64,9 +64,8 @@
   - [ ] Prefilled with 3 templates per occasion type.
   - [ ] Editing capabilities: Add/Edit questions.
 - [ ] **UX Enhancements**
-  - [ ] Estimated completion time display.
   - [ ] Magic link + Email sharing option.
-- [ ] **Future (V2.0)**: Deadlines & Reminders.
+- [ ] **Future (V2.0)**: Set Deadlines & pre set reminders for those who haven't filled in the questionnaire.
 
 ### D. Questionnaire Answers Tab
 - [ ] **Answers View**

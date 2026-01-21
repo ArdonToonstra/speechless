@@ -6,6 +6,7 @@ import { db, projects, submissions } from '@/db'
 import { getSession } from '@/actions/auth'
 import { QuestionnaireEditor } from '@/components/features/QuestionnaireEditor'
 import { SubmissionsList } from '@/components/features/SubmissionsList'
+import { AnswersByQuestion } from '@/components/features/AnswersByQuestion'
 import { StandardPageShell } from '@/components/layout/StandardPageShell'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -31,6 +32,12 @@ export default async function InputPage({ params }: { params: Promise<{ id: stri
         orderBy: [desc(submissions.createdAt)],
     })
 
+    // Get questions from project - handle both `text` and `question` field formats
+    const rawQuestions = (project.questions || []) as Array<{ text?: string; question?: string }>
+    const projectQuestions = rawQuestions.map(q => ({
+        text: q.text || q.question || ''
+    }))
+
     return (
         <StandardPageShell>
             <div className="max-w-4xl mx-auto space-y-8">
@@ -55,17 +62,40 @@ export default async function InputPage({ params }: { params: Promise<{ id: stri
                     <TabsContent value="questions" className="mt-0">
                         <QuestionnaireEditor
                             projectId={projectId}
-                            initialQuestions={(project.questions as any) || []}
+                            initialQuestions={projectQuestions}
                             initialDescription={project.questionnaireIntro || ''}
+                            speechReceiverName={project.honoree || undefined}
                             shareToken={project.shareToken || undefined}
+                            occasionType={project.occasionType || 'other'}
                         />
                     </TabsContent>
 
                     <TabsContent value="submissions" className="mt-0">
-                        <SubmissionsList
-                            submissions={projectSubmissions as any}
-                            project={project as any}
-                        />
+                        <Tabs defaultValue="by-question" className="w-full">
+                            <TabsList className="mb-6 bg-slate-100">
+                                <TabsTrigger value="by-question" className="text-sm">
+                                    By Question
+                                </TabsTrigger>
+                                <TabsTrigger value="list" className="text-sm">
+                                    List View
+                                </TabsTrigger>
+                            </TabsList>
+
+                            <TabsContent value="by-question" className="mt-0">
+                                <AnswersByQuestion
+                                    submissions={projectSubmissions as any}
+                                    questions={projectQuestions}
+                                    speechReceiverName={project.honoree || undefined}
+                                />
+                            </TabsContent>
+
+                            <TabsContent value="list" className="mt-0">
+                                <SubmissionsList
+                                    submissions={projectSubmissions as any}
+                                    project={project as any}
+                                />
+                            </TabsContent>
+                        </Tabs>
                     </TabsContent>
                 </Tabs>
             </div>
