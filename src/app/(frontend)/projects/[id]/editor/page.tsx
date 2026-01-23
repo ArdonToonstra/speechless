@@ -17,6 +17,9 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
     // Fetch Project
     const project = await db.query.projects.findFirst({
         where: eq(projects.id, projectId),
+        with: {
+            submissions: true
+        }
     })
 
     if (!project || project.ownerId !== session.user.id) notFound()

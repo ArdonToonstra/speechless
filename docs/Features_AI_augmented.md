@@ -55,14 +55,14 @@
   - [X] Owner permissions: Manage roles, delete members, revoke invites.
 - [ ] **Invites**
   - [ ] Invite via Email.
-  - [ ] Invite via Magic Link.
-- [ ] **Future (V2.0)**: "Speech Giver Selector" (Wheel of Fortune style).
+  - [X] Invite via Magic Link.
+
 
 ### C. Input Gathering (Questionnaire) Tab
 - [ ] **Questionnaire Builder**
   - [ ] Structured questions (memories, anecdotes, stories).
-  - [ ] Prefilled with 3 templates per occasion type.
-  - [ ] Editing capabilities: Add/Edit questions.
+  - [X] Prefilled with 3 templates per occasion type.
+  - [X] Editing capabilities: Add/Edit questions.
   - [ ] Magic link + Email sharing option.
 - [ ] **Future (V2.0)**: Set Deadlines & pre set reminders for those who haven't filled in the questionnaire.
 
@@ -81,12 +81,12 @@
 - [ ] **Writing Aids**
   - [ ] Template suggestions (Occasion + Question based).
   - [ ] Links to Content Library (tips/examples).
-  - [ ] Word count & Estimated read-aloud time.
+  - [X] Word count & Estimated read-aloud time.
 - [ ] **Review**: Commenting functionality for team feedback.
 - [ ] **Export**: PDF Export (Styled for reading aloud - large font/spacing).
 - [ ] **Future Updates**
   - [ ] (V1.5) Readability tools (Hemingway-style, no AI yet).
-  - [ ] (V2.0) Advanced commenting, Version history/Rollback, Real-time Collab.
+
 
 ### F. Date Poll Tab
 - [ ] **Setup**: Project owner creates date poll.
@@ -99,7 +99,7 @@
 - [ ] **Selection**: Track selected location.
   - [ ] Display selected location on Dashboard & Overview.
   - [ ] "Custom Location" input option.
-- [ ] **Future (V2.0)**: Curated "First Class" locations list (Google Maps as fallback).
+
 
 ### H. Invites Tab (Event Guest Management)
 - [ ] **Concept**: Originally for "Speech as a gift", but adaptable for other occasions.
@@ -112,7 +112,7 @@
 ## 6. Account Settings
 - [ ] Change Password.
 - [ ] Edit Profile (Name, Photo).
-- [ ] Delete Account.
+- [X] Delete Account.
 - [ ] Data Export (GDPR Compliance).
 
 ## 7. Content Library
@@ -122,4 +122,6 @@
 
 ## 8. Future Concepts & Monetization
 - [ ] **Moodboard Repurposing**: Reuse questionnaire responses for physical gifts (Poster/Book).
-- [ ] **Location Monetization**: Commission on bookings via validated location service.
+- [ ] **Location Monetization**: Commission on bookings via validated location service. Curated "First Class" locations list (Google Maps as fallback).
+- [ ] **Future (V2.0)**: "Speech Giver Selector" (Wheel of Fortune style).
+- [ ] (V2.0) Advanced commenting, Version history/Rollback, Real-time Collab.

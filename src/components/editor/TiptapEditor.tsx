@@ -1,7 +1,9 @@
 'use client'
 
-import React, { useCallback, useEffect, useState, useRef } from 'react'
+
+import React, { useCallback, useEffect, useState, useRef, useMemo } from 'react'
 import { useEditor, EditorContent, Editor } from '@tiptap/react'
+import { QuestionItem } from '@/db/schema'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import Placeholder from '@tiptap/extension-placeholder'
@@ -15,8 +17,24 @@ import {
     Heading2,
     List as ListIcon,
     ListOrdered,
-    Sparkles
+    Sparkles,
+    FileText,
+    BookOpen,
+    MessageSquare,
+    ChevronRight
 } from 'lucide-react'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+    DropdownMenuSub,
+    DropdownMenuSubTrigger,
+    DropdownMenuSubContent
+} from '@/components/ui/dropdown-menu'
+import { SPEECH_TEMPLATES } from './templates'
 import { HemingwayPanel } from './HemingwayPanel'
 import { analyzeText, AnalysisResult } from '@/lib/textAnalysis'
 import { HemingwayExtension } from './extensions/HemingwayExtension'
@@ -27,20 +45,92 @@ interface TiptapEditorProps {
     onStatsChange?: (stats: { words: number; chars: number; readTime: number }) => void
     readOnly?: boolean
     placeholder?: string
+    questions?: QuestionItem[]
+    submissions?: any[] // We can use 'any' or import the type if we want to be strict
+    speechReceiverName?: string
 }
+
+const ButtonBase = React.forwardRef<
+    HTMLButtonElement,
+    {
+        active: boolean
+        onClick: () => void
+        children: React.ReactNode
+        label: string
+        variant?: 'default' | 'accent'
+    } & React.ButtonHTMLAttributes<HTMLButtonElement>
+>(({ active, onClick, children, label, variant = 'default', className, ...props }, ref) => (
+    <button
+        ref={ref}
+        type="button"
+        onClick={onClick}
+        title={label}
+        className={cn(
+            "p-2 rounded w-8 h-8 flex items-center justify-center transition-colors",
+            variant === 'accent' && active && "bg-amber-500 text-white",
+            variant === 'accent' && !active && "text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/30",
+            variant === 'default' && active && "bg-primary text-primary-foreground",
+            variant === 'default' && !active && "text-foreground hover:bg-muted/30",
+            className
+        )}
+        {...props}
+    >
+        {children}
+    </button>
+))
+ButtonBase.displayName = "ButtonBase"
 
 export function TiptapEditor({
     initialContent,
     onChange,
     onStatsChange,
     readOnly = false,
-    placeholder = "Start writing your speech..."
+    placeholder = "Start writing your speech...",
+    questions = [],
+    submissions = [],
+    speechReceiverName = 'them'
 }: TiptapEditorProps) {
     const [hemingwayEnabled, setHemingwayEnabled] = useState(false)
     const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null)
     const [isAnalyzing, setIsAnalyzing] = useState(false)
     const analysisTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-    
+
+    // Group answers logic
+    const groupedAnswers = useMemo(() => {
+        if (!questions?.length || !submissions?.length) return []
+
+        const renderQuestion = (text: string) => {
+            return text.replace(/{speechReceiverName}/g, speechReceiverName || 'them')
+        }
+
+        return questions.map((q) => {
+            const questionText = renderQuestion(q.question)
+            const answersForQuestion: { answer: string; submitterName: string }[] = []
+
+            submissions.forEach((submission) => {
+                if (!submission.answers) return
+
+                const matchingAnswer = submission.answers.find((a: any) => {
+                    return a.question === questionText ||
+                        a.question === q.question ||
+                        a.question.replace(/{speechReceiverName}/g, speechReceiverName || 'them') === questionText
+                })
+
+                if (matchingAnswer && matchingAnswer.answer && matchingAnswer.answer.trim()) {
+                    answersForQuestion.push({
+                        answer: matchingAnswer.answer,
+                        submitterName: submission.submitterName || 'Anonymous',
+                    })
+                }
+            })
+
+            return {
+                question: questionText || "Unknown Question",
+                answers: answersForQuestion,
+            }
+        }).filter(group => group.answers.length > 0)
+    }, [questions, submissions, speechReceiverName])
+
     // Use refs to avoid stale closures in callbacks
     const hemingwayEnabledRef = useRef(hemingwayEnabled)
     const editorRef = useRef<Editor | null>(null)
@@ -177,34 +267,6 @@ export function TiptapEditor({
         return null
     }
 
-    const ButtonBase = ({
-        active,
-        onClick,
-        children,
-        label,
-        variant = 'default'
-    }: {
-        active: boolean
-        onClick: () => void
-        children: React.ReactNode
-        label: string
-        variant?: 'default' | 'accent'
-    }) => (
-        <button
-            type="button"
-            onClick={onClick}
-            title={label}
-            className={cn(
-                "p-2 rounded w-8 h-8 flex items-center justify-center transition-colors",
-                variant === 'accent' && active && "bg-amber-500 text-white",
-                variant === 'accent' && !active && "text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/30",
-                variant === 'default' && active && "bg-primary text-primary-foreground",
-                variant === 'default' && !active && "text-foreground hover:bg-muted/30"
-            )}
-        >
-            {children}
-        </button>
-    )
 
     return (
         <div className="relative w-full flex flex-col">
@@ -275,6 +337,59 @@ export function TiptapEditor({
                             >
                                 <ListOrdered className="w-4 h-4" />
                             </ButtonBase>
+                        </div>
+
+                        <div className="w-px h-6 bg-border mx-2" />
+
+                        {/* Templates & Library */}
+                        <div className="flex gap-1">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <ButtonBase
+                                        active={false}
+                                        onClick={() => { }}
+                                        label="Insert Template"
+                                    >
+                                        <FileText className="w-4 h-4" />
+                                    </ButtonBase>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start">
+                                    <DropdownMenuLabel>Speech Templates</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    {SPEECH_TEMPLATES.map((template) => (
+                                        <DropdownMenuItem
+                                            key={template.id}
+                                            onClick={() => {
+                                                editor.chain().focus('end').insertContent(template.content).run()
+                                            }}
+                                        >
+                                            {template.label}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <ButtonBase
+                                        active={false}
+                                        onClick={() => { }}
+                                        label="Content Library"
+                                    >
+                                        <BookOpen className="w-4 h-4" />
+                                    </ButtonBase>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start">
+                                    <DropdownMenuLabel>Helpful Resources</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => window.open('https://coveteur.com/how-to-write-a-good-wedding-speech', '_blank')}>
+                                        How to Write a Good Wedding Speech
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => window.open('https://www.oprahdaily.com/life/health/a64041503/how-to-write-a-speech/', '_blank')}>
+                                        Oprah Daily: How to Write a Speech
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     </div>
 

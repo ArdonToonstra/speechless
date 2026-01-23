@@ -156,6 +156,9 @@ export function InteractiveEditor({ project }: { project: any }) {
                             initialContent={initialContent}
                             onChange={handleChange}
                             onStatsChange={onStatsChange}
+                            questions={project.questions || []}
+                            submissions={project.submissions || []}
+                            speechReceiverName={project.honoree || 'them'}
                             placeholder="Start writing your speech..."
                         />
                     </div>
