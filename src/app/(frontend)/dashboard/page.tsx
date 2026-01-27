@@ -100,7 +100,7 @@ export default async function DashboardPage() {
                         <img
                             src="/images/branding/base-logo.png"
                             alt="Toast"
-                            className="h-20 w-auto object-contain"
+                            className="h-24 w-auto object-contain"
                         />
                         <div>
                             <h1 className="text-3xl font-serif font-bold text-foreground">Your Speeches</h1>

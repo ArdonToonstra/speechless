@@ -156,7 +156,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
                     {/* Roast Logo (integrated in left box) */}
                     {(project.occasionType?.toLowerCase().includes('roast') || project.customOccasion?.toLowerCase().includes('roast')) && (
-                        <div className="hidden md:flex flex-col items-center justify-center opacity-100 pointer-events-none absolute right-10 top-1/2 -translate-y-1/2 rotate-6 transform transition-transform group-hover:scale-110 group-hover:rotate-12 duration-500">
+                        <div className="hidden md:flex flex-col items-center justify-center opacity-100 pointer-events-none absolute right-20 top-1/2 -translate-y-1/2 rotate-6 transform transition-transform group-hover:scale-110 group-hover:rotate-12 duration-500">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src="/images/branding/roast-logo.png"
