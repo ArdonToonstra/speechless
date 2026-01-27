@@ -116,41 +116,53 @@ export function ProjectCard({ project }: ProjectCardProps) {
         >
             <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden transform transition-all hover:scale-[1.01] hover:shadow-xl hover:border-primary/30 flex flex-col md:flex-row">
                 {/* Left Side - Main Info */}
-                <div className="flex-1 p-6 md:p-8 text-left space-y-6">
-                    <div>
-                        <div className="text-xs font-bold text-primary uppercase tracking-widest mb-2">
-                            {occasionDisplay}
+                <div className="flex-1 p-6 md:p-8 text-left relative flex flex-col justify-between overflow-hidden">
+                    <div className="space-y-6 z-10 relative max-w-[85%]">
+                        <div>
+                            <div className="text-xs font-bold text-primary uppercase tracking-widest mb-2">
+                                {occasionDisplay}
+                            </div>
+                            <h3 className="text-2xl font-serif font-bold text-foreground group-hover:text-primary transition-colors">
+                                {project.name}
+                            </h3>
+                            {project.honoree && (
+                                <p className="text-sm text-foreground/80 mt-1">For {project.honoree}</p>
+                            )}
+                            <p className="text-sm text-muted-foreground mt-1">Last edited {lastEdited}</p>
                         </div>
-                        <h3 className="text-2xl font-serif font-bold text-foreground group-hover:text-primary transition-colors">
-                            {project.name}
-                        </h3>
-                        {project.honoree && (
-                            <p className="text-sm text-foreground/80 mt-1">For {project.honoree}</p>
+
+                        {collaborators.length > 0 && (
+                            <div className="space-y-3">
+                                <div className="text-xs font-semibold text-muted-foreground uppercase">Collaborators</div>
+                                <div className="flex -space-x-3">
+                                    {displayedCollaborators.map((collab, idx) => (
+                                        <div
+                                            key={idx}
+                                            className={`w-10 h-10 rounded-full border-2 border-card flex items-center justify-center text-xs font-bold ${collab.color}`}
+                                            title={collab.name}
+                                        >
+                                            {collab.initials}
+                                        </div>
+                                    ))}
+                                    {remainingCount > 0 && (
+                                        <div className="w-10 h-10 rounded-full border-2 border-card bg-muted flex items-center justify-center text-muted-foreground text-xs font-bold">
+                                            +{remainingCount}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         )}
-                        <p className="text-sm text-muted-foreground mt-1">Last edited {lastEdited}</p>
                     </div>
 
-
-
-                    {collaborators.length > 0 && (
-                        <div className="space-y-3">
-                            <div className="text-xs font-semibold text-muted-foreground uppercase">Collaborators</div>
-                            <div className="flex -space-x-3">
-                                {displayedCollaborators.map((collab, idx) => (
-                                    <div
-                                        key={idx}
-                                        className={`w-10 h-10 rounded-full border-2 border-card flex items-center justify-center text-xs font-bold ${collab.color}`}
-                                        title={collab.name}
-                                    >
-                                        {collab.initials}
-                                    </div>
-                                ))}
-                                {remainingCount > 0 && (
-                                    <div className="w-10 h-10 rounded-full border-2 border-card bg-muted flex items-center justify-center text-muted-foreground text-xs font-bold">
-                                        +{remainingCount}
-                                    </div>
-                                )}
-                            </div>
+                    {/* Roast Logo (integrated in left box) */}
+                    {(project.occasionType?.toLowerCase().includes('roast') || project.customOccasion?.toLowerCase().includes('roast')) && (
+                        <div className="hidden md:flex flex-col items-center justify-center opacity-100 pointer-events-none absolute right-10 top-1/2 -translate-y-1/2 rotate-6 transform transition-transform group-hover:scale-110 group-hover:rotate-12 duration-500">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src="/images/branding/roast-logo.png"
+                                alt="Roast"
+                                className="h-32 w-auto object-contain drop-shadow-md"
+                            />
                         </div>
                     )}
                 </div>

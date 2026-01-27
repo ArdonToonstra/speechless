@@ -80,14 +80,14 @@ export default async function DashboardPage() {
     })
 
     const allProjects = Array.from(allProjectsMap.values())
-    
+
     // Sort by occasionDate (if exists) or createdAt
     allProjects.sort((a, b) => {
         const dateA = a.occasionDate ? new Date(a.occasionDate) : new Date(a.createdAt)
         const dateB = b.occasionDate ? new Date(b.occasionDate) : new Date(b.createdAt)
         return dateA.getTime() - dateB.getTime()
     })
-    
+
     const userInitials = getUserInitials(user.name, user.email)
 
     return (
@@ -95,9 +95,17 @@ export default async function DashboardPage() {
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="flex justify-between items-end mb-12">
-                    <div>
-                        <h1 className="text-3xl font-serif font-bold text-foreground">Your Speeches</h1>
-                        <p className="text-muted-foreground mt-2">Welcome back, {user.name || user.email}</p>
+                    <div className="flex items-center gap-6">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src="/images/branding/base-logo.png"
+                            alt="Toast"
+                            className="h-20 w-auto object-contain"
+                        />
+                        <div>
+                            <h1 className="text-3xl font-serif font-bold text-foreground">Your Speeches</h1>
+                            <p className="text-muted-foreground mt-2">Welcome back, {user.name || user.email}</p>
+                        </div>
                     </div>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -145,7 +153,7 @@ export default async function DashboardPage() {
                             <ProjectCard key={project.id} project={project} />
                         ))}
                         {/* Create new project card */}
-                        <Link 
+                        <Link
                             href="/onboarding"
                             className="group block bg-card hover:bg-card rounded-3xl border-2 border-dashed border-border hover:border-primary transition-all p-8"
                         >

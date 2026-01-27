@@ -79,12 +79,12 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion }: Proj
         >
             {/* Header / Logo Area */}
             <div className={cn(
-                "h-16 flex items-center border-b border-border relative",
+                "h-20 flex items-center border-b border-border relative",
                 isCollapsed ? "justify-center" : "px-4 justify-center"
             )}>
                 <Link href="/dashboard" className="flex items-center justify-center w-full font-bold text-lg overflow-hidden whitespace-nowrap" title="Back to Dashboard">
                     {!isCollapsed ? (
-                        <div className="relative h-18 w-full flex items-center justify-center">
+                        <div className="relative w-full flex items-center justify-center">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={logoSrc}
