@@ -58,12 +58,18 @@ const ButtonBase = React.forwardRef<
         children: React.ReactNode
         label: string
         variant?: 'default' | 'accent'
+        preventFocus?: boolean
     } & React.ButtonHTMLAttributes<HTMLButtonElement>
->(({ active, onClick, children, label, variant = 'default', className, ...props }, ref) => (
+>(({ active, onClick, children, label, variant = 'default', preventFocus, className, ...props }, ref) => (
     <button
         ref={ref}
         type="button"
         onClick={onClick}
+        onMouseDown={(e) => {
+            if (preventFocus) {
+                e.preventDefault()
+            }
+        }}
         title={label}
         className={cn(
             "p-2 rounded w-8 h-8 flex items-center justify-center transition-colors",
@@ -280,6 +286,7 @@ export function TiptapEditor({
                                 active={editor.isActive('heading', { level: 1 })}
                                 onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
                                 label="Heading 1"
+                                preventFocus
                             >
                                 <Heading1 className="w-4 h-4" />
                             </ButtonBase>
@@ -287,6 +294,7 @@ export function TiptapEditor({
                                 active={editor.isActive('heading', { level: 2 })}
                                 onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
                                 label="Heading 2"
+                                preventFocus
                             >
                                 <Heading2 className="w-4 h-4" />
                             </ButtonBase>
@@ -300,6 +308,7 @@ export function TiptapEditor({
                                 active={editor.isActive('bold')}
                                 onClick={() => editor.chain().focus().toggleBold().run()}
                                 label="Bold"
+                                preventFocus
                             >
                                 <Bold className="w-4 h-4" />
                             </ButtonBase>
@@ -307,6 +316,7 @@ export function TiptapEditor({
                                 active={editor.isActive('italic')}
                                 onClick={() => editor.chain().focus().toggleItalic().run()}
                                 label="Italic"
+                                preventFocus
                             >
                                 <Italic className="w-4 h-4" />
                             </ButtonBase>
@@ -314,6 +324,7 @@ export function TiptapEditor({
                                 active={editor.isActive('underline')}
                                 onClick={() => editor.chain().focus().toggleUnderline().run()}
                                 label="Underline"
+                                preventFocus
                             >
                                 <UnderlineIcon className="w-4 h-4" />
                             </ButtonBase>
@@ -327,6 +338,7 @@ export function TiptapEditor({
                                 active={editor.isActive('bulletList')}
                                 onClick={() => editor.chain().focus().toggleBulletList().run()}
                                 label="Bullet List"
+                                preventFocus
                             >
                                 <ListIcon className="w-4 h-4" />
                             </ButtonBase>
@@ -334,6 +346,7 @@ export function TiptapEditor({
                                 active={editor.isActive('orderedList')}
                                 onClick={() => editor.chain().focus().toggleOrderedList().run()}
                                 label="Numbered List"
+                                preventFocus
                             >
                                 <ListOrdered className="w-4 h-4" />
                             </ButtonBase>
