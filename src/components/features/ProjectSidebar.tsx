@@ -41,9 +41,10 @@ interface ProjectSidebarProps {
     projectId: number
     projectTitle: string
     user: User
+    occasion: string
 }
 
-export function ProjectSidebar({ projectId, projectTitle, user }: ProjectSidebarProps) {
+export function ProjectSidebar({ projectId, projectTitle, user, occasion }: ProjectSidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false)
     const { isHeaderCollapsed, setHeaderCollapsed } = useProjectLayout()
     const pathname = usePathname()
@@ -60,6 +61,15 @@ export function ProjectSidebar({ projectId, projectTitle, user }: ProjectSidebar
         localStorage.setItem('sidebar-collapsed', String(newState))
     }
 
+    const getLogo = (occasion: string) => {
+        const lower = occasion?.toLowerCase()
+        if (lower === 'roast') return '/images/branding/roast-logo.png'
+        if (lower === 'wedding') return '/images/branding/wedding-logo.png'
+        return '/images/branding/base-logo.png'
+    }
+
+    const logoSrc = getLogo(occasion)
+
     return (
         <aside
             className={cn(
@@ -70,11 +80,18 @@ export function ProjectSidebar({ projectId, projectTitle, user }: ProjectSidebar
             {/* Header / Logo Area */}
             <div className={cn(
                 "h-16 flex items-center border-b border-border relative",
-                isCollapsed ? "justify-center" : "px-4 justify-between"
+                isCollapsed ? "justify-center" : "px-4 justify-center"
             )}>
                 <Link href="/dashboard" className="flex items-center gap-2 font-bold text-lg overflow-hidden whitespace-nowrap" title="Back to Dashboard">
                     {!isCollapsed ? (
-                        <span className="text-primary truncate">Speechless</span>
+                        <div className="relative h-18 w-full flex items-center justify-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={logoSrc}
+                                alt="Toast"
+                                className="h-14 w-auto object-contain"
+                            />
+                        </div>
                     ) : (
                         <Home className="w-5 h-5 text-primary" />
                     )}

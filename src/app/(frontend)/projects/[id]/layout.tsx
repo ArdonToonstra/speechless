@@ -38,6 +38,7 @@ export default async function ProjectLayout({
                     projectId={project.id}
                     projectTitle={project.name}
                     user={session.user}
+                    occasion={project.occasionType}
                 />
 
                 {/* Main Content Area */}

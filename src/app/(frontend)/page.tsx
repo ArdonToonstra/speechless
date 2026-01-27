@@ -17,7 +17,7 @@ export default async function Page() {
             <div className="flex-1 flex flex-col items-center p-6 w-full">
                 {/* Hero Section */}
                 <div className="max-w-4xl w-full text-center mt-20 mb-16 relative z-10">
-                    <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6 text-primary tracking-tight">Speechless.</h1>
+                    <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6 text-primary tracking-tight">Toast.</h1>
                     <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-10">
                         Draft, refine, and deliver your speech with confidence. <br className="hidden md:block" />
                         Give the warmest and most personal present. <br className="hidden md:block" />

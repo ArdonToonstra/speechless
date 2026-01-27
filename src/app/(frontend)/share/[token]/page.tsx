@@ -39,7 +39,7 @@ export default async function SharedProjectPage({ params }: { params: any }) {
             <div className="max-w-4xl mx-auto">
                 <div className="mb-8 text-center">
                     <h1 className="text-4xl font-serif font-bold text-slate-900 mb-2">{project.name}</h1>
-                    <p className="text-slate-500">Shared via Speechless</p>
+                    <p className="text-slate-500">Shared via Toast</p>
                 </div>
 
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">

@@ -1,13 +1,13 @@
 import Mailjet from 'node-mailjet'
 
 // Check if valid API keys exist
-const hasValidKeys = process.env.MAILJET_API_KEY && 
-                    process.env.MAILJET_SECRET_KEY &&
-                    process.env.MAILJET_API_KEY.length > 10 &&
-                    process.env.MAILJET_SECRET_KEY.length > 10
+const hasValidKeys = process.env.MAILJET_API_KEY &&
+    process.env.MAILJET_SECRET_KEY &&
+    process.env.MAILJET_API_KEY.length > 10 &&
+    process.env.MAILJET_SECRET_KEY.length > 10
 
 // Only initialize Mailjet if we have valid keys
-const mailjet = hasValidKeys 
+const mailjet = hasValidKeys
     ? Mailjet.apiConnect(
         process.env.MAILJET_API_KEY!,
         process.env.MAILJET_SECRET_KEY!
@@ -37,7 +37,7 @@ export async function sendVerificationEmail({ to, code }: SendVerificationEmailP
                 {
                     From: {
                         Email: 'noreply@detoast.nl',
-                        Name: 'Speechless',
+                        Name: 'Toast',
                     },
                     To: [
                         {
@@ -47,7 +47,7 @@ export async function sendVerificationEmail({ to, code }: SendVerificationEmailP
                     Subject: 'Your Verification Code',
                     TextPart: `Your verification code is: ${code}. It expires in 30 minutes.`,
                     HTMLPart: `
-            <h3>Welcome to Speechless!</h3>
+            <h3>Welcome to Toast!</h3>
             <p>Your verification code is: <strong style="font-size: 24px; letter-spacing: 2px;">${code}</strong></p>
             <p>This code will expire in 30 minutes.</p>
           `,
@@ -86,7 +86,7 @@ export async function sendPasswordResetEmail({ to, resetUrl }: SendPasswordReset
                 {
                     From: {
                         Email: 'noreply@detoast.nl',
-                        Name: 'Speechless',
+                        Name: 'Toast',
                     },
                     To: [
                         {
@@ -94,11 +94,11 @@ export async function sendPasswordResetEmail({ to, resetUrl }: SendPasswordReset
                         },
                     ],
                     Subject: 'Reset Your Password',
-                    TextPart: `You requested a password reset for your Speechless account. Click this link to reset your password: ${resetUrl}. This link expires in 1 hour. If you didn't request this, you can safely ignore this email.`,
+                    TextPart: `You requested a password reset for your Toast account. Click this link to reset your password: ${resetUrl}. This link expires in 1 hour. If you didn't request this, you can safely ignore this email.`,
                     HTMLPart: `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #333;">Reset Your Password</h2>
-                <p>You requested a password reset for your Speechless account.</p>
+                <p>You requested a password reset for your Toast account.</p>
                 <p>Click the button below to reset your password:</p>
                 <p style="margin: 24px 0;">
                     <a href="${resetUrl}" style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">
@@ -142,16 +142,16 @@ export async function sendEmailChangeVerification({ to, code, isNewEmail }: Send
     try {
         const subject = isNewEmail ? 'Verify Your New Email Address' : 'Email Change Request'
         const heading = isNewEmail ? 'Verify Your New Email Address' : 'Email Change Request'
-        const description = isNewEmail 
+        const description = isNewEmail
             ? 'Please verify this email address to complete the change.'
-            : 'Someone requested to change the email address for your Speechless account.'
+            : 'Someone requested to change the email address for your Toast account.'
 
         const request = mailjet.post('send', { version: 'v3.1' }).request({
             Messages: [
                 {
                     From: {
                         Email: 'noreply@detoast.nl',
-                        Name: 'Speechless',
+                        Name: 'Toast',
                     },
                     To: [
                         {
