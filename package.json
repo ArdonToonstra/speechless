@@ -1,7 +1,7 @@
 {
   "name": "",
   "version": "1.0.0",
-  "description": "Speechless - Speech writing collaboration app",
+  "description": "Toast - Speech writing collaboration app",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -50,6 +50,7 @@
     "@tiptap/pm": "^3.16.0",
     "@tiptap/react": "^3.16.0",
     "@tiptap/starter-kit": "^3.16.0",
+    "@vis.gl/react-google-maps": "^1.7.1",
     "better-auth": "^1.4.13",
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.1.1",
@@ -57,6 +58,7 @@
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.45.1",
     "framer-motion": "^12.23.26",
+    "html2pdf.js": "^0.14.0",
     "lexical": "0.35.0",
     "lucide-react": "^0.561.0",
     "next": "16.1.4",

@@ -4,17 +4,13 @@ import { db, projects } from '@/db'
 import { eq, and } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { requireAuth } from './auth'
-import { locations } from '@/data/mock-locations'
 import type { LocationSettings } from '@/db/schema'
 
-export async function selectProjectLocation(projectId: number, locationSlug: string) {
+export async function saveProjectLocation(
+    projectId: number,
+    locationData: LocationSettings
+) {
     const session = await requireAuth()
-    
-    const location = locations.find(l => l.slug === locationSlug)
-
-    if (!location) {
-        return { error: 'Location not found' }
-    }
 
     try {
         // Verify ownership
@@ -29,21 +25,17 @@ export async function selectProjectLocation(projectId: number, locationSlug: str
             return { error: 'Project not found or unauthorized' }
         }
 
-        const locationSettings: LocationSettings = {
-            slug: location.slug,
-        }
-
         await db.update(projects)
-            .set({ 
-                locationSettings,
-                updatedAt: new Date() 
+            .set({
+                locationSettings: locationData,
+                updatedAt: new Date()
             })
             .where(eq(projects.id, projectId))
 
         revalidatePath(`/projects/${projectId}/location`)
         return { success: true }
     } catch (error) {
-        console.error('Failed to select location:', error)
-        return { error: 'Failed to select location' }
+        console.error('Failed to save location:', error)
+        return { error: 'Failed to save location' }
     }
 }

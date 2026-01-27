@@ -173,7 +173,12 @@ export type EmailTemplates = {
 }
 
 export type LocationSettings = {
-  slug?: string
+  address?: string
+  lat?: number
+  lng?: number
+  placeId?: string
+  name?: string
+  slug?: string // Keeping for backward compatibility if needed, or remove if fully replacing
 }
 
 // ============================================================================

@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Loader2, Check, CalendarIcon, Trash2, AlertTriangle } from 'lucide-react'
+import { Loader2, Check, CalendarIcon, Trash2, AlertTriangle, MapPin } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { Calendar } from '@/components/ui/calendar'
@@ -29,6 +29,12 @@ interface Project {
     eventContext: string | null
     city: string | null
     guestCount: number | null
+    locationSettings: {
+        address?: string
+        lat?: number
+        lng?: number
+        name?: string
+    } | null
 }
 
 interface ProjectOverviewProps {
@@ -339,6 +345,21 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
                                         />
                                     </div>
                                 </div>
+                                {project.locationSettings?.address && (
+                                    <div className="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                        <div className="text-sm font-medium text-slate-700 mb-1">Selected Location (Map)</div>
+                                        <div className="flex items-center gap-2 text-slate-600">
+                                            <span className="text-primary"><MapPin className="w-4 h-4" /></span>
+                                            {project.locationSettings.name ? (
+                                                <span>
+                                                    <strong>{project.locationSettings.name}</strong> • {project.locationSettings.address}
+                                                </span>
+                                            ) : (
+                                                <span>{project.locationSettings.address}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </>
                     )}

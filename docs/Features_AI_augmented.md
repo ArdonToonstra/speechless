@@ -1,4 +1,4 @@
-﻿# Speechless Features & Refactoring Checklist
+﻿# Toast Features & Refactoring Checklist
 
 ## 1. Authentication & Security
 - [ ] **User Login & Authentication**
@@ -84,8 +84,7 @@
   - [X] Word count & Estimated read-aloud time.
 - [ ] **Review**: Commenting functionality for team feedback.
 - [ ] **Export**: PDF Export (Styled for reading aloud - large font/spacing).
-- [ ] **Future Updates**
-  - [ ] (V1.5) Readability tools (Hemingway-style, no AI yet).
+- [ ] Readability tools (Hemingway-style, no AI yet).
 
 
 ### F. Date Poll Tab

@@ -29,6 +29,10 @@ interface Project {
         email: string
         status: string
     }>
+    locationSettings?: {
+        address?: string
+        name?: string
+    } | null
 }
 import { format, formatDistance, differenceInDays } from 'date-fns'
 
@@ -195,10 +199,12 @@ export function ProjectCard({ project }: ProjectCardProps) {
                                 {project.speechType === 'gift' ? 'Surprise someone special' : "You're giving the speech"}
                             </div>
                         </div>
-                        {project.city && (
+                        {(project.locationSettings?.address || project.city) && (
                             <div className="text-xs text-muted-foreground">
                                 <span className="font-semibold uppercase">Location:</span>
-                                <div className="mt-1 text-foreground">{project.city}</div>
+                                <div className="mt-1 text-foreground truncate" title={project.locationSettings?.address || project.city || ''}>
+                                    {project.locationSettings?.name || project.locationSettings?.address || project.city}
+                                </div>
                             </div>
                         )}
                         {project.guestCount && (

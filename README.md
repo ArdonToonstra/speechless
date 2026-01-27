@@ -1,4 +1,4 @@
-# Speechless
+# Toast
 
 A Payload 3.0 (Beta) application with Next.js App Router and Postgres.
 

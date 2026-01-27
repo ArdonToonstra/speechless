@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm'
 import { MapPin } from 'lucide-react'
 import { db, projects } from '@/db'
 import { getSession } from '@/actions/auth'
-import { LocationManager } from '@/components/features/LocationManager'
+import { LocationPicker } from '@/components/features/LocationPicker'
 import { StandardPageShell } from '@/components/layout/StandardPageShell'
 
 export default async function LocationPage({ params }: { params: Promise<{ id: string }> }) {
@@ -36,7 +36,7 @@ export default async function LocationPage({ params }: { params: Promise<{ id: s
                     </div>
                 </div>
 
-                <LocationManager projectId={project.id} location={project.locationSettings || {}} />
+                <LocationPicker projectId={project.id} initialLocation={project.locationSettings || undefined} />
             </div>
         </StandardPageShell>
     )

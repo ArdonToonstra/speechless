@@ -5,6 +5,11 @@ import { cn } from '@/lib/utils'
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 const newsreader = Newsreader({ subsets: ['latin'], variable: '--font-serif', style: ['normal', 'italic'] })
 
+export const metadata = {
+    title: 'Toast',
+    description: 'Speech writing collaboration app',
+}
+
 export default function Layout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="en" suppressHydrationWarning>

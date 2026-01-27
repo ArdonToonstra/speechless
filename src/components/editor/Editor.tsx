@@ -225,7 +225,7 @@ interface EditorProps {
 
 export function Editor({ initialState, onChange, readOnly = false, onStatsChange }: EditorProps) {
     const initialConfig = {
-        namespace: 'SpeechlessEditor',
+        namespace: 'ToastEditor',
         theme,
         onError: (e: Error) => console.error(e),
         editable: !readOnly,

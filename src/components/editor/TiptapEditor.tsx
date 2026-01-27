@@ -21,7 +21,8 @@ import {
     FileText,
     BookOpen,
     MessageSquare,
-    ChevronRight
+    ChevronRight,
+    Download
 } from 'lucide-react'
 import {
     DropdownMenu,
@@ -231,6 +232,100 @@ export function TiptapEditor({
         editorRef.current = editor
     }, [editor])
 
+    const handleExportPdf = useCallback(() => {
+        if (!editor) return
+
+        const content = editor.getHTML()
+
+        // Create a hidden iframe for printing
+        const iframe = document.createElement('iframe')
+        iframe.style.position = 'fixed'
+        iframe.style.right = '0'
+        iframe.style.bottom = '0'
+        iframe.style.width = '0'
+        iframe.style.height = '0'
+        iframe.style.border = 'none'
+        document.body.appendChild(iframe)
+
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document
+        if (!iframeDoc) {
+            console.error('Could not access iframe document')
+            document.body.removeChild(iframe)
+            return
+        }
+
+        // Write the styled content to the iframe
+        iframeDoc.open()
+        iframeDoc.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Speech Export</title>
+                <style>
+                    @page {
+                        size: A4;
+                        margin: 20mm;
+                        /* Hide browser header/footer */
+                        margin-top: 0;
+                        margin-bottom: 0;
+                    }
+                    @media print {
+                        /* Additional rules to hide headers/footers */
+                        @page { margin: 15mm; }
+                        html, body {
+                            margin: 0 !important;
+                            padding: 0 !important;
+                        }
+                    }
+                    body {
+                        font-family: Georgia, 'Times New Roman', serif;
+                        font-size: 18pt;
+                        line-height: 2.0;
+                        color: #000000;
+                        padding: 15mm;
+                        margin: 0;
+                        background: white;
+                    }
+                    .header {
+                        text-align: right;
+                        margin-bottom: 40px;
+                    }
+                    .header img {
+                        height: 50px;
+                        width: auto;
+                    }
+                    .content {
+                        padding-top: 20px;
+                    }
+                    h1 { font-size: 24pt; font-weight: bold; margin-bottom: 24px; }
+                    h2 { font-size: 20pt; font-weight: bold; margin-bottom: 20px; }
+                    p { margin-bottom: 20px; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <img src="/images/branding/base-logo.png" alt="Toast" />
+                </div>
+                <div class="content">
+                    ${content}
+                </div>
+            </body>
+            </html>
+        `)
+        iframeDoc.close()
+
+        // Wait for content to render, then print
+        setTimeout(() => {
+            iframe.contentWindow?.focus()
+            iframe.contentWindow?.print()
+
+            // Clean up after print dialog closes
+            setTimeout(() => {
+                document.body.removeChild(iframe)
+            }, 1000)
+        }, 500)
+    }, [editor])
+
     // Toggle Hemingway mode
     const toggleHemingway = useCallback(() => {
         const newState = !hemingwayEnabled
@@ -403,6 +498,19 @@ export function TiptapEditor({
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
+                        </div>
+
+                        <div className="w-px h-6 bg-border mx-2" />
+
+                        {/* Export */}
+                        <div className="flex gap-1">
+                            <ButtonBase
+                                active={false}
+                                onClick={handleExportPdf}
+                                label="Export as PDF"
+                            >
+                                <Download className="w-4 h-4" />
+                            </ButtonBase>
                         </div>
                     </div>
 
