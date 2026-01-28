@@ -93,7 +93,7 @@ export function HemingwayPanel({ result, isAnalyzing }: HemingwayPanelProps) {
     const totalIssues = stats.passiveCount + stats.hardSentences + stats.veryHardSentences + stats.adverbs + stats.simplerAlternatives
 
     return (
-        <div className="p-4 space-y-4 overflow-y-auto max-h-[calc(100vh-200px)]">
+        <div className="p-4 space-y-4">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <h3 className="font-bold text-lg text-slate-900 dark:text-white">Writing Assistant</h3>

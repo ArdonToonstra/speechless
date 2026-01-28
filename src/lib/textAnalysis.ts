@@ -116,15 +116,22 @@ export async function analyzeText(text: string): Promise<AnalysisResult> {
                 suggestion: 'Consider using active voice'
             })
         } else if (msg.source === 'retext-readability') {
-            // Determine severity based on message
-            const isVeryHard = msg.message.includes('very hard') ||
-                (msg.actual && typeof msg.actual === 'number' && msg.actual > 25)
+            // Determine severity based on sentence length (word count)
+            // retext-readability puts the actual sentence text in msg.actual
+            // Hemingway Editor approach: 
+            // - 14-21 words and hard = "hard to read" (yellow)
+            // - 22+ words and hard = "very hard to read" (red)
+            const sentenceText = typeof msg.actual === 'string' ? msg.actual : text.slice(start, end)
+            const wordCount = sentenceText.split(/\s+/).filter((w: string) => w.length > 0).length
+            const isVeryHard = wordCount >= 22
             issues.push({
                 type: isVeryHard ? 'very-hard-sentence' : 'hard-sentence',
                 start,
                 end,
                 message: isVeryHard ? 'Very hard to read' : 'Hard to read',
-                suggestion: 'Try breaking this into shorter sentences'
+                suggestion: isVeryHard
+                    ? 'This sentence is very long. Try breaking it into 2-3 shorter sentences.'
+                    : 'Try breaking this into shorter sentences'
             })
         } else if (msg.source === 'retext-simplify') {
             issues.push({

@@ -605,6 +605,28 @@ export function TiptapEditor({
             .ProseMirror [data-issue-type="simpler-alternative"] {
               border-bottom: 2px solid rgb(34 197 94) !important; /* green-500 */
             }
+            
+            /* List styles - override Tailwind preflight reset */
+            .ProseMirror ul {
+              list-style-type: disc !important;
+              padding-left: 1.5rem !important;
+              margin-bottom: 1rem !important;
+            }
+            .ProseMirror ol {
+              list-style-type: decimal !important;
+              padding-left: 1.5rem !important;
+              margin-bottom: 1rem !important;
+            }
+            .ProseMirror ul li,
+            .ProseMirror ol li {
+              margin-bottom: 0.25rem;
+            }
+            .ProseMirror ul li::marker {
+              color: currentColor;
+            }
+            .ProseMirror ol li::marker {
+              color: currentColor;
+            }
           `}</style>
                 </div>
 
