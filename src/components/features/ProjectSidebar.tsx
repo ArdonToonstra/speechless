@@ -63,9 +63,9 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion }: Proj
 
     const getLogo = (occasion: string) => {
         const lower = occasion?.toLowerCase()
-        if (lower === 'roast') return '/images/branding/roast-logo.png'
-        if (lower === 'wedding') return '/images/branding/wedding-logo.png'
-        return '/images/branding/base-logo.png'
+        if (lower === 'roast') return '/images/branding/roast-logo.webp'
+        if (lower === 'wedding') return '/images/branding/wedding-logo.webp'
+        return '/images/branding/base-logo.webp'
     }
 
     const logoSrc = getLogo(occasion)

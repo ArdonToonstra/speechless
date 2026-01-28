@@ -98,7 +98,7 @@ export default async function DashboardPage() {
                     <div className="flex items-center gap-6">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                            src="/images/branding/base-logo.png"
+                            src="/images/branding/base-logo.webp"
                             alt="Toast"
                             className="h-24 w-auto object-contain"
                         />

@@ -304,7 +304,7 @@ export function TiptapEditor({
             </head>
             <body>
                 <div class="header">
-                    <img src="/images/branding/base-logo.png" alt="Toast" />
+                    <img src="/images/branding/base-logo.webp" alt="Toast" />
                 </div>
                 <div class="content">
                     ${content}

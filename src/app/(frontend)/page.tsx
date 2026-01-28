@@ -17,6 +17,12 @@ export default async function Page() {
             <div className="flex-1 flex flex-col items-center p-6 w-full">
                 {/* Hero Section */}
                 <div className="max-w-4xl w-full text-center mt-20 mb-16 relative z-10">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src="/images/branding/base-logo.webp"
+                        alt="Toast"
+                        className="h-32 md:h-40 w-auto object-contain mx-auto mb-6"
+                    />
                     <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6 text-primary tracking-tight">Toast.</h1>
                     <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-10">
                         Draft, refine, and deliver your speech with confidence. <br className="hidden md:block" />
@@ -265,16 +271,14 @@ export default async function Page() {
             <div className="w-full py-24 bg-card mt-0 border-t border-border/50 text-center px-4">
                 <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6 text-foreground">Ready to leave them speechless?</h2>
                 <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-                    Join thousands of speech-givers who turned anxiety into applause. Start your draft today.
+                    Join your fellow speech-givers who turned anxiety into applause. Start your draft today.
                 </p>
                 <div className="flex gap-4 justify-center">
                     <a href="/signup" className="px-10 py-5 bg-primary hover:opacity-90 text-primary-foreground font-bold rounded-full text-xl shadow-xl transition-all transform hover:scale-105">
                         Start Drafting Now
                     </a>
                 </div>
-                <p className="mt-6 text-sm text-muted-foreground">
-                    Free to start. No credit card required.
-                </p>
+
             </div>
         </div>
     )
