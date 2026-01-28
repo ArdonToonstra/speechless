@@ -10,6 +10,7 @@ import { useProjectLayout } from '@/components/layout/ProjectLayoutProvider'
 interface Project {
     id: number
     occasionType: string
+    speechType: 'gift' | 'occasion'
 }
 
 interface ProjectHeaderProps {
@@ -28,12 +29,11 @@ type Step = {
 export function ProjectHeader({ project }: ProjectHeaderProps) {
     const pathname = usePathname()
     const { isHeaderCollapsed, setHeaderCollapsed } = useProjectLayout()
-    const occasionType = project.occasionType || 'gift' // Default to gift if not set yet
 
-    // Determine which steps are available
-    const isStandardEvent = occasionType === 'standard'
+    // Filter out Venue and Share steps for "Speech for the Occasion"
+    const isOccasionSpeech = project.speechType === 'occasion'
 
-    const steps: Step[] = [
+    const allSteps: Step[] = [
         {
             id: 'overview',
             label: 'Overview',
@@ -61,7 +61,6 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
             href: 'location',
             icon: MapPin,
             matches: ['location'],
-            disabled: isStandardEvent,
         },
         {
             id: 'share',
@@ -69,17 +68,18 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
             href: 'invites',
             icon: Send,
             matches: ['invites'],
-            disabled: isStandardEvent,
         },
     ]
+
+    // Filter out Venue and Share for "Speech for the Occasion"
+    const steps = isOccasionSpeech
+        ? allSteps.filter(step => step.id !== 'venue' && step.id !== 'share')
+        : allSteps
 
     // Find active step index
     const activeStepIndex = steps.findIndex(step =>
         step.matches.some(match => pathname.includes(`/${match}`))
     )
-
-    // Current Step Title (for the left side)
-    const activeStep = steps[activeStepIndex] || steps[0]
 
     return (
         <header className={cn(
@@ -109,20 +109,17 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
                         const isActive = index === activeStepIndex
                         const isCompleted = index < activeStepIndex
                         const isLast = index === steps.length - 1
-                        const isDisabled = step.disabled
 
                         return (
                             <div key={step.id} className="flex items-center">
                                 <Link
-                                    href={isDisabled ? '#' : `/projects/${project.id}/${step.href}`}
+                                    href={`/projects/${project.id}/${step.href}`}
                                     className={cn(
                                         "flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-sm font-medium",
                                         isActive && "bg-primary text-primary-foreground shadow-sm",
                                         isCompleted && !isActive && "text-muted-foreground hover:text-foreground",
-                                        !isActive && !isCompleted && "text-muted-foreground/50",
-                                        isDisabled && "opacity-30 cursor-not-allowed hover:text-muted-foreground/50"
+                                        !isActive && !isCompleted && "text-muted-foreground/50"
                                     )}
-                                    aria-disabled={isDisabled}
                                 >
                                     <span className={cn(
                                         "flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold border",

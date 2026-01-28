@@ -39,11 +39,12 @@ export default async function ProjectLayout({
                     projectTitle={project.name}
                     user={session.user}
                     occasion={project.occasionType}
+                    speechType={project.speechType as 'gift' | 'occasion'}
                 />
 
                 {/* Main Content Area */}
                 <main className="flex-1 flex flex-col overflow-hidden relative">
-                    <ProjectHeader project={project as any} />
+                    <ProjectHeader project={{ ...project, speechType: project.speechType as 'gift' | 'occasion' }} />
                     {children}
                 </main>
             </div>

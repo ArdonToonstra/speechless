@@ -42,9 +42,10 @@ interface ProjectSidebarProps {
     projectTitle: string
     user: User
     occasion: string
+    speechType: 'gift' | 'occasion'
 }
 
-export function ProjectSidebar({ projectId, projectTitle, user, occasion }: ProjectSidebarProps) {
+export function ProjectSidebar({ projectId, projectTitle, user, occasion, speechType }: ProjectSidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false)
     const { isHeaderCollapsed, setHeaderCollapsed } = useProjectLayout()
     const pathname = usePathname()
@@ -124,27 +125,35 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion }: Proj
 
             {/* Navigation */}
             <nav className="flex-1 p-2 space-y-1 overflow-y-auto overflow-x-hidden">
-                {navItems.map((item) => {
-                    const isActive = pathname.includes(`/projects/${projectId}/${item.href}`)
+                {navItems
+                    .filter(item => {
+                        // Hide location and invites tabs for "Speech for the Occasion"
+                        if (speechType === 'occasion' && (item.href === 'location' || item.href === 'invites')) {
+                            return false
+                        }
+                        return true
+                    })
+                    .map((item) => {
+                        const isActive = pathname.includes(`/projects/${projectId}/${item.href}`)
 
-                    return (
-                        <Button
-                            key={item.href}
-                            variant={isActive ? "secondary" : "ghost"}
-                            className={cn(
-                                "w-full justify-start h-10 mb-1",
-                                isCollapsed ? "px-0 justify-center" : "px-3 gap-3"
-                            )}
-                            asChild
-                            title={isCollapsed ? item.label : undefined}
-                        >
-                            <Link href={`/projects/${projectId}/${item.href}`}>
-                                <item.icon className={cn("w-4 h-4 shrink-0", isActive && "text-primary")} />
-                                {!isCollapsed && <span className="truncate">{item.label}</span>}
-                            </Link>
-                        </Button>
-                    )
-                })}
+                        return (
+                            <Button
+                                key={item.href}
+                                variant={isActive ? "secondary" : "ghost"}
+                                className={cn(
+                                    "w-full justify-start h-10 mb-1",
+                                    isCollapsed ? "px-0 justify-center" : "px-3 gap-3"
+                                )}
+                                asChild
+                                title={isCollapsed ? item.label : undefined}
+                            >
+                                <Link href={`/projects/${projectId}/${item.href}`}>
+                                    <item.icon className={cn("w-4 h-4 shrink-0", isActive && "text-primary")} />
+                                    {!isCollapsed && <span className="truncate">{item.label}</span>}
+                                </Link>
+                            </Button>
+                        )
+                    })}
             </nav>
 
             {/* Footer / Toggle */}
