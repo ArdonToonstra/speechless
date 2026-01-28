@@ -35,8 +35,7 @@ const OCCASION_TYPES = [
 
 const DATE_OPTIONS = [
     { id: 'specific', label: 'Specific Date', description: 'I know when it is' },
-    { id: 'unknown', label: 'Not Yet Known', description: 'I will decide later' },
-    { id: 'help', label: 'Help Me Choose', description: 'Via Date Picker (coming soon)' },
+    { id: 'unknown', label: 'Not Yet Known', description: 'I will decide later (date picker available)' },
 ]
 
 export default function OnboardingPage() {
@@ -156,20 +155,17 @@ export default function OnboardingPage() {
     const dateStep = {
         title: "When is the Big Day?",
         description: "We'll help you track your progress.",
-        isValid: formData.dateOption === 'unknown' || formData.dateOption === 'help' || (formData.dateOption === 'specific' && !!formData.date),
+        isValid: formData.dateOption === 'unknown' || (formData.dateOption === 'specific' && !!formData.date),
         content: (
             <div className="space-y-6 mt-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
                     {DATE_OPTIONS.map((option) => (
                         <button
                             key={option.id}
                             onClick={() => updateField('dateOption', option.id)}
-                            disabled={option.id === 'help'}
                             className={`p-6 rounded-2xl border-2 text-left transition-all ${formData.dateOption === option.id
                                 ? 'border-primary bg-primary/5 shadow-md'
-                                : option.id === 'help'
-                                    ? 'border-border/20 opacity-50 cursor-not-allowed'
-                                    : 'border-border/30 hover:border-border'
+                                : 'border-border/30 hover:border-border'
                                 }`}
                         >
                             <h3 className="font-semibold text-lg text-foreground">{option.label}</h3>
@@ -292,7 +288,9 @@ export default function OnboardingPage() {
             <div className="w-full">
                 <div className="text-center mb-10">
                     <h1 className="text-4xl font-serif font-bold text-foreground mb-2">Let&apos;s Get Started</h1>
-                    <p className="text-muted-foreground">Create your speech project in {stepCount} simple steps.</p>
+                    {formData.speechType && (
+                        <p className="text-muted-foreground">Create your speech project in {stepCount} simple steps.</p>
+                    )}
                 </div>
                 <Wizard steps={steps} onComplete={handleSubmit} isSubmitting={isSubmitting} />
             </div>
