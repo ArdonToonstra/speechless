@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm'
 import { db, projects } from '@/db'
 import { getSession } from '@/actions/auth'
 import { InteractiveEditor } from '@/components/features/InteractiveEditor'
+import { StandardPageShell } from '@/components/layout/StandardPageShell'
 
 export default async function EditorPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -25,10 +26,8 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
     if (!project || project.ownerId !== session.user.id) notFound()
 
     return (
-        <div className="h-full flex flex-col">
-            <div className="flex-1 min-h-0 border-0 rounded-none bg-transparent shadow-none overflow-hidden">
-                <InteractiveEditor project={project as any} />
-            </div>
-        </div>
+        <StandardPageShell>
+            <InteractiveEditor project={project as any} />
+        </StandardPageShell>
     )
 }

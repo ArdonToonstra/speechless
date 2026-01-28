@@ -75,53 +75,7 @@ export function InteractiveEditor({ project }: { project: any }) {
     }, [])
 
     return (
-        <div className={cn("h-full flex flex-col", focusMode ? "fixed inset-0 z-50 bg-background" : "relative")}>
-            {/* Toolbar - Sticky at top */}
-            <header className={cn(
-                "border-b border-slate-200 px-8 py-5 flex items-center justify-between shrink-0 bg-white/95 backdrop-blur-sm shadow-sm z-40",
-                focusMode ? "hidden" : "flex"
-            )}>
-                {/* Left Side: Standard Title */}
-                <div className="flex items-center gap-4">
-                    <div className="p-2.5 bg-primary/10 rounded-xl hidden sm:block">
-                        <PenTool className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                        <h1 className="text-lg font-bold text-slate-900">Speech Editor</h1>
-                        <p className="text-slate-500 flex items-center gap-2 text-xs mt-0.5">
-                            {project.title || project.name}
-                            {mounted && lastSaved && <span className="text-xs opacity-60 hidden md:inline">• Saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
-                        </p>
-                    </div>
-                </div>
-
-                {/* Right Side: Editor Controls */}
-                <div className="flex gap-4 items-center">
-                    <div className="text-sm text-slate-600 hidden lg:block text-right bg-slate-50 px-4 py-2 rounded-xl border border-slate-100">
-                        <p className="font-semibold">{stats.words} <span className="font-normal text-slate-500">words</span></p>
-                    </div>
-
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setFocusMode(true)}
-                        className="gap-2 h-9 px-4 rounded-lg hover:bg-slate-100 text-slate-700"
-                    >
-                        Focus
-                    </Button>
-
-                    <Button
-                        onClick={onManualSave}
-                        disabled={saving}
-                        size="sm"
-                        className="gap-2 bg-primary hover:opacity-90 text-primary-foreground h-9 px-5 rounded-lg shadow-sm"
-                    >
-                        <Save className="w-4 h-4" />
-                        {saving ? 'Saving...' : 'Save'}
-                    </Button>
-                </div>
-            </header>
-
+        <div className={cn("flex flex-col", focusMode ? "fixed inset-0 z-50 h-full bg-background" : "relative")}>
             {/* Focus Mode Controls */}
             {focusMode && (
                 <div className="fixed top-4 right-4 z-50">
@@ -138,19 +92,63 @@ export function InteractiveEditor({ project }: { project: any }) {
 
             {/* Editor Container - Scrollable */}
             <main className={cn(
-                "flex-grow overflow-y-auto scroll-smooth",
-                focusMode ? "p-0 flex items-center justify-center bg-background" : "p-4 md:p-6 bg-muted/5"
+                "flex-grow",
+                focusMode ? "p-0 flex items-center justify-center bg-background overflow-y-auto scroll-smooth" : "p-4 md:p-6"
             )}>
                 <div className={cn(
                     "mx-auto transition-all duration-500 w-full",
                     focusMode ? "max-w-4xl" : "max-w-6xl"
                 )}>
+                    {/* Toolbar - inside max-width container to align with content */}
+                    {!focusMode && (
+                        <header className="border-b border-slate-200/50 px-4 md:px-6 py-3 flex items-center justify-between shrink-0 z-40 mb-4">
+                            {/* Left Side: Standard Title */}
+                            <div className="flex items-center gap-4">
+                                <div className="p-2.5 bg-primary/10 rounded-xl hidden sm:block">
+                                    <PenTool className="w-5 h-5 text-primary" />
+                                </div>
+                                <div>
+                                    <h1 className="text-lg font-bold text-slate-900">Speech Editor</h1>
+                                    <p className="text-slate-500 flex items-center gap-2 text-xs mt-0.5">
+                                        {mounted && lastSaved && <span className="text-xs opacity-60 hidden md:inline">Saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Right Side: Editor Controls */}
+                            <div className="flex gap-4 items-center">
+                                <div className="text-sm text-slate-600 hidden lg:block text-right bg-slate-50 px-4 py-2 rounded-xl border border-slate-100">
+                                    <p className="font-semibold">{stats.words} <span className="font-normal text-slate-500">words</span></p>
+                                </div>
+
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setFocusMode(true)}
+                                    className="gap-2 h-9 px-4 rounded-lg hover:bg-slate-100 text-slate-700"
+                                >
+                                    Focus
+                                </Button>
+
+                                <Button
+                                    onClick={onManualSave}
+                                    disabled={saving}
+                                    size="sm"
+                                    className="gap-2 bg-primary hover:opacity-90 text-primary-foreground h-9 px-5 rounded-lg shadow-sm"
+                                >
+                                    <Save className="w-4 h-4" />
+                                    {saving ? 'Saving...' : 'Save'}
+                                </Button>
+                            </div>
+                        </header>
+                    )}
+
                     {/* Single "Paper" Container */}
                     <div className={cn(
                         "transition-all duration-500",
                         focusMode
                             ? "bg-transparent border-none shadow-none"
-                            : "bg-card rounded-xl shadow-sm border border-border/50 min-h-[1100px] my-8"
+                            : "bg-card rounded-xl shadow-sm border border-border/50 min-h-[1100px]"
                     )}>
                         <TiptapEditor
                             initialContent={initialContent}

@@ -57,14 +57,14 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
         },
         {
             id: 'venue',
-            label: 'Venue',
+            label: 'Location',
             href: 'location',
             icon: MapPin,
             matches: ['location'],
         },
         {
             id: 'share',
-            label: 'Share',
+            label: 'Invites',
             href: 'invites',
             icon: Send,
             matches: ['invites'],

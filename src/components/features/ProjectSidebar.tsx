@@ -80,7 +80,7 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion, speech
         >
             {/* Header / Logo Area */}
             <div className={cn(
-                "h-20 flex items-center border-b border-border relative",
+                "h-16 flex items-center border-b border-border relative",
                 isCollapsed ? "justify-center" : "px-4 justify-center"
             )}>
                 <Link href="/dashboard" className="flex items-center justify-center w-full font-bold text-lg overflow-hidden whitespace-nowrap" title="Back to Dashboard">
@@ -90,7 +90,7 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion, speech
                             <img
                                 src={logoSrc}
                                 alt="Toast"
-                                className="h-14 w-auto object-contain"
+                                className="h-10 w-auto object-contain"
                             />
                         </div>
                     ) : (
