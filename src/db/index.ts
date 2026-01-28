@@ -5,9 +5,10 @@ import * as schema from './schema'
 const getConnectionString = () => {
     if (process.env.DATABASE_URL) return process.env.DATABASE_URL
     if (process.env.POSTGRES_URL) return process.env.POSTGRES_URL
+    if (process.env.STORAGE_DATABASE_URL) return process.env.STORAGE_DATABASE_URL
 
     if (process.env.NODE_ENV === 'production') {
-        throw new Error('DATABASE_URL or POSTGRES_URL environment variable is not defined')
+        throw new Error('DATABASE_URL, POSTGRES_URL or STORAGE_DATABASE_URL environment variable is not defined')
     }
 
     return 'postgres://postgres:postgres@localhost:5435/speechless'
