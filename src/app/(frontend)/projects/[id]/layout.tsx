@@ -26,9 +26,15 @@ export default async function ProjectLayout({
     // Fetch current project to show title/context
     const project = await db.query.projects.findFirst({
         where: eq(projects.id, projectId),
+        with: {
+            dateOptions: true // Create dependency on schema relation
+        }
     })
 
     if (!project) notFound()
+
+    const hasDateOptions = project.dateOptions && project.dateOptions.length > 0
+    const showScheduling = !project.dateKnown || hasDateOptions
 
     return (
         <ProjectLayoutProvider>
@@ -40,11 +46,15 @@ export default async function ProjectLayout({
                     user={session.user}
                     occasion={project.occasionType}
                     speechType={project.speechType as 'gift' | 'occasion'}
+                    showScheduling={showScheduling}
                 />
 
                 {/* Main Content Area */}
                 <main className="flex-1 flex flex-col overflow-hidden relative">
-                    <ProjectHeader project={{ ...project, speechType: project.speechType as 'gift' | 'occasion' }} />
+                    <ProjectHeader
+                        project={{ ...project, speechType: project.speechType as 'gift' | 'occasion' }}
+                        showScheduling={showScheduling}
+                    />
                     {children}
                 </main>
             </div>

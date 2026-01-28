@@ -15,7 +15,8 @@ import {
     ChevronLeft,
     ChevronRight,
     LogOut,
-    Home
+    Home,
+    CalendarDays
 } from 'lucide-react'
 import { useProjectLayout } from '@/components/layout/ProjectLayoutProvider'
 
@@ -33,6 +34,7 @@ const navItems = [
     { label: 'Collaborators', href: 'collaborators', icon: Users },
     { label: 'Input Gathering', href: 'input', icon: MessageSquareQuote },
     { label: 'Speech Editor', href: 'editor', icon: PenTool },
+    { label: 'Scheduling', href: 'scheduling', icon: CalendarDays },
     { label: 'Location', href: 'location', icon: MapPin },
     { label: 'Send Invites', href: 'invites', icon: Send },
 ]
@@ -43,9 +45,10 @@ interface ProjectSidebarProps {
     user: User
     occasion: string
     speechType: 'gift' | 'occasion'
+    showScheduling: boolean
 }
 
-export function ProjectSidebar({ projectId, projectTitle, user, occasion, speechType }: ProjectSidebarProps) {
+export function ProjectSidebar({ projectId, projectTitle, user, occasion, speechType, showScheduling }: ProjectSidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false)
     const { isHeaderCollapsed, setHeaderCollapsed } = useProjectLayout()
     const pathname = usePathname()
@@ -129,6 +132,10 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion, speech
                     .filter(item => {
                         // Hide location and invites tabs for "Speech for the Occasion"
                         if (speechType === 'occasion' && (item.href === 'location' || item.href === 'invites')) {
+                            return false
+                        }
+                        // Hide scheduling if not relevant
+                        if (item.href === 'scheduling' && !showScheduling) {
                             return false
                         }
                         return true

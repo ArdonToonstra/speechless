@@ -4,7 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { ChevronRight, Home, Users, PenTool, MapPin, Send, ChevronUp } from 'lucide-react'
+import { ChevronRight, Home, Users, PenTool, MapPin, Send, ChevronUp, CalendarDays } from 'lucide-react'
 import { useProjectLayout } from '@/components/layout/ProjectLayoutProvider'
 
 interface Project {
@@ -15,6 +15,7 @@ interface Project {
 
 interface ProjectHeaderProps {
     project: Project
+    showScheduling: boolean
 }
 
 type Step = {
@@ -26,7 +27,7 @@ type Step = {
     disabled?: boolean
 }
 
-export function ProjectHeader({ project }: ProjectHeaderProps) {
+export function ProjectHeader({ project, showScheduling }: ProjectHeaderProps) {
     const pathname = usePathname()
     const { isHeaderCollapsed, setHeaderCollapsed } = useProjectLayout()
 
@@ -56,6 +57,13 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
             matches: ['editor'],
         },
         {
+            id: 'scheduling',
+            label: 'Scheduling',
+            href: 'scheduling',
+            icon: CalendarDays,
+            matches: ['scheduling'],
+        },
+        {
             id: 'venue',
             label: 'Location',
             href: 'location',
@@ -72,9 +80,11 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
     ]
 
     // Filter out Venue and Share for "Speech for the Occasion"
-    const steps = isOccasionSpeech
-        ? allSteps.filter(step => step.id !== 'venue' && step.id !== 'share')
-        : allSteps
+    const steps = allSteps.filter(step => {
+        if (isOccasionSpeech && (step.id === 'venue' || step.id === 'share')) return false
+        if (step.id === 'scheduling' && !showScheduling) return false
+        return true
+    })
 
     // Find active step index
     const activeStepIndex = steps.findIndex(step =>

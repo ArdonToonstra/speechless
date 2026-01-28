@@ -15,6 +15,13 @@
       "when": 1768947470114,
       "tag": "0001_young_firebird",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769589494979,
+      "tag": "0002_deep_wonder_man",
+      "breakpoints": true
     }
   ]
 }

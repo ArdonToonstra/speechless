@@ -149,6 +149,33 @@ export const magicLinks = pgTable('magic_links', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 
+// Date options proposed by project owner for scheduling
+export const dateOptions = pgTable('date_options', {
+  id: serial('id').primaryKey(),
+  projectId: integer('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
+  proposedDate: timestamp('proposed_date').notNull(),
+  proposedTime: text('proposed_time'), // Optional time string like "18:00"
+  note: text('note'), // Owner's note about this option
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+// Responses from collaborators to date options
+export const dateResponses = pgTable('date_responses', {
+  id: serial('id').primaryKey(),
+  dateOptionId: integer('date_option_id')
+    .notNull()
+    .references(() => dateOptions.id, { onDelete: 'cascade' }),
+  guestId: integer('guest_id')
+    .notNull()
+    .references(() => guests.id, { onDelete: 'cascade' }),
+  response: text('response').notNull(), // 'yes' | 'no' | 'maybe'
+  note: text('note'), // Optional note from collaborator
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
 // ============================================================================
 // Type Definitions for JSONB columns
 // ============================================================================
@@ -194,6 +221,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   invitations: many(invitations),
   submissions: many(submissions),
   magicLinks: many(magicLinks),
+  dateOptions: many(dateOptions),
 }))
 
 export const guestsRelations = relations(guests, ({ one, many }) => ({
@@ -202,6 +230,7 @@ export const guestsRelations = relations(guests, ({ one, many }) => ({
     references: [projects.id],
   }),
   submissions: many(submissions),
+  dateResponses: many(dateResponses),
 }))
 
 export const invitationsRelations = relations(invitations, ({ one }) => ({
@@ -229,3 +258,21 @@ export const magicLinksRelations = relations(magicLinks, ({ one }) => ({
   }),
 }))
 
+export const dateOptionsRelations = relations(dateOptions, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [dateOptions.projectId],
+    references: [projects.id],
+  }),
+  responses: many(dateResponses),
+}))
+
+export const dateResponsesRelations = relations(dateResponses, ({ one }) => ({
+  dateOption: one(dateOptions, {
+    fields: [dateResponses.dateOptionId],
+    references: [dateOptions.id],
+  }),
+  guest: one(guests, {
+    fields: [dateResponses.guestId],
+    references: [guests.id],
+  }),
+}))
