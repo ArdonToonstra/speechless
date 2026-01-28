@@ -161,16 +161,21 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
                             <button
                                 type="button"
                                 className={cn(
-                                    "text-left relative rounded-2xl p-6 transition-all duration-200 border-2 select-none",
+                                    "text-center relative rounded-2xl p-6 transition-all duration-200 border-2 select-none flex flex-col items-center",
                                     speechType === 'gift'
                                         ? "border-primary bg-primary/5 shadow-md shadow-primary/5"
                                         : "border-transparent bg-slate-50 hover:bg-slate-100 hover:border-slate-200 text-slate-600"
                                 )}
                                 onClick={() => setSpeechType('gift')}
                             >
-                                <div className="font-semibold text-lg mb-2 flex items-center gap-2 text-slate-900">
-                                    <span className="text-2xl">🎁</span>
-                                    <span>Speech as a Gift</span>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src="/images/branding/toast-as-present-logo.webp"
+                                    alt="Speech as a Gift"
+                                    className="h-20 w-auto object-contain mb-3"
+                                />
+                                <div className="font-semibold text-lg mb-2 text-slate-900">
+                                    Speech as a Gift
                                 </div>
                                 <div className="text-sm text-slate-500 leading-relaxed">You are organizing the event or surprise for someone.</div>
                             </button>
@@ -178,16 +183,21 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
                             <button
                                 type="button"
                                 className={cn(
-                                    "text-left relative rounded-2xl p-6 transition-all duration-200 border-2 select-none",
+                                    "text-center relative rounded-2xl p-6 transition-all duration-200 border-2 select-none flex flex-col items-center",
                                     speechType === 'occasion'
                                         ? "border-primary bg-primary/5 shadow-md shadow-primary/5"
                                         : "border-transparent bg-slate-50 hover:bg-slate-100 hover:border-slate-200 text-slate-600"
                                 )}
                                 onClick={() => setSpeechType('occasion')}
                             >
-                                <div className="font-semibold text-lg mb-2 flex items-center gap-2 text-slate-900">
-                                    <span className="text-2xl">🎤</span>
-                                    <span>Speech for the Occasion</span>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src="/images/branding/toast-at-the-occasion-logo.webp"
+                                    alt="Speech for the Occasion"
+                                    className="h-20 w-auto object-contain mb-3"
+                                />
+                                <div className="font-semibold text-lg mb-2 text-slate-900">
+                                    Speech for the Occasion
                                 </div>
                                 <div className="text-sm text-slate-500 leading-relaxed">The location/time is set by someone else.</div>
                             </button>

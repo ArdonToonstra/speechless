@@ -9,15 +9,17 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
 const SPEECH_TYPE_OPTIONS = [
-    { 
-        id: 'gift', 
+    {
+        id: 'gift',
         label: 'Speech as a Gift',
-        description: 'You are organizing the event or surprise for someone.' 
+        description: 'You are organizing the event or surprise for someone.',
+        image: '/images/branding/toast-as-present-logo.webp'
     },
-    { 
-        id: 'occasion', 
+    {
+        id: 'occasion',
         label: 'Speech for the Occasion',
-        description: 'The location/time is set by someone else.' 
+        description: 'The location/time is set by someone else.',
+        image: '/images/branding/toast-at-the-occasion-logo.webp'
     },
 ]
 
@@ -88,18 +90,24 @@ export default function OnboardingPage() {
         description: "This helps us ask the right questions.",
         isValid: !!formData.speechType,
         content: (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 max-w-2xl mx-auto">
                 {SPEECH_TYPE_OPTIONS.map((type) => (
                     <button
                         key={type.id}
                         onClick={() => updateField('speechType', type.id)}
-                        className={`p-6 rounded-2xl border-2 text-left transition-all ${formData.speechType === type.id
-                            ? 'border-primary bg-primary/5 shadow-md'
-                            : 'border-border/30 hover:border-border'
+                        className={`p-6 rounded-2xl border-2 text-center transition-all flex flex-col items-center ${formData.speechType === type.id
+                            ? 'border-primary bg-primary/5 shadow-lg'
+                            : 'border-border/30 hover:border-border hover:shadow-md'
                             }`}
                     >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={type.image}
+                            alt={type.label}
+                            className="h-32 w-auto object-contain mb-4"
+                        />
                         <h3 className="font-semibold text-lg text-foreground">{type.label}</h3>
-                        <p className="text-sm text-muted-foreground">{type.description}</p>
+                        <p className="text-sm text-muted-foreground mt-1">{type.description}</p>
                     </button>
                 ))}
             </div>
@@ -267,12 +275,12 @@ export default function OnboardingPage() {
     // Build steps dynamically based on speech type
     const buildSteps = () => {
         const steps = [speechTypeStep, occasionStep, dateStep, contextStep]
-        
+
         // Add logistics step only for "gift" speech type
         if (formData.speechType === 'gift') {
             steps.push(logisticsStep)
         }
-        
+
         return steps
     }
 
