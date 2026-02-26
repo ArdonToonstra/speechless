@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, boolean, jsonb, integer } from 'drizzle-orm/pg-core'
+import { pgTable, text, serial, timestamp, boolean, jsonb, integer, uniqueIndex } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 
 // ============================================================================
@@ -174,7 +174,9 @@ export const dateResponses = pgTable('date_responses', {
   note: text('note'), // Optional note from collaborator
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-})
+}, (table) => [
+  uniqueIndex('date_responses_option_guest_unique').on(table.dateOptionId, table.guestId),
+])
 
 // ============================================================================
 // Type Definitions for JSONB columns

@@ -77,11 +77,6 @@ export function DateScheduler({ projectId, initialOptions }: DateSchedulerProps)
         setIsDeleting(null)
     }
 
-    // Sort options by date
-    const sortedOptions = [...options].sort((a, b) =>
-        new Date(a.proposedDate).getTime() - new Date(b.proposedDate).getTime()
-    )
-
     return (
         <div className="space-y-8">
             <Card>
@@ -152,18 +147,18 @@ export function DateScheduler({ projectId, initialOptions }: DateSchedulerProps)
                 </CardContent>
             </Card>
 
-            {sortedOptions.length > 0 && (
+            {options.length > 0 && (
                 <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Proposed Options</h3>
                     <div className="grid gap-4">
-                        {sortedOptions.map((opt) => {
+                        {options.map((opt) => {
                             const yesCount = opt.responses.filter(r => r.response === 'yes').length
                             const noCount = opt.responses.filter(r => r.response === 'no').length
                             const maybeCount = opt.responses.filter(r => r.response === 'maybe').length
 
                             // Check max votes to highlight best option
                             // Simple logic: max yes votes
-                            const isPopular = yesCount > 0 && yesCount >= Math.max(...sortedOptions.map(o => o.responses.filter(r => r.response === 'yes').length))
+                            const isPopular = yesCount > 0 && yesCount >= Math.max(...options.map(o => o.responses.filter(r => r.response === 'yes').length))
 
                             return (
                                 <Card key={opt.id} className={cn("overflow-hidden transition-all", isPopular && "border-primary/50 bg-primary/5")}>

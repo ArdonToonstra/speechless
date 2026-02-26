@@ -2,7 +2,7 @@
 
 import { eq, and } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
-import { db, dateOptions, dateResponses, guests } from '@/db'
+import { db, dateOptions, dateResponses, guests, projects } from '@/db'
 import { getSession } from './auth'
 
 // Type for date option with responses
@@ -69,10 +69,17 @@ export async function addDateOption(
     proposedDate: Date,
     proposedTime?: string,
     note?: string
-): Promise<{ success: boolean; error?: string; option?: any }> {
+): Promise<{ success: boolean; error?: string; option?: typeof dateOptions.$inferSelect }> {
     const session = await getSession()
     if (!session?.user) {
         return { success: false, error: 'Unauthorized' }
+    }
+
+    const project = await db.query.projects.findFirst({
+        where: and(eq(projects.id, projectId), eq(projects.ownerId, session.user.id))
+    })
+    if (!project) {
+        return { success: false, error: 'Forbidden' }
     }
 
     try {
@@ -99,6 +106,13 @@ export async function deleteDateOption(
     const session = await getSession()
     if (!session?.user) {
         return { success: false, error: 'Unauthorized' }
+    }
+
+    const project = await db.query.projects.findFirst({
+        where: and(eq(projects.id, projectId), eq(projects.ownerId, session.user.id))
+    })
+    if (!project) {
+        return { success: false, error: 'Forbidden' }
     }
 
     try {
@@ -137,32 +151,21 @@ export async function submitDateResponse(
             return { success: false, error: 'You are not a collaborator on this project' }
         }
 
-        // Check if response already exists
-        const existingResponse = await db.query.dateResponses.findFirst({
-            where: and(
-                eq(dateResponses.dateOptionId, dateOptionId),
-                eq(dateResponses.guestId, guest.id)
-            )
-        })
-
-        if (existingResponse) {
-            // Update existing response
-            await db.update(dateResponses)
-                .set({
-                    response,
-                    note: note || null,
-                    updatedAt: new Date()
-                })
-                .where(eq(dateResponses.id, existingResponse.id))
-        } else {
-            // Create new response
-            await db.insert(dateResponses).values({
+        await db.insert(dateResponses)
+            .values({
                 dateOptionId,
                 guestId: guest.id,
                 response,
                 note: note || null,
             })
-        }
+            .onConflictDoUpdate({
+                target: [dateResponses.dateOptionId, dateResponses.guestId],
+                set: {
+                    response,
+                    note: note || null,
+                    updatedAt: new Date(),
+                },
+            })
 
         revalidatePath(`/projects/${projectId}/scheduling`)
         return { success: true }

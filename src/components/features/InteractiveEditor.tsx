@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useCallback, useMemo } from 'react'
+import type { JSONContent } from '@tiptap/core'
 import { TiptapEditor } from '@/components/editor/TiptapEditor'
 import { Button } from '@/components/ui/button'
 import { Save, PenTool } from 'lucide-react'
@@ -30,7 +31,7 @@ export function InteractiveEditor({ project }: { project: any }) {
     // Debounce ref for auto-save
     const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 
-    const saveContent = useCallback(async (json: object) => {
+    const saveContent = useCallback(async (json: JSONContent) => {
         setSaving(true)
         try {
             await updateProjectContent(project.id, json)
@@ -42,7 +43,7 @@ export function InteractiveEditor({ project }: { project: any }) {
         }
     }, [project.id])
 
-    const handleChange = useCallback((_html: string, json: object) => {
+    const handleChange = useCallback((_html: string, json: JSONContent) => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current)
 
         timeoutRef.current = setTimeout(() => {

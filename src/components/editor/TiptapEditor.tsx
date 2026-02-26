@@ -3,6 +3,7 @@
 
 import React, { useCallback, useEffect, useState, useRef, useMemo } from 'react'
 import { useEditor, EditorContent, Editor } from '@tiptap/react'
+import type { JSONContent } from '@tiptap/core'
 import { QuestionItem } from '@/db/schema'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
@@ -42,7 +43,7 @@ import { HemingwayExtension } from './extensions/HemingwayExtension'
 
 interface TiptapEditorProps {
     initialContent?: any // Tiptap Content type (string | JSON | null)
-    onChange?: (content: string, json: object) => void
+    onChange?: (content: string, json: JSONContent) => void
     onStatsChange?: (stats: { words: number; chars: number; readTime: number }) => void
     readOnly?: boolean
     placeholder?: string

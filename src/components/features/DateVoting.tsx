@@ -18,11 +18,6 @@ interface DateVotingProps {
 }
 
 export function DateVoting({ projectId, projectName, options, userResponses }: DateVotingProps) {
-    // Sort options by date
-    const sortedOptions = [...options].sort((a, b) =>
-        new Date(a.proposedDate).getTime() - new Date(b.proposedDate).getTime()
-    )
-
     return (
         <div className="space-y-6">
             <div className="bg-white rounded-xl shadow-sm border p-6">
@@ -33,17 +28,17 @@ export function DateVoting({ projectId, projectName, options, userResponses }: D
             </div>
 
             <div className="space-y-4">
-                {sortedOptions.length === 0 ? (
+                {options.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground bg-slate-50 rounded-xl border border-dashed">
                         No dates have been proposed yet.
                     </div>
                 ) : (
-                    sortedOptions.map((opt) => (
+                    options.map((opt) => (
                         <VotingCard
                             key={opt.id}
                             option={opt}
                             projectId={projectId}
-                            initialResponse={userResponses[opt.id]?.response as any}
+                            initialResponse={userResponses[opt.id]?.response as 'yes' | 'no' | 'maybe' | undefined}
                             initialNote={userResponses[opt.id]?.note || ''}
                         />
                     ))

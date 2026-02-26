@@ -1,5 +1,6 @@
 'use server'
 
+import type { JSONContent } from '@tiptap/core'
 import { db, projects } from '@/db'
 import { eq, and, or } from 'drizzle-orm'
 import { redirect } from 'next/navigation'
@@ -49,7 +50,7 @@ export async function createProject(data: {
     }
 }
 
-export async function updateProjectContent(projectId: string, content: any) {
+export async function updateProjectContent(projectId: string, content: JSONContent) {
     const session = await requireAuth()
 
     try {
