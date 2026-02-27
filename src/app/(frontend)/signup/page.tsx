@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -42,6 +42,7 @@ export default function SignupPage() {
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
     const [password, setPassword] = useState('')
+    const loadedAt = useRef(Date.now())
     const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -53,6 +54,18 @@ export default function SignupPage() {
         const name = formData.get('name') as string
         const email = formData.get('email') as string
         const confirmPassword = formData.get('confirmPassword') as string
+
+        // Honeypot: bot filled the hidden field
+        const website = formData.get('website') as string
+        if (website) {
+            setLoading(false)
+            return
+        }
+        // Timing: form submitted too fast to be human (< 1500ms)
+        if (Date.now() - loadedAt.current < 1500) {
+            setLoading(false)
+            return
+        }
 
         // Validate password strength
         const validation = validatePasswordStrength(password)
@@ -138,6 +151,22 @@ export default function SignupPage() {
                             required
                             placeholder="Confirm your password"
                             className="bg-background"
+                        />
+                    </div>
+
+                    {/* Honeypot — positioned off-screen, invisible to real users */}
+                    <div
+                        aria-hidden="true"
+                        style={{ position: 'absolute', left: '-9999px', opacity: 0, pointerEvents: 'none' }}
+                    >
+                        <label htmlFor="website">Website</label>
+                        <input
+                            id="website"
+                            type="text"
+                            name="website"
+                            defaultValue=""
+                            autoComplete="off"
+                            tabIndex={-1}
                         />
                     </div>
 
