@@ -85,11 +85,20 @@ export async function submitQuestionnaire(data: {
 
         console.log('[submitQuestionnaire] Guest created:', guest.id)
 
-        // Filter out empty answers
+        // Build a lookup from rendered question text → question ID
+        const questionLookup = new Map<string, string>()
+        for (const q of project.questions || []) {
+            if (!q.question || !q.id) continue
+            const rendered = q.question.replace(/{speechReceiverName}/g, project.honoree || 'them')
+            questionLookup.set(rendered, q.id)
+            questionLookup.set(q.question, q.id) // raw template as fallback
+        }
+
+        // Filter out empty answers and populate questionId
         const validAnswers: AnswerItem[] = data.answers
             .filter(a => a.answer && a.answer.trim().length > 0)
             .map(a => ({
-                questionId: '', // Will be matched by question text
+                questionId: questionLookup.get(a.question) || '',
                 question: a.question,
                 answer: a.answer,
             }))

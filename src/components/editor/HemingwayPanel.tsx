@@ -1,9 +1,9 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { AnalysisResult, getIssueLabel, getIssueColor, IssueType } from '@/lib/textAnalysis'
 import { cn } from '@/lib/utils'
-import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Loader2, AlertCircle, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react'
 
 interface HemingwayPanelProps {
     result: AnalysisResult | null
@@ -67,6 +67,8 @@ function GradeLevelBadge({ level }: { level: number }) {
 }
 
 export function HemingwayPanel({ result, isAnalyzing }: HemingwayPanelProps) {
+    const [tipsOpen, setTipsOpen] = useState(false)
+
     if (isAnalyzing) {
         return (
             <div className="p-4 flex items-center justify-center h-full min-h-[200px]">
@@ -156,46 +158,24 @@ export function HemingwayPanel({ result, isAnalyzing }: HemingwayPanelProps) {
                 />
             </div>
 
-            {/* Legend */}
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-3">
-                    Color Legend
-                </h4>
-                <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2">
-                        <span className="w-4 h-4 rounded bg-red-200 dark:bg-red-900/50" />
-                        <span className="text-slate-600 dark:text-slate-400">Very hard to read</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span className="w-4 h-4 rounded bg-yellow-200 dark:bg-yellow-900/50" />
-                        <span className="text-slate-600 dark:text-slate-400">Hard to read</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span className="w-4 h-4 rounded bg-blue-200 dark:bg-blue-900/50" />
-                        <span className="text-slate-600 dark:text-slate-400">Passive voice</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span className="w-4 h-4 rounded bg-purple-200 dark:bg-purple-900/50" />
-                        <span className="text-slate-600 dark:text-slate-400">Adverbs</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span className="w-4 h-4 rounded border-b-2 border-green-500 bg-white dark:bg-slate-800" />
-                        <span className="text-slate-600 dark:text-slate-400">Simpler alternative exists</span>
-                    </div>
-                </div>
-            </div>
-
-            {/* Tips for speeches */}
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-2">
-                    Speech Tips
-                </h4>
-                <ul className="text-xs text-slate-500 dark:text-slate-400 space-y-1">
-                    <li>• Aim for Grade 6-8 for maximum audience engagement</li>
-                    <li>• Short sentences are easier to deliver with confidence</li>
-                    <li>• Active voice sounds more dynamic when spoken</li>
-                    <li>• Reading time assumes 150 words/minute for speeches</li>
-                </ul>
+            {/* Speech Tips — collapsible */}
+            <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+                <button
+                    type="button"
+                    onClick={() => setTipsOpen(!tipsOpen)}
+                    className="flex items-center justify-between w-full text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide py-1 hover:text-slate-900 dark:hover:text-white transition-colors"
+                >
+                    <span>Speech Tips</span>
+                    {tipsOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                </button>
+                {tipsOpen && (
+                    <ul className="text-xs text-slate-500 dark:text-slate-400 space-y-1 mt-2">
+                        <li>• Aim for Grade 6-8 for maximum audience engagement</li>
+                        <li>• Short sentences are easier to deliver with confidence</li>
+                        <li>• Active voice sounds more dynamic when spoken</li>
+                        <li>• Reading time assumes 150 words/minute for speeches</li>
+                    </ul>
+                )}
             </div>
         </div>
     )

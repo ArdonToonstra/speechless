@@ -30,6 +30,7 @@ export function InteractiveEditor({ project }: { project: any }) {
 
     // Debounce ref for auto-save
     const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+    const currentJsonRef = React.useRef<JSONContent | null>(null)
 
     const saveContent = useCallback(async (json: JSONContent) => {
         setSaving(true)
@@ -44,6 +45,7 @@ export function InteractiveEditor({ project }: { project: any }) {
     }, [project.id])
 
     const handleChange = useCallback((_html: string, json: JSONContent) => {
+        currentJsonRef.current = json
         if (timeoutRef.current) clearTimeout(timeoutRef.current)
 
         timeoutRef.current = setTimeout(() => {
@@ -57,14 +59,11 @@ export function InteractiveEditor({ project }: { project: any }) {
 
     // Manual save trigger
     const onManualSave = useCallback(() => {
-        // Clear any pending auto-save and trigger immediate save indicator
-        if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current)
+        if (timeoutRef.current) clearTimeout(timeoutRef.current)
+        if (currentJsonRef.current) {
+            saveContent(currentJsonRef.current)
         }
-        // The auto-save handles persistence, this provides user feedback
-        setSaving(true)
-        setTimeout(() => setSaving(false), 500)
-    }, [])
+    }, [saveContent])
 
     const [mounted, setMounted] = React.useState(false)
 
@@ -119,7 +118,12 @@ export function InteractiveEditor({ project }: { project: any }) {
                             {/* Right Side: Editor Controls */}
                             <div className="flex gap-4 items-center">
                                 <div className="text-sm text-slate-600 hidden lg:block text-right bg-slate-50 px-4 py-2 rounded-xl border border-slate-100">
-                                    <p className="font-semibold">{stats.words} <span className="font-normal text-slate-500">words</span></p>
+                                    <p className="font-semibold">
+                                        {stats.words} <span className="font-normal text-slate-500">words</span>
+                                        {stats.readTime > 0 && (
+                                            <span className="font-normal text-slate-400"> · ~{stats.readTime} min</span>
+                                        )}
+                                    </p>
                                 </div>
 
                                 <Button

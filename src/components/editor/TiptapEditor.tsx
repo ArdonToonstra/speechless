@@ -20,9 +20,8 @@ import {
     ListOrdered,
     Sparkles,
     FileText,
-    BookOpen,
     MessageSquare,
-    ChevronRight,
+    ChevronDown,
     Download
 } from 'lucide-react'
 import {
@@ -32,10 +31,8 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-    DropdownMenuSub,
-    DropdownMenuSubTrigger,
-    DropdownMenuSubContent
 } from '@/components/ui/dropdown-menu'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { SPEECH_TEMPLATES } from './templates'
 import { HemingwayPanel } from './HemingwayPanel'
 import { analyzeText, AnalysisResult } from '@/lib/textAnalysis'
@@ -74,11 +71,11 @@ const ButtonBase = React.forwardRef<
         }}
         title={label}
         className={cn(
-            "p-2 rounded w-8 h-8 flex items-center justify-center transition-colors",
-            variant === 'accent' && active && "bg-amber-500 text-white",
-            variant === 'accent' && !active && "text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/30",
-            variant === 'default' && active && "bg-primary text-primary-foreground",
-            variant === 'default' && !active && "text-foreground hover:bg-muted/30",
+            "p-1.5 rounded-md w-8 h-8 flex items-center justify-center transition-colors duration-100",
+            variant === 'accent' && active && "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
+            variant === 'accent' && !active && "text-muted-foreground hover:text-foreground hover:bg-muted/60",
+            variant === 'default' && active && "bg-primary/10 text-primary",
+            variant === 'default' && !active && "text-muted-foreground hover:text-foreground hover:bg-muted/60",
             className
         )}
         {...props}
@@ -107,7 +104,8 @@ export function TiptapEditor({
     const groupedAnswers = useMemo(() => {
         if (!questions?.length || !submissions?.length) return []
 
-        const renderQuestion = (text: string) => {
+        const renderQuestion = (text: string | undefined | null) => {
+            if (!text) return ''
             return text.replace(/{speechReceiverName}/g, speechReceiverName || 'them')
         }
 
@@ -119,9 +117,11 @@ export function TiptapEditor({
                 if (!submission.answers) return
 
                 const matchingAnswer = submission.answers.find((a: any) => {
+                    if (a.questionId && q.id) return a.questionId === q.id
+                    // fallback: text match for legacy submissions without questionId
                     return a.question === questionText ||
                         a.question === q.question ||
-                        a.question.replace(/{speechReceiverName}/g, speechReceiverName || 'them') === questionText
+                        (a.question && a.question.replace(/{speechReceiverName}/g, speechReceiverName || 'them') === questionText)
                 })
 
                 if (matchingAnswer && matchingAnswer.answer && matchingAnswer.answer.trim()) {
@@ -374,10 +374,10 @@ export function TiptapEditor({
         <div className="relative w-full flex flex-col">
             {/* Toolbar */}
             {!readOnly && (
-                <div className="flex gap-2 p-3 border-b border-border bg-card items-center flex-wrap justify-between">
-                    <div className="flex gap-2 items-center flex-wrap">
-                        {/* Heading buttons */}
-                        <div className="flex gap-1">
+                <div className="flex gap-2 px-3 py-2 border-b border-border/50 bg-background/95 backdrop-blur-sm items-center justify-between sticky top-0 z-10">
+                    <div className="flex gap-2 items-center">
+                        {/* Headings group */}
+                        <div className="flex items-center gap-0.5 bg-muted/40 rounded-lg p-0.5">
                             <ButtonBase
                                 active={editor.isActive('heading', { level: 1 })}
                                 onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
@@ -396,10 +396,8 @@ export function TiptapEditor({
                             </ButtonBase>
                         </div>
 
-                        <div className="w-px h-6 bg-border mx-2" />
-
-                        {/* Text formatting */}
-                        <div className="flex gap-1">
+                        {/* Formatting group */}
+                        <div className="flex items-center gap-0.5 bg-muted/40 rounded-lg p-0.5">
                             <ButtonBase
                                 active={editor.isActive('bold')}
                                 onClick={() => editor.chain().focus().toggleBold().run()}
@@ -426,10 +424,8 @@ export function TiptapEditor({
                             </ButtonBase>
                         </div>
 
-                        <div className="w-px h-6 bg-border mx-2" />
-
-                        {/* Lists */}
-                        <div className="flex gap-1">
+                        {/* Lists group */}
+                        <div className="flex items-center gap-0.5 bg-muted/40 rounded-lg p-0.5">
                             <ButtonBase
                                 active={editor.isActive('bulletList')}
                                 onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -448,88 +444,96 @@ export function TiptapEditor({
                             </ButtonBase>
                         </div>
 
-                        <div className="w-px h-6 bg-border mx-2" />
-
-                        {/* Templates & Library */}
-                        <div className="flex gap-1">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <ButtonBase
-                                        active={false}
-                                        onClick={() => { }}
-                                        label="Insert Template"
+                        {/* Templates */}
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button
+                                    type="button"
+                                    className="flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors duration-100"
+                                >
+                                    <FileText className="w-3.5 h-3.5" />
+                                    Templates
+                                    <ChevronDown className="w-2.5 h-2.5 opacity-50" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start">
+                                <DropdownMenuLabel>Speech Templates</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {SPEECH_TEMPLATES.map((template) => (
+                                    <DropdownMenuItem
+                                        key={template.id}
+                                        onClick={() => {
+                                            editor.chain().focus().insertContent(template.content).run()
+                                        }}
                                     >
-                                        <FileText className="w-4 h-4" />
-                                    </ButtonBase>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start">
-                                    <DropdownMenuLabel>Speech Templates</DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    {SPEECH_TEMPLATES.map((template) => (
-                                        <DropdownMenuItem
-                                            key={template.id}
-                                            onClick={() => {
-                                                editor.chain().focus('end').insertContent(template.content).run()
-                                            }}
-                                        >
-                                            {template.label}
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <ButtonBase
-                                        active={false}
-                                        onClick={() => { }}
-                                        label="Content Library"
-                                    >
-                                        <BookOpen className="w-4 h-4" />
-                                    </ButtonBase>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start">
-                                    <DropdownMenuLabel>Helpful Resources</DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={() => window.open('https://coveteur.com/how-to-write-a-good-wedding-speech', '_blank')}>
-                                        How to Write a Good Wedding Speech
+                                        {template.label}
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => window.open('https://www.oprahdaily.com/life/health/a64041503/how-to-write-a-speech/', '_blank')}>
-                                        Oprah Daily: How to Write a Speech
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-
-                        <div className="w-px h-6 bg-border mx-2" />
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
 
                         {/* Export */}
-                        <div className="flex gap-1">
-                            <ButtonBase
-                                active={false}
-                                onClick={handleExportPdf}
-                                label="Export as PDF"
-                            >
-                                <Download className="w-4 h-4" />
-                            </ButtonBase>
-                        </div>
+                        <button
+                            type="button"
+                            onClick={handleExportPdf}
+                            title="Export as PDF"
+                            className="flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors duration-100"
+                        >
+                            <Download className="w-3.5 h-3.5" />
+                            Export
+                        </button>
                     </div>
 
-                    {/* Hemingway toggle */}
-                    <div className="flex gap-1 items-center">
-                        <ButtonBase
-                            active={hemingwayEnabled}
-                            onClick={toggleHemingway}
-                            label="Writing Assistant"
-                            variant="accent"
-                        >
-                            <Sparkles className="w-4 h-4" />
-                        </ButtonBase>
-                        {hemingwayEnabled && (
-                            <span className="text-xs text-amber-600 dark:text-amber-400 font-medium ml-1 hidden sm:inline">
-                                Writing Assistant
-                            </span>
+                    {/* Right side: Answers + Writing Assistant */}
+                    <div className="flex gap-2 items-center">
+                        {/* Answers Popover */}
+                        {groupedAnswers.length > 0 && (
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <button
+                                        type="button"
+                                        onMouseDown={(e) => e.preventDefault()}
+                                        className="flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium text-primary/80 hover:text-primary hover:bg-primary/10 transition-colors duration-100"
+                                    >
+                                        <MessageSquare className="w-3.5 h-3.5" />
+                                        Inspiration
+                                        <span className="bg-primary/15 text-primary text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none">
+                                            {groupedAnswers.reduce((n, g) => n + g.answers.length, 0)}
+                                        </span>
+                                    </button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-96 max-h-[28rem] overflow-y-auto p-4 space-y-4" align="end">
+                                    <h3 className="font-semibold text-sm text-slate-900 dark:text-white">Inspiration from collaborators</h3>
+                                    {groupedAnswers.map((group, i) => (
+                                        <div key={i} className="space-y-2">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{group.question}</p>
+                                            {group.answers.map((a, j) => (
+                                                <div key={j} className="text-sm bg-muted/40 rounded-md p-2.5 border-l-2 border-primary/40">
+                                                    <p className="text-slate-800 dark:text-slate-200 leading-relaxed">"{a.answer}"</p>
+                                                    <p className="text-xs text-muted-foreground mt-1">— {a.submitterName}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ))}
+                                </PopoverContent>
+                            </Popover>
                         )}
+
+                        {/* Writing Assistant pill */}
+                        <button
+                            type="button"
+                            onClick={toggleHemingway}
+                            title="Writing Assistant"
+                            className={cn(
+                                "flex items-center gap-1.5 h-7 px-3 rounded-full text-xs font-medium transition-all duration-150",
+                                hemingwayEnabled
+                                    ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 ring-1 ring-amber-200/70 dark:ring-amber-700/40"
+                                    : "bg-muted/40 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                            )}
+                        >
+                            <Sparkles className="w-3.5 h-3.5" />
+                            Writing
+                        </button>
                     </div>
                 </div>
             )}

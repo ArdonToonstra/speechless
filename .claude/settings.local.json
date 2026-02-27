@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(head -100 '/c/git/ArdonToonstra/speechless/src/app/\\(frontend\\)/globals.css')"
+    ]
+  }
+}
