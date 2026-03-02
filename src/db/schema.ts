@@ -85,6 +85,7 @@ export const projects = pgTable('projects', {
   questionnaireIntro: text('questionnaire_intro'),
   emailTemplates: jsonb('email_templates').$type<EmailTemplates>(),
   locationSettings: jsonb('location_settings').$type<LocationSettings>(),
+  progressChecks: jsonb('progress_checks').$type<string[]>().default([]),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })

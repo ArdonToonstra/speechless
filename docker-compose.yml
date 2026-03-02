@@ -1,23 +1,6 @@
 version: '3'
 
 services:
-  payload:
-    image: node:20-alpine
-    ports:
-      - '3001:3000'
-    volumes:
-      - .:/home/node/app
-      - node_modules:/home/node/app/node_modules
-    working_dir: /home/node/app/
-    command: sh -c "corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm dev"
-    depends_on:
-      - postgres
-    env_file:
-      - .env
-    environment:
-      - DATABASE_URI=postgres://postgres:postgres@postgres:5432/speechless
-      - PAYLOAD_SECRET=${PAYLOAD_SECRET}
-
   postgres:
     restart: always
     image: postgres:16
@@ -32,4 +15,3 @@ services:
 
 volumes:
   pgdata:
-  node_modules:

@@ -88,10 +88,11 @@ export async function submitQuestionnaire(data: {
         // Build a lookup from rendered question text → question ID
         const questionLookup = new Map<string, string>()
         for (const q of project.questions || []) {
-            if (!q.question || !q.id) continue
-            const rendered = q.question.replace(/{speechReceiverName}/g, project.honoree || 'them')
+            const qText = q.question || (q as any).text  // support both schema field names
+            if (!qText || !q.id) continue
+            const rendered = qText.replace(/{speechReceiverName}/g, project.honoree || 'them')
             questionLookup.set(rendered, q.id)
-            questionLookup.set(q.question, q.id) // raw template as fallback
+            questionLookup.set(qText, q.id) // raw template as fallback
         }
 
         // Filter out empty answers and populate questionId

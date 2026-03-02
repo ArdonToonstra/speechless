@@ -7,18 +7,18 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
     LayoutDashboard,
+    Activity,
     Users,
-    MessageSquareQuote,
+    ClipboardList,
+    Inbox,
     PenTool,
     MapPin,
     Send,
     ChevronLeft,
     ChevronRight,
-    LogOut,
     Home,
     CalendarDays
 } from 'lucide-react'
-import { useProjectLayout } from '@/components/layout/ProjectLayoutProvider'
 
 interface User {
     id: string
@@ -26,13 +26,14 @@ interface User {
     email: string
     image?: string | null
 }
-import { ChevronDown } from 'lucide-react'
 
 // Define the navigation items
 const navItems = [
     { label: 'Overview', href: 'overview', icon: LayoutDashboard },
+    { label: 'Progress', href: 'progress', icon: Activity },
     { label: 'Collaborators', href: 'collaborators', icon: Users },
-    { label: 'Input Gathering', href: 'input', icon: MessageSquareQuote },
+    { label: 'Questionnaire', href: 'questionnaire', icon: ClipboardList },
+    { label: 'Submissions', href: 'submissions', icon: Inbox },
     { label: 'Speech Editor', href: 'editor', icon: PenTool },
     { label: 'Scheduling', href: 'scheduling', icon: CalendarDays },
     { label: 'Location', href: 'location', icon: MapPin },
@@ -50,7 +51,6 @@ interface ProjectSidebarProps {
 
 export function ProjectSidebar({ projectId, projectTitle, user, occasion, speechType, showScheduling }: ProjectSidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false)
-    const { isHeaderCollapsed, setHeaderCollapsed } = useProjectLayout()
     const pathname = usePathname()
 
     // Optional: Persist collapse state
@@ -83,7 +83,7 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion, speech
         >
             {/* Header / Logo Area */}
             <div className={cn(
-                "h-16 flex items-center border-b border-border relative",
+                "h-16 flex items-center border-b border-border",
                 isCollapsed ? "justify-center" : "px-4 justify-center"
             )}>
                 <Link href="/dashboard" className="flex items-center justify-center w-full font-bold text-lg overflow-hidden whitespace-nowrap" title="Back to Dashboard">
@@ -100,22 +100,6 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion, speech
                         <Home className="w-5 h-5 text-primary" />
                     )}
                 </Link>
-
-                {/* Header Expand Trigger (subtle point down) */}
-                {isHeaderCollapsed && (
-                    <button
-                        onClick={() => setHeaderCollapsed(false)}
-                        className={cn(
-                            "absolute bg-primary text-white rounded-full p-0.5 shadow-lg hover:scale-110 transition-transform",
-                            isCollapsed
-                                ? "top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2"
-                                : "top-1/2 -translate-y-1/2 right-4"
-                        )}
-                        title="Show Header"
-                    >
-                        <ChevronDown className="w-3 h-3" />
-                    </button>
-                )}
             </div>
 
             {/* Project Context (Only visible when expanded) */}

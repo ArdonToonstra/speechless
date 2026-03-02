@@ -110,7 +110,8 @@ export function TiptapEditor({
         }
 
         return questions.map((q) => {
-            const questionText = renderQuestion(q.question)
+            const qText = q.question || (q as any).text  // support both schema field names
+            const questionText = renderQuestion(qText)
             const answersForQuestion: { answer: string; submitterName: string }[] = []
 
             submissions.forEach((submission) => {
@@ -120,7 +121,7 @@ export function TiptapEditor({
                     if (a.questionId && q.id) return a.questionId === q.id
                     // fallback: text match for legacy submissions without questionId
                     return a.question === questionText ||
-                        a.question === q.question ||
+                        a.question === qText ||
                         (a.question && a.question.replace(/{speechReceiverName}/g, speechReceiverName || 'them') === questionText)
                 })
 
@@ -374,7 +375,7 @@ export function TiptapEditor({
         <div className="relative w-full flex flex-col">
             {/* Toolbar */}
             {!readOnly && (
-                <div className="flex gap-2 px-3 py-2 border-b border-border/50 bg-background/95 backdrop-blur-sm items-center justify-between sticky top-0 z-10">
+                <div className="flex gap-2 px-3 py-2 border-b border-border/50 bg-background/95 backdrop-blur-sm items-center justify-between sticky top-0 z-10 rounded-t-xl">
                     <div className="flex gap-2 items-center">
                         {/* Headings group */}
                         <div className="flex items-center gap-0.5 bg-muted/40 rounded-lg p-0.5">

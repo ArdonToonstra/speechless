@@ -4,8 +4,6 @@ import { eq } from 'drizzle-orm'
 import { db, projects } from '@/db'
 import { getSession } from '@/actions/auth'
 import { ProjectSidebar } from '@/components/features/ProjectSidebar'
-import { ProjectHeader } from '@/components/features/ProjectHeader'
-import { ProjectLayoutProvider } from '@/components/layout/ProjectLayoutProvider'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,7 +25,7 @@ export default async function ProjectLayout({
     const project = await db.query.projects.findFirst({
         where: eq(projects.id, projectId),
         with: {
-            dateOptions: true // Create dependency on schema relation
+            dateOptions: true
         }
     })
 
@@ -37,27 +35,19 @@ export default async function ProjectLayout({
     const showScheduling = !project.dateKnown || hasDateOptions
 
     return (
-        <ProjectLayoutProvider>
-            <div className="flex h-screen bg-background overflow-hidden">
-                {/* Collapsible Sidebar */}
-                <ProjectSidebar
-                    projectId={project.id}
-                    projectTitle={project.name}
-                    user={session.user}
-                    occasion={project.occasionType}
-                    speechType={project.speechType as 'gift' | 'occasion'}
-                    showScheduling={showScheduling}
-                />
+        <div className="flex h-screen bg-background overflow-hidden">
+            <ProjectSidebar
+                projectId={project.id}
+                projectTitle={project.name}
+                user={session.user}
+                occasion={project.occasionType}
+                speechType={project.speechType as 'gift' | 'occasion'}
+                showScheduling={showScheduling}
+            />
 
-                {/* Main Content Area */}
-                <main className="flex-1 flex flex-col overflow-hidden relative">
-                    <ProjectHeader
-                        project={{ ...project, speechType: project.speechType as 'gift' | 'occasion' }}
-                        showScheduling={showScheduling}
-                    />
-                    {children}
-                </main>
-            </div>
-        </ProjectLayoutProvider>
+            <main className="flex-1 flex flex-col overflow-hidden relative">
+                {children}
+            </main>
+        </div>
     )
 }
