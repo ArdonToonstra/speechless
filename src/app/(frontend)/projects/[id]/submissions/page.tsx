@@ -1,8 +1,8 @@
 import React from 'react'
 import { notFound, redirect } from 'next/navigation'
-import { eq, desc } from 'drizzle-orm'
+import { eq, desc, asc } from 'drizzle-orm'
 import { Inbox } from 'lucide-react'
-import { db, projects, submissions } from '@/db'
+import { db, projects, submissions, comments } from '@/db'
 import { getSession } from '@/actions/auth'
 import { SubmissionsList } from '@/components/features/SubmissionsList'
 import { AnswersByQuestion } from '@/components/features/AnswersByQuestion'
@@ -27,6 +27,7 @@ export default async function SubmissionsPage({ params }: { params: Promise<{ id
     const projectSubmissions = await db.query.submissions.findMany({
         where: eq(submissions.projectId, projectId),
         orderBy: [desc(submissions.createdAt)],
+        with: { comments: { orderBy: [asc(comments.createdAt)] } },
     })
 
     const rawQuestions = (project.questions || []) as Array<{ text?: string; question?: string }>
@@ -74,6 +75,8 @@ export default async function SubmissionsPage({ params }: { params: Promise<{ id
                         <SubmissionsList
                             submissions={projectSubmissions as any}
                             project={project as any}
+                            projectId={projectId}
+                            authorName={session.user.name}
                         />
                     </TabsContent>
                 </Tabs>

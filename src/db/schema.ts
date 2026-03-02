@@ -179,6 +179,25 @@ export const dateResponses = pgTable('date_responses', {
   uniqueIndex('date_responses_option_guest_unique').on(table.dateOptionId, table.guestId),
 ])
 
+export const comments = pgTable('comments', {
+  id: serial('id').primaryKey(),
+  projectId: integer('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
+  submissionId: integer('submission_id')
+    .notNull()
+    .references(() => submissions.id, { onDelete: 'cascade' }),
+  parentId: integer('parent_id'), // null = top-level; set = reply (no FK, self-reference)
+  authorId: text('author_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  authorName: text('author_name').notNull(),
+  content: text('content').notNull(),
+  resolvedAt: timestamp('resolved_at'), // null = open; set = resolved
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
 // ============================================================================
 // Type Definitions for JSONB columns
 // ============================================================================
@@ -225,6 +244,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   submissions: many(submissions),
   magicLinks: many(magicLinks),
   dateOptions: many(dateOptions),
+  comments: many(comments),
 }))
 
 export const guestsRelations = relations(guests, ({ one, many }) => ({
@@ -243,7 +263,7 @@ export const invitationsRelations = relations(invitations, ({ one }) => ({
   }),
 }))
 
-export const submissionsRelations = relations(submissions, ({ one }) => ({
+export const submissionsRelations = relations(submissions, ({ one, many }) => ({
   project: one(projects, {
     fields: [submissions.projectId],
     references: [projects.id],
@@ -251,6 +271,22 @@ export const submissionsRelations = relations(submissions, ({ one }) => ({
   guest: one(guests, {
     fields: [submissions.guestId],
     references: [guests.id],
+  }),
+  comments: many(comments),
+}))
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+  project: one(projects, {
+    fields: [comments.projectId],
+    references: [projects.id],
+  }),
+  submission: one(submissions, {
+    fields: [comments.submissionId],
+    references: [submissions.id],
+  }),
+  author: one(user, {
+    fields: [comments.authorId],
+    references: [user.id],
   }),
 }))
 

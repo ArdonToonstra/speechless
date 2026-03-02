@@ -3,8 +3,9 @@
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { MessageSquare, User, Calendar } from 'lucide-react'
+import { MessageSquare, Calendar } from 'lucide-react'
 import { format } from 'date-fns'
+import { CommentThread, type CommentData } from './CommentThread'
 
 interface AnswerItem {
     question: string
@@ -16,6 +17,7 @@ interface Submission {
     submitterName: string
     answers: AnswerItem[] | null
     createdAt: Date | null
+    comments: CommentData[]
 }
 
 interface Project {
@@ -26,9 +28,11 @@ interface Project {
 interface SubmissionsListProps {
     submissions: Submission[]
     project: Project
+    projectId: number
+    authorName: string
 }
 
-export function SubmissionsList({ submissions, project }: SubmissionsListProps) {
+export function SubmissionsList({ submissions, project, projectId, authorName }: SubmissionsListProps) {
     if (submissions.length === 0) {
         return (
             <div className="bg-muted/30 border border-dashed rounded-lg p-12 text-center">
@@ -96,6 +100,12 @@ export function SubmissionsList({ submissions, project }: SubmissionsListProps) 
                                 <p className="text-sm text-slate-400 italic text-center py-4">No answers provided</p>
                             )}
                         </CardContent>
+                        <CommentThread
+                            submissionId={submission.id}
+                            projectId={projectId}
+                            authorName={authorName}
+                            initialComments={submission.comments}
+                        />
                     </Card>
                 ))}
             </div>
