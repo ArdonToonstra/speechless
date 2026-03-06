@@ -234,6 +234,10 @@ export default async function DashboardPage() {
                         </Link>
                     </div>
                 )}
+                <div className="mt-12 flex gap-6 justify-center text-sm text-muted-foreground/60">
+                    <Link href="/privacy" className="hover:text-muted-foreground transition-colors">Privacy</Link>
+                    <Link href="/terms" className="hover:text-muted-foreground transition-colors">Terms</Link>
+                </div>
             </div>
         </div>
     )

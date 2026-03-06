@@ -14,6 +14,8 @@ export const user = pgTable('user', {
   image: text('image'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  lastLoginAt: timestamp('last_login_at'),
+  deletionWarningAt: timestamp('deletion_warning_at'),
 })
 
 export const session = pgTable('session', {

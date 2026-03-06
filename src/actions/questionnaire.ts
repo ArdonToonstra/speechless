@@ -2,6 +2,7 @@
 
 import { db, projects, guests, submissions } from '@/db'
 import { eq, and } from 'drizzle-orm'
+import { getSession } from './auth'
 import { revalidatePath } from 'next/cache'
 import { requireAuth } from './auth'
 import type { QuestionItem, AnswerItem } from '@/db/schema'
@@ -119,6 +120,73 @@ export async function submitQuestionnaire(data: {
         return { success: true, submissionId: submission.id }
     } catch (error) {
         console.error('[submitQuestionnaire] Error:', error)
+        return { error: 'Failed to submit questionnaire' }
+    }
+}
+
+export async function submitQuestionnaireAsUser(
+    projectId: number,
+    answers: { question: string; answer: string }[]
+) {
+    const session = await getSession()
+    if (!session?.user) return { error: 'Not authenticated' }
+
+    try {
+        const project = await db.query.projects.findFirst({
+            where: eq(projects.id, projectId),
+        })
+
+        if (!project) return { error: 'Project not found' }
+
+        // Find or create a guest record for this user on the project
+        let guest = await db.query.guests.findFirst({
+            where: and(
+                eq(guests.projectId, projectId),
+                eq(guests.email, session.user.email)
+            ),
+        })
+
+        if (!guest) {
+            const [created] = await db.insert(guests).values({
+                email: session.user.email,
+                name: session.user.name,
+                projectId,
+                role: 'collaborator',
+                status: 'accepted',
+            }).returning()
+            guest = created
+        }
+
+        // Build lookup from rendered question text → question ID
+        const questionLookup = new Map<string, string>()
+        for (const q of project.questions || []) {
+            const qText = q.question || (q as any).text
+            if (!qText || !q.id) continue
+            const rendered = qText.replace(/{speechReceiverName}/g, project.honoree || 'them')
+            questionLookup.set(rendered, q.id)
+            questionLookup.set(qText, q.id)
+        }
+
+        const validAnswers: AnswerItem[] = answers
+            .filter(a => a.answer && a.answer.trim().length > 0)
+            .map(a => ({
+                questionId: questionLookup.get(a.question) || '',
+                question: a.question,
+                answer: a.answer,
+            }))
+
+        const [submission] = await db.insert(submissions).values({
+            projectId,
+            guestId: guest.id,
+            submitterName: session.user.name,
+            answers: validAnswers,
+        }).returning()
+
+        revalidatePath(`/projects/${projectId}/submissions`)
+        revalidatePath(`/projects/${projectId}/questionnaire`)
+        return { success: true, submissionId: submission.id }
+    } catch (error) {
+        console.error('[submitQuestionnaireAsUser] Error:', error)
         return { error: 'Failed to submit questionnaire' }
     }
 }

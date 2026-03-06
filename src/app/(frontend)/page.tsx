@@ -279,6 +279,11 @@ export default async function Page() {
                     </a>
                 </div>
 
+                <div className="mt-12 flex gap-6 justify-center text-sm text-muted-foreground/60">
+                    <a href="/privacy" className="hover:text-muted-foreground transition-colors">Privacy</a>
+                    <a href="/terms" className="hover:text-muted-foreground transition-colors">Terms</a>
+                </div>
+
             </div>
         </div>
     )

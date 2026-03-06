@@ -48,3 +48,10 @@ next-env.d.ts
 .env
 
 /media
+
+# PWA generated files
+/public/sw.js
+/public/workbox-*.js
+/public/worker-*.js
+/public/sw.js.map
+/public/workbox-*.js.map

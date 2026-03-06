@@ -121,6 +121,58 @@ export async function sendPasswordResetEmail({ to, resetUrl }: SendPasswordReset
     }
 }
 
+type SendDeletionWarningEmailProps = {
+    to: string
+    name: string
+}
+
+export async function sendDeletionWarningEmail({ to, name }: SendDeletionWarningEmailProps) {
+    if (process.env.NODE_ENV !== 'production' && !hasValidKeys) {
+        console.log('[EMAIL] Dev mode - Skipping deletion warning email to:', to)
+        return { success: true, devMode: true }
+    }
+
+    if (!mailjet) {
+        throw new Error('Email service not configured - missing API keys')
+    }
+
+    console.log('[EMAIL] Sending deletion warning email to:', to)
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detoast.nl'
+    try {
+        const request = mailjet.post('send', { version: 'v3.1' }).request({
+            Messages: [
+                {
+                    From: {
+                        Email: 'noreply@detoast.nl',
+                        Name: 'Toast',
+                    },
+                    To: [{ Email: to }],
+                    Subject: 'Your Toast account will be deleted soon',
+                    TextPart: `Hi ${name},\n\nYour Toast account has been inactive for 5 months. If we don't see you log in within the next month, your account and all associated data will be permanently deleted.\n\nTo keep your account, simply log in at ${appUrl}/login.\n\nIf you no longer need your account, no action is required.\n\nThe Toast Team`,
+                    HTMLPart: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #333;">Your account will be deleted soon</h2>
+                <p>Hi ${name},</p>
+                <p>Your Toast account has been inactive for <strong>5 months</strong>. If we don't see you log in within the next month, your account and all associated data will be <strong>permanently deleted</strong>.</p>
+                <p style="margin: 24px 0;">
+                    <a href="${appUrl}/login" style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">
+                        Log in to keep my account
+                    </a>
+                </p>
+                <p style="color: #666; font-size: 14px;">If you no longer need your account, no action is required — it will be automatically removed after 6 months of inactivity.</p>
+            </div>
+          `,
+                },
+            ],
+        })
+        const result = await request
+        return result.body
+    } catch (error) {
+        console.error('Error sending deletion warning email:', error)
+        throw new Error('Failed to send deletion warning email')
+    }
+}
+
 type SendEmailChangeVerificationProps = {
     to: string
     code: string

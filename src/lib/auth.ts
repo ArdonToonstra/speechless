@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth'
 import { emailOTP } from 'better-auth/plugins'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { eq } from 'drizzle-orm'
 import { db } from '@/db'
 import * as schema from '@/db/schema'
 import { sendVerificationEmail, sendPasswordResetEmail, sendEmailChangeVerification } from '@/lib/email'
@@ -37,6 +38,17 @@ export const auth = betterAuth({
   trustedOrigins: [
     process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
   ],
+  databaseHooks: {
+    session: {
+      create: {
+        after: async (session) => {
+          await db.update(schema.user)
+            .set({ lastLoginAt: new Date(), deletionWarningAt: null })
+            .where(eq(schema.user.id, session.userId))
+        },
+      },
+    },
+  },
   plugins: [
     emailOTP({
       async sendVerificationOTP({ email, otp }) {

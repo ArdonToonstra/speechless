@@ -49,6 +49,15 @@ export default function PrivacyPage() {
                     </p>
 
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">
+                        Inactive Accounts
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6">
+                        To keep our service clean, accounts that have been inactive for 5 months will receive a warning
+                        email. If the account owner does not log in within 1 month of that warning, the account and all
+                        associated data will be permanently deleted. You can always log in to reset the inactivity clock.
+                    </p>
+
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">
                         Data Storage
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400 mb-6">
