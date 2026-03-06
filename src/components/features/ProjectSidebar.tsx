@@ -1,10 +1,10 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link, usePathname } from '@/i18n/navigation'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { useTranslations } from 'next-intl'
 import {
     LayoutDashboard,
     Activity,
@@ -28,19 +28,6 @@ interface User {
     image?: string | null
 }
 
-// Define the navigation items
-const navItems = [
-    { label: 'Overview', href: 'overview', icon: LayoutDashboard },
-    { label: 'Progress', href: 'progress', icon: Activity },
-    { label: 'Collaborators', href: 'collaborators', icon: Users },
-    { label: 'Questionnaire', href: 'questionnaire', icon: ClipboardList },
-    { label: 'Submissions', href: 'submissions', icon: Inbox },
-    { label: 'Speech Editor', href: 'editor', icon: PenTool },
-    { label: 'Scheduling', href: 'scheduling', icon: CalendarDays },
-    { label: 'Location', href: 'location', icon: MapPin },
-    { label: 'Send Invites', href: 'invites', icon: Send },
-]
-
 interface ProjectSidebarProps {
     projectId: number
     projectTitle: string
@@ -54,6 +41,20 @@ interface ProjectSidebarProps {
 export function ProjectSidebar({ projectId, projectTitle, user, occasion, speechType, showScheduling, hasFeedback }: ProjectSidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false)
     const pathname = usePathname()
+    const t = useTranslations('nav')
+    const tCommon = useTranslations('common')
+
+    const navItems = [
+        { label: t('overview'), href: 'overview', icon: LayoutDashboard },
+        { label: t('progress'), href: 'progress', icon: Activity },
+        { label: t('collaborators'), href: 'collaborators', icon: Users },
+        { label: t('questionnaire'), href: 'questionnaire', icon: ClipboardList },
+        { label: t('submissions'), href: 'submissions', icon: Inbox },
+        { label: t('editor'), href: 'editor', icon: PenTool },
+        { label: t('scheduling'), href: 'scheduling', icon: CalendarDays },
+        { label: t('location'), href: 'location', icon: MapPin },
+        { label: t('invites'), href: 'invites', icon: Send },
+    ]
 
     // Optional: Persist collapse state
     useEffect(() => {
@@ -88,7 +89,7 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion, speech
                 "h-16 flex items-center border-b border-border",
                 isCollapsed ? "justify-center" : "px-4 justify-center"
             )}>
-                <Link href="/dashboard" className="flex items-center justify-center w-full font-bold text-lg overflow-hidden whitespace-nowrap" title="Back to Dashboard">
+                <Link href="/dashboard" className="flex items-center justify-center w-full font-bold text-lg overflow-hidden whitespace-nowrap" title={t('backToDashboard')}>
                     {!isCollapsed ? (
                         <div className="relative w-full flex items-center justify-center">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -107,7 +108,7 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion, speech
             {/* Project Context (Only visible when expanded) */}
             {!isCollapsed && (
                 <div className="px-4 py-3 animate-in fade-in slide-in-from-left-2 duration-300">
-                    <p className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider mb-1">Project</p>
+                    <p className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider mb-1">{t('project')}</p>
                     <p className="font-semibold truncate text-sm" title={projectTitle}>{projectTitle}</p>
                 </div>
             )}
@@ -155,7 +156,7 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion, speech
                 {/* Feedback link */}
                 <Link
                     href="/feedback"
-                    title={isCollapsed ? (hasFeedback ? 'Feedback (done)' : 'Share Feedback') : undefined}
+                    title={isCollapsed ? (hasFeedback ? t('feedbackDone') : t('feedbackPrompt')) : undefined}
                     className={cn(
                         "flex items-center rounded-md transition-colors hover:bg-muted/50",
                         isCollapsed ? "justify-center w-full px-0 py-2" : "gap-3 px-2 py-2"
@@ -169,9 +170,9 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion, speech
                     </div>
                     {!isCollapsed && (
                         <div className="overflow-hidden">
-                            <p className="text-sm font-medium truncate">Feedback</p>
+                            <p className="text-sm font-medium truncate">{tCommon('feedback')}</p>
                             <p className="text-xs text-muted-foreground truncate opacity-70">
-                                {hasFeedback ? 'Thanks for sharing!' : 'Share your thoughts'}
+                                {hasFeedback ? t('feedbackDone') : t('feedbackPrompt')}
                             </p>
                         </div>
                     )}
@@ -186,7 +187,7 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion, speech
                             </div>
                             <div className="overflow-hidden text-left">
                                 <p className="text-sm font-medium truncate">{user.name || 'User'}</p>
-                                <p className="text-xs text-muted-foreground truncate opacity-70">Logged in</p>
+                                <p className="text-xs text-muted-foreground truncate opacity-70">{t('loggedIn')}</p>
                             </div>
                         </div>
                     </Link>
@@ -197,7 +198,7 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion, speech
                     size="icon"
                     className="w-full h-8 hover:bg-muted"
                     onClick={toggleCollapse}
-                    title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                    title={isCollapsed ? t('expandSidebar') : t('collapseSidebar')}
                 >
                     {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
                 </Button>

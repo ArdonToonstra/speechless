@@ -1,7 +1,10 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
+import { format, formatDistance, differenceInDays } from 'date-fns'
+import { enUS, nl } from 'date-fns/locale'
+import { useLocale, useTranslations } from 'next-intl'
 
 interface Project {
     id: number
@@ -34,7 +37,6 @@ interface Project {
         name?: string
     } | null
 }
-import { format, formatDistance, differenceInDays } from 'date-fns'
 
 interface ProjectCardProps {
     project: Project
@@ -69,17 +71,23 @@ function getColorForUser(identifier: string): string {
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
+    const locale = useLocale()
+    const t = useTranslations('projectCard')
+    const dateFnsLocale = locale === 'nl' ? nl : enUS
+
     const eventDate = project.occasionDate ? new Date(project.occasionDate) : null
     const daysLeft = eventDate ? differenceInDays(eventDate, new Date()) : null
 
     // Format date nicely
     const dateDisplay = !project.dateKnown
-        ? 'Date TBD'
+        ? t('dateTbd')
         : eventDate
             ? daysLeft !== null && daysLeft >= 0 && daysLeft <= 30
-                ? `${daysLeft} day${daysLeft !== 1 ? 's' : ''} away`
-                : format(eventDate, 'MMM d, yyyy')
-            : 'No date set'
+                ? daysLeft === 1
+                    ? t('daysAway', { days: daysLeft })
+                    : t('daysAwayPlural', { days: daysLeft })
+                : format(eventDate, 'MMM d, yyyy', { locale: dateFnsLocale })
+            : t('noDateSet')
 
     // Format occasion display
     const occasionDisplay = project.occasionType === 'other' && project.customOccasion
@@ -89,7 +97,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             : 'Speech'
 
     const isUpcoming = daysLeft !== null && daysLeft >= 0 && daysLeft <= 7
-    const lastEdited = formatDistance(new Date(project.updatedAt), new Date(), { addSuffix: true })
+    const lastEdited = formatDistance(new Date(project.updatedAt), new Date(), { addSuffix: true, locale: dateFnsLocale })
 
     // Prepare collaborators list (owner first, then guests)
     const collaborators = []
@@ -130,14 +138,14 @@ export function ProjectCard({ project }: ProjectCardProps) {
                                 {project.name}
                             </h3>
                             {project.honoree && (
-                                <p className="text-sm text-foreground/80 mt-1">For {project.honoree}</p>
+                                <p className="text-sm text-foreground/80 mt-1">{t('forHonoree', { name: project.honoree })}</p>
                             )}
-                            <p className="text-sm text-muted-foreground mt-1">Last edited {lastEdited}</p>
+                            <p className="text-sm text-muted-foreground mt-1">{t('lastEdited', { time: lastEdited })}</p>
                         </div>
 
                         {collaborators.length > 0 && (
                             <div className="space-y-3">
-                                <div className="text-xs font-semibold text-muted-foreground uppercase">Collaborators</div>
+                                <div className="text-xs font-semibold text-muted-foreground uppercase">{t('collaborators')}</div>
                                 <div className="flex -space-x-3">
                                     {displayedCollaborators.map((collab, idx) => (
                                         <div
@@ -167,7 +175,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
                                     ? '/images/branding/toast-as-present-logo.webp'
                                     : '/images/branding/toast-at-the-occasion-logo.webp'
                                 }
-                                alt={project.speechType === 'gift' ? 'Gift' : 'Occasion'}
+                                alt={project.speechType === 'gift' ? t('giftType') : t('occasionType')}
                                 className="h-24 w-auto object-contain drop-shadow-sm"
                             />
                         </div>
@@ -188,18 +196,18 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
                 {/* Right Side - Status */}
                 <div className="w-full md:w-56 bg-muted/10 border-t md:border-t-0 md:border-l border-border/50 p-6 text-left space-y-4">
-                    <div className="text-xs font-semibold text-muted-foreground uppercase mb-2">Status</div>
+                    <div className="text-xs font-semibold text-muted-foreground uppercase mb-2">{t('statusLabel')}</div>
                     <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold ${project.status === 'final'
                         ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
                         : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
                         }`}>
                         <span className={`w-2 h-2 rounded-full ${project.status === 'final' ? 'bg-emerald-500' : 'bg-amber-500'
                             }`}></span>
-                        {project.status === 'final' ? 'Ready' : 'Drafting Phase'}
+                        {project.status === 'final' ? t('statusReady') : t('statusDrafting')}
                     </div>
 
                     <div className="text-xs text-muted-foreground">
-                        <span className="font-semibold uppercase">Event Date:</span>
+                        <span className="font-semibold uppercase">{t('eventDate')}</span>
                         <div className={`mt-1 ${isUpcoming ? 'text-primary font-semibold' : 'text-foreground'}`}>
                             {dateDisplay}
                         </div>
@@ -208,15 +216,15 @@ export function ProjectCard({ project }: ProjectCardProps) {
                     <div className="pt-4 space-y-2">
                         <div className="text-xs text-muted-foreground">
                             <div className="mt-1 text-foreground font-medium">
-                                {project.speechType === 'gift' ? 'A Speech as a Gift' : 'Speech for the Occasion'}
+                                {project.speechType === 'gift' ? t('giftType') : t('occasionType')}
                             </div>
                             <div className="text-muted-foreground/70 text-[10px] mt-0.5">
-                                {project.speechType === 'gift' ? 'Surprise someone special' : "You're giving the speech"}
+                                {project.speechType === 'gift' ? t('giftTypeDesc') : t('occasionTypeDesc')}
                             </div>
                         </div>
                         {(project.locationSettings?.address || project.city) && (
                             <div className="text-xs text-muted-foreground">
-                                <span className="font-semibold uppercase">Location:</span>
+                                <span className="font-semibold uppercase">{t('location')}</span>
                                 <div className="mt-1 text-foreground truncate" title={project.locationSettings?.address || project.city || ''}>
                                     {project.locationSettings?.name || project.locationSettings?.address || project.city}
                                 </div>
@@ -224,7 +232,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
                         )}
                         {project.guestCount && (
                             <div className="text-xs text-muted-foreground">
-                                <span className="font-semibold uppercase">Guests:</span>
+                                <span className="font-semibold uppercase">{t('guests')}</span>
                                 <div className="mt-1 text-foreground">~{project.guestCount}</div>
                             </div>
                         )}
