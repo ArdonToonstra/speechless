@@ -29,7 +29,7 @@ export default async function LocaleLayout({
     return (
         <html lang={locale} suppressHydrationWarning>
             <body className={cn(inter.variable, newsreader.variable, 'font-sans antialiased bg-background text-foreground')}>
-                <NextIntlClientProvider messages={messages}>
+                <NextIntlClientProvider locale={locale} messages={messages}>
                     {children}
                 </NextIntlClientProvider>
                 <Script defer src="https://umami.donit.be/script.js" data-website-id="306004f2-2da6-473a-97a4-0c7a19b70289" />
