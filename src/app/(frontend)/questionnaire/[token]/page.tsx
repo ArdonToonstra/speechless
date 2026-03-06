@@ -19,10 +19,10 @@ export default async function QuestionnairePage({ params }: { params: Promise<{ 
     }
 
     return (
-        <div className="min-h-screen bg-muted/5 py-12 px-4">
-            <div className="max-w-2xl mx-auto">
+        <div className="min-h-screen bg-background flex items-center justify-center p-6">
+            <div className="w-full">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold mb-2">{project.name}</h1>
+                    <h1 className="text-3xl font-serif font-bold mb-2">{project.name}</h1>
                     <p className="text-muted-foreground">
                         {project.questionnaireIntro || 'We would love to get your input to help us write a great speech!'}
                     </p>
