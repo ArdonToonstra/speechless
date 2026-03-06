@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 import { CheckCircle2 } from 'lucide-react'
 import { submitQuestionnaireAsUser } from '@/actions/questionnaire'
@@ -21,9 +21,11 @@ interface Project {
 interface QuestionnaireFormCollaboratorProps {
     project: Project
     userName: string
+    hasExistingSubmission?: boolean
+    alreadySubmittedWarning?: string
 }
 
-export function QuestionnaireFormCollaborator({ project, userName }: QuestionnaireFormCollaboratorProps) {
+export function QuestionnaireFormCollaborator({ project, userName, hasExistingSubmission = false, alreadySubmittedWarning }: QuestionnaireFormCollaboratorProps) {
     const [answers, setAnswers] = useState<Record<number, string>>({})
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
@@ -95,11 +97,18 @@ export function QuestionnaireFormCollaborator({ project, userName }: Questionnai
     }
 
     return (
-        <Wizard
-            steps={steps}
-            onComplete={handleSubmit}
-            isSubmitting={isSubmitting}
-            completedLabel="Submit Responses"
-        />
+        <>
+            {hasExistingSubmission && alreadySubmittedWarning && (
+                <p className="text-center mb-4 text-sm text-amber-600 font-medium">
+                    {alreadySubmittedWarning}
+                </p>
+            )}
+            <Wizard
+                steps={steps}
+                onComplete={handleSubmit}
+                isSubmitting={isSubmitting}
+                completedLabel="Submit Responses"
+            />
+        </>
     )
 }

@@ -1,7 +1,7 @@
 'use server'
 
 import { db, guests, projects } from '@/db'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, ne } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { requireAuth } from './auth'
 import { generateToken } from '@/lib/tokens'
@@ -141,7 +141,7 @@ export async function getProjectGuests(projectId: number) {
     }
 
     const projectGuests = await db.query.guests.findMany({
-        where: eq(guests.projectId, projectId),
+        where: and(eq(guests.projectId, projectId), ne(guests.role, 'owner')),
         orderBy: (guests, { desc }) => [desc(guests.createdAt)],
     })
 

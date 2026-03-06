@@ -47,6 +47,7 @@ function SignupContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const invite = searchParams.get('invite')
+    const redirect = searchParams.get('redirect')
     const t = useTranslations('auth.signup')
     const tCommon = useTranslations('common')
 
@@ -91,7 +92,8 @@ function SignupContent() {
             setError(result.error.message || 'Failed to create account')
             setLoading(false)
         } else {
-            router.push(`/verify-email?email=${encodeURIComponent(email)}${invite ? `&invite=${invite}` : ''}`)
+            const redirectParam = redirect ? `&redirect=${encodeURIComponent(redirect)}` : (invite ? `&invite=${invite}` : '')
+            router.push(`/verify-email?email=${encodeURIComponent(email)}${redirectParam}`)
         }
     }
 

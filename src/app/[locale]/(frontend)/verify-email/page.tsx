@@ -14,6 +14,7 @@ function VerifyEmailContent() {
     const searchParams = useSearchParams()
     const email = searchParams.get('email')
     const invite = searchParams.get('invite')
+    const redirect = searchParams.get('redirect')
     const t = useTranslations('auth.verifyEmail')
     const tCommon = useTranslations('common')
 
@@ -39,7 +40,7 @@ function VerifyEmailContent() {
             if (result.error) {
                 setError(result.error.message || t('errorVerification'))
             } else {
-                router.push(invite ? `/invite/${invite}` : '/dashboard')
+                router.push(redirect || (invite ? `/invite/${invite}` : '/dashboard'))
             }
         } catch (err) {
             setError(t('errorOccurred'))

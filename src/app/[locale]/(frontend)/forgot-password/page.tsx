@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Link } from '@/i18n/navigation'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('')
@@ -15,6 +15,7 @@ export default function ForgotPasswordPage() {
     const [success, setSuccess] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const t = useTranslations('auth.forgotPassword')
+    const locale = useLocale()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -22,7 +23,8 @@ export default function ForgotPasswordPage() {
         setLoading(true)
 
         try {
-            const result = await forgetPassword({ email })
+            const redirectTo = `${window.location.origin}/${locale}/reset-password`
+            const result = await forgetPassword({ email, redirectTo })
             if (result.error) {
                 setError(result.error.message || t('errorFailed'))
             } else {

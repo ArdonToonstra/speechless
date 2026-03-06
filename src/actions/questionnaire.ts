@@ -138,6 +138,8 @@ export async function submitQuestionnaireAsUser(
 
         if (!project) return { error: 'Project not found' }
 
+        const isOwner = project.ownerId === session.user.id
+
         // Find or create a guest record for this user on the project
         let guest = await db.query.guests.findFirst({
             where: and(
@@ -151,7 +153,7 @@ export async function submitQuestionnaireAsUser(
                 email: session.user.email,
                 name: session.user.name,
                 projectId,
-                role: 'collaborator',
+                role: isOwner ? 'owner' : 'collaborator',
                 status: 'accepted',
             }).returning()
             guest = created

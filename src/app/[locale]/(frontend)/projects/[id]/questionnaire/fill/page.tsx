@@ -63,16 +63,13 @@ export default async function QuestionnaireFillPage({ params }: { params: Promis
                     <p className="text-muted-foreground">
                         {project.questionnaireIntro || t('defaultIntro')}
                     </p>
-                    {existingSubmission && (
-                        <p className="mt-2 text-sm text-amber-600 font-medium">
-                            {t('alreadySubmitted')}
-                        </p>
-                    )}
                 </div>
 
                 <QuestionnaireFormCollaborator
                     project={{ id: project.id, questions: projectQuestions, speechReceiverName: project.honoree || undefined }}
                     userName={session.user.name || session.user.email}
+                    hasExistingSubmission={!!existingSubmission}
+                    alreadySubmittedWarning={t('alreadySubmitted')}
                 />
             </div>
         </div>
