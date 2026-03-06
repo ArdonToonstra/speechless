@@ -1,7 +1,7 @@
 import React from 'react'
 import { redirect, notFound } from 'next/navigation'
 import { eq } from 'drizzle-orm'
-import { db, projects } from '@/db'
+import { db, projects, userFeedback } from '@/db'
 import { getSession } from '@/actions/auth'
 import { ProjectSidebar } from '@/components/features/ProjectSidebar'
 
@@ -34,6 +34,11 @@ export default async function ProjectLayout({
     const hasDateOptions = project.dateOptions && project.dateOptions.length > 0
     const showScheduling = !project.dateKnown || hasDateOptions
 
+    const feedbackRow = await db.query.userFeedback.findFirst({
+        where: eq(userFeedback.userId, session.user.id),
+    })
+    const hasFeedback = !!feedbackRow
+
     return (
         <div className="flex h-screen bg-background overflow-hidden">
             <ProjectSidebar
@@ -43,6 +48,7 @@ export default async function ProjectLayout({
                 occasion={project.occasionType}
                 speechType={project.speechType as 'gift' | 'occasion'}
                 showScheduling={showScheduling}
+                hasFeedback={hasFeedback}
             />
 
             <main className="flex-1 flex flex-col overflow-hidden relative">

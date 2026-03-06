@@ -17,7 +17,8 @@ import {
     ChevronLeft,
     ChevronRight,
     Home,
-    CalendarDays
+    CalendarDays,
+    Heart
 } from 'lucide-react'
 
 interface User {
@@ -47,9 +48,10 @@ interface ProjectSidebarProps {
     occasion: string
     speechType: 'gift' | 'occasion'
     showScheduling: boolean
+    hasFeedback: boolean
 }
 
-export function ProjectSidebar({ projectId, projectTitle, user, occasion, speechType, showScheduling }: ProjectSidebarProps) {
+export function ProjectSidebar({ projectId, projectTitle, user, occasion, speechType, showScheduling, hasFeedback }: ProjectSidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false)
     const pathname = usePathname()
 
@@ -149,6 +151,31 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion, speech
 
             {/* Footer / Toggle */}
             <div className="p-2 border-t border-border mt-auto flex flex-col gap-2">
+
+                {/* Feedback link */}
+                <Link
+                    href="/feedback"
+                    title={isCollapsed ? (hasFeedback ? 'Feedback (done)' : 'Share Feedback') : undefined}
+                    className={cn(
+                        "flex items-center rounded-md transition-colors hover:bg-muted/50",
+                        isCollapsed ? "justify-center w-full px-0 py-2" : "gap-3 px-2 py-2"
+                    )}
+                >
+                    <div className="relative shrink-0">
+                        <Heart className={cn("w-4 h-4", hasFeedback ? "text-rose-300" : "text-rose-400")} />
+                        {!hasFeedback && (
+                            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500" />
+                        )}
+                    </div>
+                    {!isCollapsed && (
+                        <div className="overflow-hidden">
+                            <p className="text-sm font-medium truncate">Feedback</p>
+                            <p className="text-xs text-muted-foreground truncate opacity-70">
+                                {hasFeedback ? 'Thanks for sharing!' : 'Share your thoughts'}
+                            </p>
+                        </div>
+                    )}
+                </Link>
 
                 {/* User Info (Only expanded) */}
                 {!isCollapsed && (
