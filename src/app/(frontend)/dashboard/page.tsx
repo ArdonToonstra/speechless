@@ -1,12 +1,12 @@
 import React from 'react'
-import { db, projects, guests } from '@/db'
+import { db, projects, guests, userFeedback } from '@/db'
 import { eq, and } from 'drizzle-orm'
 import { ProjectCard } from '@/components/features/ProjectCard'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import Link from 'next/link'
-import { Plus, Settings, LogOut } from 'lucide-react'
+import { Plus, Settings, LogOut, MessageSquare, Heart } from 'lucide-react'
 import { logout, getSession } from '@/actions/auth'
 import { redirect } from 'next/navigation'
 
@@ -88,6 +88,11 @@ export default async function DashboardPage() {
         return dateA.getTime() - dateB.getTime()
     })
 
+    const feedbackRow = await db.query.userFeedback.findFirst({
+        where: eq(userFeedback.userId, user.id),
+    })
+    const hasFeedback = !!feedbackRow
+
     const userInitials = getUserInitials(user.name, user.email)
 
     return (
@@ -133,6 +138,13 @@ export default async function DashboardPage() {
                                     <span>Settings</span>
                                 </Link>
                             </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href="/feedback" className="cursor-pointer">
+                                    <MessageSquare className="mr-2 h-4 w-4" />
+                                    <span>Feedback</span>
+                                    {!hasFeedback && <span className="ml-auto text-red-500 text-base leading-none">♥</span>}
+                                </Link>
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
                                 <form action={logout} className="w-full">
@@ -166,14 +178,60 @@ export default async function DashboardPage() {
                                 </h3>
                             </div>
                         </Link>
+
+                        {/* Feedback card */}
+                        <Link
+                            href="/feedback"
+                            className="group block bg-card rounded-3xl border-2 border-dashed border-border hover:border-rose-300 transition-all p-8"
+                        >
+                            <div className="flex items-center justify-center gap-4">
+                                <div className="rounded-full bg-rose-50 p-3">
+                                    <Heart className={`w-6 h-6 transition-colors ${hasFeedback ? 'text-rose-300' : 'text-rose-400 group-hover:text-rose-500'}`} />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-muted-foreground group-hover:text-foreground transition-colors">
+                                        Share Your Feedback
+                                    </h3>
+                                    {hasFeedback ? (
+                                        <p className="text-sm text-muted-foreground">Thanks for sharing! ✓</p>
+                                    ) : (
+                                        <p className="text-sm text-rose-400">2 minutes · helps us improve</p>
+                                    )}
+                                </div>
+                            </div>
+                        </Link>
                     </div>
                 ) : (
-                    <div className="text-center py-20 bg-card rounded-3xl border border-dashed border-border">
-                        <h2 className="text-xl font-semibold text-foreground mb-2">No speeches yet</h2>
-                        <p className="text-muted-foreground mb-6">Ready to write a masterpiece?</p>
-                        <Button asChild className="rounded-full px-8 bg-primary hover:opacity-90 text-primary-foreground">
-                            <Link href="/onboarding">Start First Project</Link>
-                        </Button>
+                    <div className="space-y-4">
+                        <div className="text-center py-20 bg-card rounded-3xl border border-dashed border-border">
+                            <h2 className="text-xl font-semibold text-foreground mb-2">No speeches yet</h2>
+                            <p className="text-muted-foreground mb-6">Ready to write a masterpiece?</p>
+                            <Button asChild className="rounded-full px-8 bg-primary hover:opacity-90 text-primary-foreground">
+                                <Link href="/onboarding">Start First Project</Link>
+                            </Button>
+                        </div>
+
+                        {/* Feedback card */}
+                        <Link
+                            href="/feedback"
+                            className="group block bg-card rounded-3xl border-2 border-dashed border-border hover:border-rose-300 transition-all p-8"
+                        >
+                            <div className="flex items-center justify-center gap-4">
+                                <div className="rounded-full bg-rose-50 p-3">
+                                    <Heart className={`w-6 h-6 transition-colors ${hasFeedback ? 'text-rose-300' : 'text-rose-400 group-hover:text-rose-500'}`} />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-muted-foreground group-hover:text-foreground transition-colors">
+                                        Share Your Feedback
+                                    </h3>
+                                    {hasFeedback ? (
+                                        <p className="text-sm text-muted-foreground">Thanks for sharing! ✓</p>
+                                    ) : (
+                                        <p className="text-sm text-rose-400">2 minutes · helps us improve</p>
+                                    )}
+                                </div>
+                            </div>
+                        </Link>
                     </div>
                 )}
             </div>

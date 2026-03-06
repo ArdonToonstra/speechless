@@ -198,6 +198,13 @@ export const comments = pgTable('comments', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
 
+export const userFeedback = pgTable('user_feedback', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().unique().references(() => user.id, { onDelete: 'cascade' }),
+  answers: jsonb('answers').$type<Record<string, string>>().notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
 // ============================================================================
 // Type Definitions for JSONB columns
 // ============================================================================
@@ -313,5 +320,12 @@ export const dateResponsesRelations = relations(dateResponses, ({ one }) => ({
   guest: one(guests, {
     fields: [dateResponses.guestId],
     references: [guests.id],
+  }),
+}))
+
+export const userFeedbackRelations = relations(userFeedback, ({ one }) => ({
+  user: one(user, {
+    fields: [userFeedback.userId],
+    references: [user.id],
   }),
 }))

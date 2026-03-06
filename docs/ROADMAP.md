@@ -10,8 +10,6 @@ This document outlines the planned features and improvements for the Speechless 
   - **Toolbar Polish**: Improve the floating/fixed toolbar design (Bold, Italic, Headers).
 - [ ] **Viewer Feedback**
   - Allow viewers/collaborators to leave comments.
-- [ ] **PDF Export**
-  - "Print to PDF" styled specifically for reading aloud.
 - [ ] **Templates & Example Speeches Library**
   - Extensive library of example speeches for various occasions (Weddings, Birthdays, etc.).
   - "Fill-in-the-blank" style structural templates.
@@ -20,11 +18,7 @@ This document outlines the planned features and improvements for the Speechless 
   - Add docs to guide users on installing the PWA.
 - [ ] **Offline Mode**
   - Cache drafts locally so users can write without an internet connection.
-- [ ] **Collaboration Features**
-  - Real-time collaborative editing with multiple users.
-  - User presence indicators and edit tracking.
-- [ ] **User Profiles & Settings**
-  - Allow users to delete accounts.
+
 - [ ] **Mobile Optimization**
   - Responsive design improvements for mobile devices.
   - Touch-friendly editor controls.

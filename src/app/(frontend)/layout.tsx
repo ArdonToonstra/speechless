@@ -1,4 +1,5 @@
 import { Inter, Newsreader } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 import { cn } from '@/lib/utils'
 
@@ -15,6 +16,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <html lang="en" suppressHydrationWarning>
             <body className={cn(inter.variable, newsreader.variable, "font-sans antialiased bg-background text-foreground")}>
                 {children}
+                <Script defer src="https://umami.donit.be/script.js" data-website-id="306004f2-2da6-473a-97a4-0c7a19b70289" />
             </body>
         </html>
     )

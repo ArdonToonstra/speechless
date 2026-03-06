@@ -14,9 +14,10 @@ interface WizardProps {
     }[]
     onComplete: () => void
     isSubmitting?: boolean
+    completedLabel?: string
 }
 
-export function Wizard({ steps, onComplete, isSubmitting = false }: WizardProps) {
+export function Wizard({ steps, onComplete, isSubmitting = false, completedLabel = 'Create Project' }: WizardProps) {
     const [currentStep, setCurrentStep] = useState(0)
     const totalSteps = steps.length
 
@@ -98,7 +99,7 @@ export function Wizard({ steps, onComplete, isSubmitting = false }: WizardProps)
                     {isSubmitting ? (
                         <span className="animate-pulse">Loading...</span>
                     ) : currentStep === totalSteps - 1 ? (
-                        'Create Project'
+                        completedLabel
                     ) : (
                         'Continue'
                     )}
