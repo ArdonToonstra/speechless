@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { signUp } from '@/lib/auth-client'
 import { Link, useRouter } from '@/i18n/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Check, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
@@ -38,12 +39,14 @@ function PasswordRequirements({ password, t }: { password: string; t: ReturnType
     )
 }
 
-export default function SignupPage() {
+function SignupContent() {
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
     const [password, setPassword] = useState('')
     const loadedAt = useRef(Date.now())
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const invite = searchParams.get('invite')
     const t = useTranslations('auth.signup')
     const tCommon = useTranslations('common')
 
@@ -88,7 +91,7 @@ export default function SignupPage() {
             setError(result.error.message || 'Failed to create account')
             setLoading(false)
         } else {
-            router.push(`/verify-email?email=${encodeURIComponent(email)}`)
+            router.push(`/verify-email?email=${encodeURIComponent(email)}${invite ? `&invite=${invite}` : ''}`)
         }
     }
 
@@ -188,5 +191,19 @@ export default function SignupPage() {
                 {tCommon('backToHome')}
             </Link>
         </div>
+    )
+}
+
+export default function SignupPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="w-full max-w-md bg-card rounded-2xl shadow-xl border border-border p-8">
+                    <div className="text-center">Loading...</div>
+                </div>
+            </div>
+        }>
+            <SignupContent />
+        </Suspense>
     )
 }

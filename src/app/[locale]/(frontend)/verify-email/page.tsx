@@ -13,6 +13,7 @@ function VerifyEmailContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const email = searchParams.get('email')
+    const invite = searchParams.get('invite')
     const t = useTranslations('auth.verifyEmail')
     const tCommon = useTranslations('common')
 
@@ -38,7 +39,7 @@ function VerifyEmailContent() {
             if (result.error) {
                 setError(result.error.message || t('errorVerification'))
             } else {
-                router.push('/dashboard')
+                router.push(invite ? `/invite/${invite}` : '/dashboard')
             }
         } catch (err) {
             setError(t('errorOccurred'))

@@ -15,6 +15,7 @@ function LoginContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const resetSuccess = searchParams.get('reset') === 'success'
+    const invite = searchParams.get('invite')
     const t = useTranslations('auth.login')
     const tCommon = useTranslations('common')
 
@@ -33,7 +34,7 @@ function LoginContent() {
             setError(result.error.message || 'Invalid email or password')
             setLoading(false)
         } else {
-            router.push('/dashboard')
+            router.push(invite ? `/invite/${invite}` : '/dashboard')
             router.refresh()
         }
     }
