@@ -203,7 +203,7 @@ export default async function ProgressPage({ params }: { params: Promise<{ id: s
                             <Badge variant="secondary" className="text-sm font-medium">
                                 {t('stepsDone', { completed: completedCount, total: totalCount })}
                             </Badge>
-                            {eventDateSet && occasionDate ? (
+                            {eventDateSet && occasionDate && (
                                 <Badge
                                     className={
                                         daysUntil(occasionDate) <= 7
@@ -215,13 +215,6 @@ export default async function ProgressPage({ params }: { params: Promise<{ id: s
                                     <CalendarClock className="w-3 h-3 mr-1" />
                                     {formatCountdown(occasionDate)}
                                 </Badge>
-                            ) : (
-                                <Link
-                                    href={`/projects/${projectId}/overview`}
-                                    className="text-sm text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline"
-                                >
-                                    {t('setEventDate')}
-                                </Link>
                             )}
                         </div>
                         <p className="text-muted-foreground mt-0.5">{t('description')}</p>

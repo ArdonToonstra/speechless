@@ -334,7 +334,6 @@
       "title": "Progress",
       "stepsDone": "{completed} / {total} steps done",
       "description": "Track your speech-writing journey",
-      "setEventDate": "Set event date →",
       "workflow": "Workflow",
       "statsCollaborators": "Collaborators",
       "statsQuestions": "Questions",

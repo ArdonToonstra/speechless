@@ -10,6 +10,7 @@ import { Link2, Copy, Check, RefreshCw, AlertCircle } from 'lucide-react'
 import { getMagicLink, regenerateMagicLink, type MagicLinkRole } from '@/actions/magic-links'
 import { format, formatDistanceToNow } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { useLocale } from 'next-intl'
 
 interface MagicLinkGeneratorProps {
     projectId: number
@@ -31,9 +32,10 @@ export function MagicLinkGenerator({ projectId }: MagicLinkGeneratorProps) {
     const [isRegenerating, setIsRegenerating] = useState(false)
     const [copied, setCopied] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const locale = useLocale()
 
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    const fullLink = magicLink ? `${baseUrl}/join/${magicLink.token}` : ''
+    const fullLink = magicLink ? `${baseUrl}/${locale}/join/${magicLink.token}` : ''
 
     const loadMagicLink = useCallback(async () => {
         setIsLoading(true)

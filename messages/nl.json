@@ -334,7 +334,6 @@
       "title": "Voortgang",
       "stepsDone": "{completed} / {total} stappen klaar",
       "description": "Volg je schrijfreis",
-      "setEventDate": "Evenementdatum instellen →",
       "workflow": "Werkstroom",
       "statsCollaborators": "Bijdragers",
       "statsQuestions": "Vragen",
