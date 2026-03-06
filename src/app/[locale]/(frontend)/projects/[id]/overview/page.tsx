@@ -1,13 +1,12 @@
 import React from 'react'
-import { notFound } from 'next/navigation'
-import { redirect } from 'next/navigation'
-import { eq } from 'drizzle-orm'
+import { notFound, redirect } from 'next/navigation'
+import { eq, and } from 'drizzle-orm'
 import { LayoutDashboard } from 'lucide-react'
-import { db, projects } from '@/db'
+import { db, projects, guests } from '@/db'
 import { getSession } from '@/actions/auth'
 import { ProjectOverview } from '@/components/features/ProjectOverview'
 import { StandardPageShell } from '@/components/layout/StandardPageShell'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 
 export default async function OverviewPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -15,13 +14,21 @@ export default async function OverviewPage({ params }: { params: Promise<{ id: s
     if (isNaN(projectId)) notFound()
 
     const session = await getSession()
-    if (!session?.user) return redirect('/login')
+    const locale = await getLocale()
+    if (!session?.user) return redirect(`/${locale}/login`)
 
     const project = await db.query.projects.findFirst({
         where: eq(projects.id, projectId),
     })
 
-    if (!project || project.ownerId !== session.user.id) notFound()
+    if (!project) notFound()
+
+    if (project.ownerId !== session.user.id) {
+        const guest = await db.query.guests.findFirst({
+            where: and(eq(guests.projectId, projectId), eq(guests.email, session.user.email), eq(guests.status, 'accepted')),
+        })
+        if (!guest) notFound()
+    }
 
     const t = await getTranslations('projects.overview')
 

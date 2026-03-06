@@ -18,8 +18,8 @@ import {
     CommandList,
     CommandSeparator,
 } from '@/components/ui/command' // Requires Shadcn Command component installation
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { Link } from '@/i18n/navigation'
+import { useRouter } from '@/i18n/navigation'
 
 interface ProjectSwitcherProps {
     currentProjectId: number

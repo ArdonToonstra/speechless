@@ -3,7 +3,7 @@
 import { db, projects, guests, submissions } from '@/db'
 import { eq, and } from 'drizzle-orm'
 import { getSession } from './auth'
-import { revalidatePath } from 'next/cache'
+import { revalidateForAllLocales } from '@/lib/revalidation'
 import { requireAuth } from './auth'
 import type { QuestionItem, AnswerItem } from '@/db/schema'
 
@@ -40,7 +40,7 @@ export async function updateProjectQuestions(projectId: number, formData: FormDa
             })
             .where(eq(projects.id, projectId))
 
-        revalidatePath(`/projects/${projectId}/settings`)
+        revalidateForAllLocales(`/projects/${projectId}/settings`)
         return { success: true }
     } catch (error) {
         console.error('Failed to update questions:', error)
@@ -116,7 +116,7 @@ export async function submitQuestionnaire(data: {
 
         console.log('[submitQuestionnaire] Submission created:', submission.id)
 
-        revalidatePath(`/projects/${data.projectId}/submissions`)
+        revalidateForAllLocales(`/projects/${data.projectId}/submissions`)
         return { success: true, submissionId: submission.id }
     } catch (error) {
         console.error('[submitQuestionnaire] Error:', error)
@@ -184,8 +184,8 @@ export async function submitQuestionnaireAsUser(
             answers: validAnswers,
         }).returning()
 
-        revalidatePath(`/projects/${projectId}/submissions`)
-        revalidatePath(`/projects/${projectId}/questionnaire`)
+        revalidateForAllLocales(`/projects/${projectId}/submissions`)
+        revalidateForAllLocales(`/projects/${projectId}/questionnaire`)
         return { success: true, submissionId: submission.id }
     } catch (error) {
         console.error('[submitQuestionnaireAsUser] Error:', error)

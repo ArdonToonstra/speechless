@@ -2,7 +2,7 @@
 
 import { db, magicLinks, projects, guests } from '@/db'
 import { eq, and, gt } from 'drizzle-orm'
-import { revalidatePath } from 'next/cache'
+import { revalidateForAllLocales } from '@/lib/revalidation'
 import { requireAuth } from './auth'
 import { generateToken } from '@/lib/tokens'
 
@@ -88,7 +88,7 @@ export async function regenerateMagicLink(projectId: number, role: MagicLinkRole
             usageCount: 0,
         }).returning()
 
-        revalidatePath(`/projects/${projectId}/collaborators`)
+        revalidateForAllLocales(`/projects/${projectId}/collaborators`)
         return {
             success: true,
             magicLink: newLink,
@@ -162,7 +162,7 @@ export async function joinViaMagicLink(token: string) {
             .set({ usageCount: magicLink.usageCount + 1 })
             .where(eq(magicLinks.id, magicLink.id))
 
-        revalidatePath(`/projects/${magicLink.projectId}/collaborators`)
+        revalidateForAllLocales(`/projects/${magicLink.projectId}/collaborators`)
         return {
             success: true,
             projectId: magicLink.projectId,

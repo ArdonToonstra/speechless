@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { Loader2, Trash2 } from 'lucide-react'
 import { updateGuestRole, deleteGuest } from '@/actions/guests'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/navigation'
 
 type Role = 'collaborator' | 'speech-editor'
 

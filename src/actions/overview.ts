@@ -2,8 +2,7 @@
 
 import { db, projects } from '@/db'
 import { eq, and } from 'drizzle-orm'
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
+import { revalidateForAllLocales } from '@/lib/revalidation'
 import { requireAuth } from './auth'
 
 export async function updateProjectMetadata(projectId: number, formData: FormData) {
@@ -52,9 +51,9 @@ export async function updateProjectMetadata(projectId: number, formData: FormDat
             })
             .where(eq(projects.id, projectId))
 
-        revalidatePath(`/projects/${projectId}/overview`)
+        revalidateForAllLocales(`/projects/${projectId}/overview`)
         // Also revalidate the layout since title is in the sidebar
-        revalidatePath(`/projects/${projectId}`, 'layout')
+        revalidateForAllLocales(`/projects/${projectId}`, 'layout')
         return { success: true }
     } catch (error) {
         console.error('Failed to update project metadata:', error)
@@ -80,7 +79,7 @@ export async function deleteProject(projectId: number) {
 
         await db.delete(projects).where(eq(projects.id, projectId))
 
-        revalidatePath('/dashboard')
+        revalidateForAllLocales('/dashboard')
         return { success: true, redirect: '/dashboard' }
     } catch (error) {
         console.error('Failed to delete project:', error)

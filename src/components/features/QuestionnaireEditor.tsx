@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useLocale } from 'next-intl'
 import { updateProjectQuestions } from '@/actions/questionnaire'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -61,14 +62,15 @@ export function QuestionnaireEditor({
     const [lastSaved, setLastSaved] = useState<Date | null>(null)
     const [linkCopied, setLinkCopied] = useState(false)
     const [confirmTemplate, setConfirmTemplate] = useState<QuestionTemplate | null>(null)
+    const locale = useLocale()
 
     // Get available templates for this occasion
     const templates = getTemplatesForOccasion(occasionType)
 
     // Generate shareable link using share token (non-guessable)
     const shareableLink = shareToken
-        ? `${typeof window !== 'undefined' ? window.location.origin : ''}/questionnaire/${shareToken}`
-        : `${typeof window !== 'undefined' ? window.location.origin : ''}/questionnaire/${projectId}`
+        ? `${typeof window !== 'undefined' ? window.location.origin : ''}/${locale}/questionnaire/${shareToken}`
+        : `${typeof window !== 'undefined' ? window.location.origin : ''}/${locale}/questionnaire/${projectId}`
 
     const copyLink = () => {
         navigator.clipboard.writeText(shareableLink)

@@ -2,7 +2,7 @@
 
 import { db, guests, projects } from '@/db'
 import { eq, and, ne } from 'drizzle-orm'
-import { revalidatePath } from 'next/cache'
+import { revalidateForAllLocales } from '@/lib/revalidation'
 import { requireAuth } from './auth'
 import { generateToken } from '@/lib/tokens'
 
@@ -47,7 +47,7 @@ export async function inviteGuest(projectId: number, formData: FormData) {
         console.log(`Magic link: ${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/invite/${guest.token}`)
         console.log(`Project: ${projectId}, Role: ${role}`)
 
-        revalidatePath(`/projects/${projectId}/collaborators`)
+        revalidateForAllLocales(`/projects/${projectId}/collaborators`)
         return { success: true, message: 'Collaborator added. Email sending will be enabled in a future update.' }
     } catch (error) {
         console.error('Failed to invite guest:', error)
@@ -89,7 +89,7 @@ export async function deleteGuest(guestId: number, projectId: number) {
         await db.delete(guests).where(eq(guests.id, guestId))
 
         console.log(`[DELETE GUEST] Successfully deleted guest ${guestId}`)
-        revalidatePath(`/projects/${projectId}/collaborators`)
+        revalidateForAllLocales(`/projects/${projectId}/collaborators`)
         return { success: true }
     } catch (error) {
         console.error('Failed to delete guest:', error)
@@ -117,7 +117,7 @@ export async function updateGuestRole(guestId: number, projectId: number, newRol
             .set({ role: newRole, updatedAt: new Date() })
             .where(and(eq(guests.id, guestId), eq(guests.projectId, projectId)))
 
-        revalidatePath(`/projects/${projectId}/collaborators`)
+        revalidateForAllLocales(`/projects/${projectId}/collaborators`)
         return { success: true }
     } catch (error) {
         console.error('Failed to update guest role:', error)

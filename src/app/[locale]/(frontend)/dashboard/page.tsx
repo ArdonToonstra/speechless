@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Link } from '@/i18n/navigation'
+import { redirect } from 'next/navigation'
 import { Plus, Settings, LogOut, MessageSquare, Heart } from 'lucide-react'
 import { logout, getSession } from '@/actions/auth'
-import { redirect } from 'next/navigation'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { LanguageSwitcher } from '@/components/features/LanguageSwitcher'
 
 export const dynamic = 'force-dynamic'
@@ -28,9 +28,10 @@ function getUserInitials(name: string | null, email: string): string {
 
 export default async function DashboardPage() {
     const session = await getSession()
+    const locale = await getLocale()
 
     if (!session) {
-        redirect('/login')
+        redirect(`/${locale}/login`)
     }
 
     const t = await getTranslations('dashboard')

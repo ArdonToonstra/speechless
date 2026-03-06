@@ -2,7 +2,7 @@
 
 import { db, invitations, projects } from '@/db'
 import { eq, and } from 'drizzle-orm'
-import { revalidatePath } from 'next/cache'
+import { revalidateForAllLocales } from '@/lib/revalidation'
 import { requireAuth } from './auth'
 import type { EmailTemplates } from '@/db/schema'
 
@@ -52,7 +52,7 @@ export async function prepareSpeechInvites(
         console.log(`Recipients:`, recipients)
         console.log(`Custom message:`, customMessage)
 
-        revalidatePath(`/projects/${projectId}/invites`)
+        revalidateForAllLocales(`/projects/${projectId}/invites`)
 
         return {
             success: true,
@@ -98,7 +98,7 @@ export async function saveInviteTemplate(
             .set({ emailTemplates: updatedTemplates, updatedAt: new Date() })
             .where(eq(projects.id, projectId))
 
-        revalidatePath(`/projects/${projectId}/invites`)
+        revalidateForAllLocales(`/projects/${projectId}/invites`)
         return { success: true }
     } catch (error) {
         console.error('Failed to save template:', error)

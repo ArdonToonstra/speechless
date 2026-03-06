@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Mail, Plus, X, Eye, Clock, Package, AlertCircle, Sparkles } from 'lucide-react'
 import { prepareSpeechInvites, validatePostcardOption } from '@/actions/invites'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/navigation'
 
 interface Project {
     id: number

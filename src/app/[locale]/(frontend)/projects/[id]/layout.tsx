@@ -1,9 +1,10 @@
 import React from 'react'
-import { redirect, notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { eq } from 'drizzle-orm'
 import { db, projects, userFeedback } from '@/db'
 import { getSession } from '@/actions/auth'
 import { ProjectSidebar } from '@/components/features/ProjectSidebar'
+import { getLocale } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,7 +20,8 @@ export default async function ProjectLayout({
     if (isNaN(projectId)) notFound()
 
     const session = await getSession()
-    if (!session?.user) return redirect('/login')
+    const locale = await getLocale()
+    if (!session?.user) return redirect(`/${locale}/login`)
 
     // Fetch current project to show title/context
     const project = await db.query.projects.findFirst({

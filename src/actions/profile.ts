@@ -2,12 +2,11 @@
 
 import { db, user, projects, session as sessionTable, account } from '@/db'
 import { eq } from 'drizzle-orm'
-import { revalidatePath } from 'next/cache'
+import { revalidateForAllLocales } from '@/lib/revalidation'
 import { requireAuth } from './auth'
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 
 // Password validation helper
 function validatePassword(password: string): { valid: boolean; error?: string } {    if (password.length < 8) {
@@ -48,8 +47,8 @@ export async function updateProfile(formData: FormData) {
             })
             .where(eq(user.id, session.user.id))
 
-        revalidatePath('/settings')
-        revalidatePath('/dashboard')
+        revalidateForAllLocales('/settings')
+        revalidateForAllLocales('/dashboard')
         return { success: 'Profile updated successfully' }
     } catch (error: any) {
         return { error: error.message || 'Failed to update profile' }

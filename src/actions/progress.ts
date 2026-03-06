@@ -1,7 +1,7 @@
 'use server'
 
 import { eq, and } from 'drizzle-orm'
-import { revalidatePath } from 'next/cache'
+import { revalidateForAllLocales } from '@/lib/revalidation'
 import { db, projects } from '@/db'
 import { requireAuth } from './auth'
 
@@ -30,7 +30,7 @@ export async function toggleProgressCheck(
             .set({ progressChecks: updated, updatedAt: new Date() })
             .where(eq(projects.id, projectId))
 
-        revalidatePath(`/projects/${projectId}/progress`)
+        revalidateForAllLocales(`/projects/${projectId}/progress`)
         return { success: true }
     } catch (error) {
         console.error('Failed to toggle progress check:', error)

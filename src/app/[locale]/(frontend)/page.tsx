@@ -1,7 +1,7 @@
 import React from 'react'
 import { getSession } from '@/actions/auth'
 import { redirect } from 'next/navigation'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { LanguageSwitcher } from '@/components/features/LanguageSwitcher'
 
@@ -9,10 +9,11 @@ export const dynamic = 'force-dynamic'
 
 export default async function Page() {
     const session = await getSession()
+    const locale = await getLocale()
 
     // Redirect authenticated users to dashboard
     if (session) {
-        redirect('/dashboard')
+        redirect(`/${locale}/dashboard`)
     }
 
     const t = await getTranslations('home')

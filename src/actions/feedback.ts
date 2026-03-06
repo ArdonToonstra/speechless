@@ -3,14 +3,14 @@
 import { requireAuth } from './auth'
 import { db, userFeedback } from '@/db'
 import { eq } from 'drizzle-orm'
-import { revalidatePath } from 'next/cache'
+import { revalidateForAllLocales } from '@/lib/revalidation'
 
 export async function submitFeedback(answers: Record<string, string>) {
     const session = await requireAuth()
     await db.insert(userFeedback)
         .values({ userId: session.user.id, answers })
         .onConflictDoUpdate({ target: userFeedback.userId, set: { answers } })
-    revalidatePath('/dashboard')
+    revalidateForAllLocales('/dashboard')
 }
 
 export async function hasSubmittedFeedback(): Promise<boolean> {

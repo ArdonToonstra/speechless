@@ -1,7 +1,7 @@
 'use server'
 
 import { eq, and } from 'drizzle-orm'
-import { revalidatePath } from 'next/cache'
+import { revalidateForAllLocales } from '@/lib/revalidation'
 import { db, projects, comments } from '@/db'
 import { requireAuth } from './auth'
 
@@ -34,7 +34,7 @@ export async function addComment(
             content: content.trim(),
         }).returning()
 
-        revalidatePath(`/projects/${projectId}/submissions`)
+        revalidateForAllLocales(`/projects/${projectId}/submissions`)
         return { success: true, comment }
     } catch (error) {
         console.error('Failed to add comment:', error)
@@ -64,7 +64,7 @@ export async function replyToComment(
             content: content.trim(),
         }).returning()
 
-        revalidatePath(`/projects/${projectId}/submissions`)
+        revalidateForAllLocales(`/projects/${projectId}/submissions`)
         return { success: true, comment }
     } catch (error) {
         console.error('Failed to add reply:', error)
@@ -87,7 +87,7 @@ export async function resolveComment(
             .set({ resolvedAt: new Date(), updatedAt: new Date() })
             .where(eq(comments.id, commentId))
 
-        revalidatePath(`/projects/${projectId}/submissions`)
+        revalidateForAllLocales(`/projects/${projectId}/submissions`)
         return { success: true }
     } catch (error) {
         console.error('Failed to resolve comment:', error)
@@ -110,7 +110,7 @@ export async function reopenComment(
             .set({ resolvedAt: null, updatedAt: new Date() })
             .where(eq(comments.id, commentId))
 
-        revalidatePath(`/projects/${projectId}/submissions`)
+        revalidateForAllLocales(`/projects/${projectId}/submissions`)
         return { success: true }
     } catch (error) {
         console.error('Failed to reopen comment:', error)
@@ -131,7 +131,7 @@ export async function deleteComment(
     try {
         await db.delete(comments).where(eq(comments.id, commentId))
 
-        revalidatePath(`/projects/${projectId}/submissions`)
+        revalidateForAllLocales(`/projects/${projectId}/submissions`)
         return { success: true }
     } catch (error) {
         console.error('Failed to delete comment:', error)

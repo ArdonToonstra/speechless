@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { updateProfile, changePassword, deleteAccount } from '@/actions/profile'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/navigation'
 import { AlertTriangle, Check, X } from 'lucide-react'
 
 interface User {

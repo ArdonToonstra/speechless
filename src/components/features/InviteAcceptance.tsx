@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { UserPlus, Mail, Calendar } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { format } from 'date-fns'
 
 interface Guest {

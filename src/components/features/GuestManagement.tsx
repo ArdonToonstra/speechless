@@ -17,7 +17,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/navigation'
 import { TeamMemberList } from './TeamMemberList'
 import { MagicLinkGenerator } from './MagicLinkGenerator'
 import { RoleManagementDialog } from './RoleManagementDialog'

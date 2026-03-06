@@ -1,7 +1,7 @@
 'use server'
 
 import { eq, and } from 'drizzle-orm'
-import { revalidatePath } from 'next/cache'
+import { revalidateForAllLocales } from '@/lib/revalidation'
 import { db, dateOptions, dateResponses, guests, projects } from '@/db'
 import { getSession } from './auth'
 
@@ -90,7 +90,7 @@ export async function addDateOption(
             note: note || null,
         }).returning()
 
-        revalidatePath(`/projects/${projectId}/scheduling`)
+        revalidateForAllLocales(`/projects/${projectId}/scheduling`)
         return { success: true, option: newOption }
     } catch (error) {
         console.error('Error adding date option:', error)
@@ -118,7 +118,7 @@ export async function deleteDateOption(
     try {
         await db.delete(dateOptions).where(eq(dateOptions.id, optionId))
 
-        revalidatePath(`/projects/${projectId}/scheduling`)
+        revalidateForAllLocales(`/projects/${projectId}/scheduling`)
         return { success: true }
     } catch (error) {
         console.error('Error deleting date option:', error)
@@ -167,7 +167,7 @@ export async function submitDateResponse(
                 },
             })
 
-        revalidatePath(`/projects/${projectId}/scheduling`)
+        revalidateForAllLocales(`/projects/${projectId}/scheduling`)
         return { success: true }
     } catch (error) {
         console.error('Error submitting date response:', error)

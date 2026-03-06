@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useLocale } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Share2, Copy, Check, Globe, Lock } from 'lucide-react'
 import { generateMagicLink, toggleSharing } from '@/actions/sharing'
@@ -20,8 +21,9 @@ export function ShareDialog({ projectId, initialToken, initialEnabled }: ShareDi
     const [loading, setLoading] = useState(false)
     const [copied, setCopied] = useState(false)
 
+    const locale = useLocale()
     const origin = typeof window !== 'undefined' ? window.location.origin : ''
-    const shareUrl = token ? `${origin}/share/${token}` : ''
+    const shareUrl = token ? `${origin}/${locale}/share/${token}` : ''
 
     const handleGenerate = async () => {
         setLoading(true)

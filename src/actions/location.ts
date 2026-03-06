@@ -2,7 +2,7 @@
 
 import { db, projects } from '@/db'
 import { eq, and } from 'drizzle-orm'
-import { revalidatePath } from 'next/cache'
+import { revalidateForAllLocales } from '@/lib/revalidation'
 import { requireAuth } from './auth'
 import type { LocationSettings } from '@/db/schema'
 
@@ -32,7 +32,7 @@ export async function saveProjectLocation(
             })
             .where(eq(projects.id, projectId))
 
-        revalidatePath(`/projects/${projectId}/location`)
+        revalidateForAllLocales(`/projects/${projectId}/location`)
         return { success: true }
     } catch (error) {
         console.error('Failed to save location:', error)

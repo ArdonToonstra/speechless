@@ -1,16 +1,17 @@
 import React from 'react'
 import { db, guests, projects } from '@/db'
 import { eq } from 'drizzle-orm'
-import { notFound } from 'next/navigation'
-import { redirect } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { InviteAcceptance } from '@/components/features/InviteAcceptance'
 import { getSession } from '@/actions/auth'
+import { getLocale } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
-export default async function InvitePage({ params }: { params: Promise<{ token: string; locale: string }> }) {
-    const { token, locale } = await params
+export default async function InvitePage({ params }: { params: Promise<{ token: string }> }) {
+    const { token } = await params
     const session = await getSession()
+    const locale = await getLocale()
 
     const guest = await db.query.guests.findFirst({
         where: eq(guests.token, token),

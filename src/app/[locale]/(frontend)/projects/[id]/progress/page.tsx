@@ -1,8 +1,7 @@
 import React from 'react'
-import { notFound } from 'next/navigation'
-import { redirect } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { Link } from '@/i18n/navigation'
-import { eq, desc } from 'drizzle-orm'
+import { eq, desc, and } from 'drizzle-orm'
 import {
     Activity,
     CalendarClock,
@@ -14,7 +13,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ProgressChecklist, type WorkflowStep } from '@/components/features/ProgressChecklist'
 import { Users, ClipboardList, Inbox, PenTool } from 'lucide-react'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 
 // Recursively extract word count from Tiptap JSONContent
 function countWords(json: unknown): number {
@@ -42,14 +41,22 @@ export default async function ProgressPage({ params }: { params: Promise<{ id: s
     if (isNaN(projectId)) notFound()
 
     const session = await getSession()
-    if (!session?.user) return redirect('/login')
+    const locale = await getLocale()
+    if (!session?.user) return redirect(`/${locale}/login`)
 
     const project = await db.query.projects.findFirst({
         where: eq(projects.id, projectId),
         with: { dateOptions: true },
     })
 
-    if (!project || project.ownerId !== session.user.id) notFound()
+    if (!project) notFound()
+
+    if (project.ownerId !== session.user.id) {
+        const guest = await db.query.guests.findFirst({
+            where: and(eq(guests.projectId, projectId), eq(guests.email, session.user.email), eq(guests.status, 'accepted')),
+        })
+        if (!guest) notFound()
+    }
 
     const [collaboratorRows, submissionRows] = await Promise.all([
         db.query.guests.findMany({ where: eq(guests.projectId, projectId) }),

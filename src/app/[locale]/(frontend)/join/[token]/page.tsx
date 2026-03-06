@@ -8,15 +8,16 @@ import { UserPlus, Calendar, AlertCircle, Check } from 'lucide-react'
 import { format } from 'date-fns'
 import { getSession } from '@/actions/auth'
 import { getMagicLinkInfo, joinViaMagicLink } from '@/actions/magic-links'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 
 interface JoinPageProps {
-    params: Promise<{ token: string; locale: string }>
+    params: Promise<{ token: string }>
 }
 
 export default async function JoinPage({ params }: JoinPageProps) {
-    const { token, locale } = await params
+    const { token } = await params
     const session = await getSession()
+    const locale = await getLocale()
     const t = await getTranslations('tokens.join')
 
     const linkInfo = await getMagicLinkInfo(token)

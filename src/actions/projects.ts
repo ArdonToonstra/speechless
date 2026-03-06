@@ -3,8 +3,6 @@
 import type { JSONContent } from '@tiptap/core'
 import { db, projects } from '@/db'
 import { eq, and, or } from 'drizzle-orm'
-import { redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
 import { requireAuth } from './auth'
 import { generateToken } from '@/lib/tokens'
 

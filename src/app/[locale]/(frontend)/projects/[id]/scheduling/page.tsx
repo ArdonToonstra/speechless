@@ -1,6 +1,5 @@
 import React from 'react'
-import { notFound } from 'next/navigation'
-import { redirect } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { eq } from 'drizzle-orm'
 import { CalendarDays } from 'lucide-react'
 import { db, projects } from '@/db'
@@ -9,15 +8,16 @@ import { getDateOptions, getMyDateResponses } from '@/actions/scheduling'
 import { DateScheduler } from '@/components/features/DateScheduler'
 import { DateVoting } from '@/components/features/DateVoting'
 import { StandardPageShell } from '@/components/layout/StandardPageShell'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 
-export default async function SchedulingPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
-    const { id, locale } = await params
+export default async function SchedulingPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
     const projectId = parseInt(id)
     if (isNaN(projectId)) notFound()
 
     const session = await getSession()
-    if (!session?.user) return redirect('/login')
+    const locale = await getLocale()
+    if (!session?.user) return redirect(`/${locale}/login`)
 
     const project = await db.query.projects.findFirst({
         where: eq(projects.id, projectId),

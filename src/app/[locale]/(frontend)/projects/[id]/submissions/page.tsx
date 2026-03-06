@@ -1,6 +1,5 @@
 import React from 'react'
-import { notFound } from 'next/navigation'
-import { redirect } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { eq, desc, asc } from 'drizzle-orm'
 import { Inbox } from 'lucide-react'
 import { db, projects, submissions, comments } from '@/db'
@@ -10,7 +9,7 @@ import { AnswersByQuestion } from '@/components/features/AnswersByQuestion'
 import { StandardPageShell } from '@/components/layout/StandardPageShell'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 
 export default async function SubmissionsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -18,7 +17,8 @@ export default async function SubmissionsPage({ params }: { params: Promise<{ id
     if (isNaN(projectId)) notFound()
 
     const session = await getSession()
-    if (!session?.user) return redirect('/login')
+    const locale = await getLocale()
+    if (!session?.user) return redirect(`/${locale}/login`)
 
     const project = await db.query.projects.findFirst({
         where: eq(projects.id, projectId),

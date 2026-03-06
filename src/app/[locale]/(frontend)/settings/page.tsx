@@ -5,15 +5,16 @@ import { ArrowLeft } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
 import { Button } from '@/components/ui/button'
 import { getSession } from '@/actions/auth'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
 export default async function SettingsPage() {
     const session = await getSession()
+    const locale = await getLocale()
 
     if (!session) {
-        redirect('/login')
+        redirect(`/${locale}/login`)
     }
 
     const t = await getTranslations('settings')
