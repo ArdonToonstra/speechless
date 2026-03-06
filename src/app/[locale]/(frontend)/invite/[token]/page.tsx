@@ -8,8 +8,8 @@ import { getSession } from '@/actions/auth'
 
 export const dynamic = 'force-dynamic'
 
-export default async function InvitePage({ params }: { params: Promise<{ token: string }> }) {
-    const { token } = await params
+export default async function InvitePage({ params }: { params: Promise<{ token: string; locale: string }> }) {
+    const { token, locale } = await params
     const session = await getSession()
 
     const guest = await db.query.guests.findFirst({
@@ -30,7 +30,7 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
                 .set({ status: 'accepted', updatedAt: new Date() })
                 .where(eq(guests.id, guest.id))
         }
-        redirect(`/projects/${project.id}/overview`)
+        redirect(`/${locale}/projects/${project.id}/overview`)
     }
 
     return (

@@ -11,8 +11,8 @@ import { DateVoting } from '@/components/features/DateVoting'
 import { StandardPageShell } from '@/components/layout/StandardPageShell'
 import { getTranslations } from 'next-intl/server'
 
-export default async function SchedulingPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params
+export default async function SchedulingPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
+    const { id, locale } = await params
     const projectId = parseInt(id)
     if (isNaN(projectId)) notFound()
 
@@ -28,7 +28,7 @@ export default async function SchedulingPage({ params }: { params: Promise<{ id:
 
     const hasOptions = project.dateOptions && project.dateOptions.length > 0
     if (project.dateKnown && !hasOptions) {
-        redirect(`/projects/${projectId}/overview`)
+        redirect(`/${locale}/projects/${projectId}/overview`)
     }
 
     const isOwner = project.ownerId === session.user.id

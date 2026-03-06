@@ -11,11 +11,11 @@ import { getMagicLinkInfo, joinViaMagicLink } from '@/actions/magic-links'
 import { getTranslations } from 'next-intl/server'
 
 interface JoinPageProps {
-    params: Promise<{ token: string }>
+    params: Promise<{ token: string; locale: string }>
 }
 
 export default async function JoinPage({ params }: JoinPageProps) {
-    const { token } = await params
+    const { token, locale } = await params
     const session = await getSession()
     const t = await getTranslations('tokens.join')
 
@@ -131,7 +131,7 @@ export default async function JoinPage({ params }: JoinPageProps) {
 
     if (joinResult.error) {
         if (joinResult.projectId) {
-            redirect(`/projects/${joinResult.projectId}`)
+            redirect(`/${locale}/projects/${joinResult.projectId}`)
         }
 
         return (
