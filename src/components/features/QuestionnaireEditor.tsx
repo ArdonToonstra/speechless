@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react'
 import { useLocale } from 'next-intl'
-import { updateProjectQuestions, sendQuestionnaireToCollaborators } from '@/actions/questionnaire'
+import { updateProjectQuestions, sendQuestionnaireToCollaborators, sendQuestionnaireToEmails } from '@/actions/questionnaire'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Trash2, Plus, GripVertical, Copy, Check, Link2, Mail, Loader2, FileText, ChevronDown } from 'lucide-react'
+import { Trash2, Plus, GripVertical, Copy, Check, Link2, Mail, Loader2, FileText, ChevronDown, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { getTemplatesForOccasion, type QuestionTemplate } from '@/data/question-templates'
@@ -64,6 +64,10 @@ export function QuestionnaireEditor({
     const [linkCopied, setLinkCopied] = useState(false)
     const [confirmTemplate, setConfirmTemplate] = useState<QuestionTemplate | null>(null)
     const [isSendingEmails, setIsSendingEmails] = useState(false)
+    const [isSendingAdditional, setIsSendingAdditional] = useState(false)
+    const [additionalEmails, setAdditionalEmails] = useState<{ email: string; name: string }[]>([])
+    const [newEmail, setNewEmail] = useState('')
+    const [newName, setNewName] = useState('')
     const locale = useLocale()
 
     const templates = getTemplatesForOccasion(occasionType)
@@ -111,6 +115,18 @@ export function QuestionnaireEditor({
         setQuestions(processedQuestions)
         setConfirmTemplate(null)
         toast.success(`Loaded "${template.name}" template`)
+    }
+
+    const addAdditionalEmail = () => {
+        if (newEmail && newEmail.includes('@')) {
+            setAdditionalEmails([...additionalEmails, { email: newEmail, name: newName }])
+            setNewEmail('')
+            setNewName('')
+        }
+    }
+
+    const removeAdditionalEmail = (index: number) => {
+        setAdditionalEmails(additionalEmails.filter((_, i) => i !== index))
     }
 
     const handleSave = React.useCallback(async () => {
@@ -217,20 +233,20 @@ export function QuestionnaireEditor({
                 </div>
             </div>
 
-            {/* Share section - aligned with collaborators page style */}
+            {/* Share section - two columns side by side */}
             <div className="space-y-3">
                 <h2 className="text-sm font-medium text-slate-500">Share</h2>
 
-                {/* Via link */}
-                <div className="bg-white rounded-xl border border-slate-100 p-4">
-                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Via link</p>
-                    <div className="flex items-center gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Via link */}
+                    <div className="bg-white rounded-xl border border-slate-100 p-4">
+                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Via link</p>
                         <Button
                             onClick={copyLink}
                             variant="outline"
                             size="sm"
                             className={cn(
-                                "h-9 rounded-lg",
+                                "h-9 rounded-lg w-full",
                                 linkCopied && "bg-emerald-50 text-emerald-600 border-emerald-200"
                             )}
                         >
@@ -241,46 +257,121 @@ export function QuestionnaireEditor({
                             )}
                         </Button>
                     </div>
+
+                    {/* Via email — collaborators */}
+                    <div className="bg-white rounded-xl border border-slate-100 p-4">
+                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Via email — collaborators</p>
+                        {guests.length === 0 ? (
+                            <p className="text-xs text-slate-400">No collaborators yet.</p>
+                        ) : (
+                            <div className="space-y-2">
+                                <div className="space-y-1">
+                                    {guests.map((g) => (
+                                        <div key={g.id} className="flex items-center gap-1.5 text-xs text-slate-600">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-slate-300 shrink-0" />
+                                            <span className="font-medium truncate">{g.name || g.email}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <Button
+                                    onClick={async () => {
+                                        setIsSendingEmails(true)
+                                        const result = await sendQuestionnaireToCollaborators(projectId)
+                                        setIsSendingEmails(false)
+                                        if (result.error) {
+                                            toast.error(result.error)
+                                        } else {
+                                            toast.success(`Sent to ${result.sent} collaborator${result.sent === 1 ? '' : 's'}`)
+                                        }
+                                    }}
+                                    disabled={isSendingEmails}
+                                    size="sm"
+                                    className="h-9 rounded-lg w-full"
+                                >
+                                    {isSendingEmails ? (
+                                        <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Sending...</>
+                                    ) : (
+                                        <><Mail className="w-3.5 h-3.5 mr-1.5" /> Send to All</>
+                                    )}
+                                </Button>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                {/* Via email */}
+                {/* Via email — additional */}
                 <div className="bg-white rounded-xl border border-slate-100 p-4">
-                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Via email</p>
-                    {guests.length === 0 ? (
-                        <p className="text-sm text-slate-400">No collaborators yet. Add team members on the collaborators page.</p>
-                    ) : (
-                        <div className="space-y-3">
-                            <div className="space-y-1">
-                                {guests.map((g) => (
-                                    <div key={g.id} className="flex items-center gap-2 text-sm text-slate-600">
+                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Via email — additional</p>
+                    <div className="flex flex-col sm:flex-row gap-2 mb-2">
+                        <Input
+                            placeholder="Name (optional)"
+                            value={newName}
+                            onChange={(e) => setNewName(e.target.value)}
+                            className="h-9 text-sm bg-white border-slate-200 rounded-lg sm:w-36"
+                        />
+                        <Input
+                            type="email"
+                            placeholder="Email"
+                            value={newEmail}
+                            onChange={(e) => setNewEmail(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addAdditionalEmail())}
+                            className="h-9 text-sm bg-white border-slate-200 rounded-lg sm:flex-1"
+                        />
+                        <Button
+                            onClick={addAdditionalEmail}
+                            variant="outline"
+                            size="sm"
+                            disabled={!newEmail.includes('@')}
+                            className="h-9 rounded-lg px-4 shrink-0"
+                        >
+                            <Plus className="w-4 h-4 mr-1" /> Add
+                        </Button>
+                    </div>
+                    {additionalEmails.length > 0 && (
+                        <>
+                            <div className="space-y-1 mb-3">
+                                {additionalEmails.map((r, index) => (
+                                    <div key={index} className="flex items-center gap-2 px-2 py-1 rounded-lg text-sm">
                                         <span className="w-1.5 h-1.5 rounded-full bg-slate-300 shrink-0" />
-                                        <span className="font-medium">{g.name || g.email}</span>
-                                        {g.name && <span className="text-slate-400 text-xs">{g.email}</span>}
+                                        <span className="font-medium text-slate-900 truncate">{r.name || r.email}</span>
+                                        {r.name && <span className="text-xs text-slate-400 truncate">{r.email}</span>}
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => removeAdditionalEmail(index)}
+                                            className="h-6 w-6 ml-auto text-slate-300 hover:text-red-500 hover:bg-red-50 shrink-0"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </Button>
                                     </div>
                                 ))}
                             </div>
                             <Button
                                 onClick={async () => {
-                                    setIsSendingEmails(true)
-                                    const result = await sendQuestionnaireToCollaborators(projectId)
-                                    setIsSendingEmails(false)
+                                    setIsSendingAdditional(true)
+                                    const result = await sendQuestionnaireToEmails(
+                                        projectId,
+                                        additionalEmails.map(r => ({ email: r.email, name: r.name || undefined }))
+                                    )
+                                    setIsSendingAdditional(false)
                                     if (result.error) {
                                         toast.error(result.error)
                                     } else {
-                                        toast.success(`Questionnaire sent to ${result.sent} collaborator${result.sent === 1 ? '' : 's'}`)
+                                        toast.success(`Sent to ${result.sent} recipient${result.sent === 1 ? '' : 's'}`)
+                                        setAdditionalEmails([])
                                     }
                                 }}
-                                disabled={isSendingEmails}
+                                disabled={isSendingAdditional}
                                 size="sm"
                                 className="h-9 rounded-lg px-4"
                             >
-                                {isSendingEmails ? (
+                                {isSendingAdditional ? (
                                     <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Sending...</>
                                 ) : (
-                                    <><Mail className="w-3.5 h-3.5 mr-1.5" /> Send to All</>
+                                    <><Mail className="w-3.5 h-3.5 mr-1.5" /> Send to {additionalEmails.length}</>
                                 )}
                             </Button>
-                        </div>
+                        </>
                     )}
                 </div>
             </div>

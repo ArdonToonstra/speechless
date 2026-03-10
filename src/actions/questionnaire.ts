@@ -94,6 +94,45 @@ export async function sendQuestionnaireToCollaborators(projectId: number) {
     return { success: true, sent }
 }
 
+export async function sendQuestionnaireToEmails(
+    projectId: number,
+    emails: { email: string; name?: string }[]
+) {
+    const session = await requireAuth()
+
+    const project = await db.query.projects.findFirst({
+        where: and(
+            eq(projects.id, projectId),
+            eq(projects.ownerId, session.user.id)
+        ),
+    })
+
+    if (!project) return { error: 'Project not found or unauthorized' }
+    if (!project.shareToken) return { error: 'Questionnaire has no share link yet' }
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detoast.nl'
+    const questionnaireUrl = `${appUrl}/en/questionnaire/${project.shareToken}`
+    const ownerName = session.user.name || session.user.email
+
+    let sent = 0
+    for (const recipient of emails) {
+        try {
+            await sendQuestionnaireInviteEmail({
+                to: recipient.email,
+                name: recipient.name,
+                projectName: project.name,
+                questionnaireUrl,
+                ownerName,
+            })
+            sent++
+        } catch (err) {
+            console.error(`[QUESTIONNAIRE] Failed to send to ${recipient.email}:`, err)
+        }
+    }
+
+    return { success: true, sent }
+}
+
 export async function submitQuestionnaire(data: {
     projectId: number
     token: string
