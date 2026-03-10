@@ -11,7 +11,7 @@ import { addComment, replyToComment, resolveComment, reopenComment, deleteCommen
 
 export interface CommentData {
     id: number
-    submissionId: number
+    submissionId: number | null
     projectId: number
     parentId: number | null
     authorId: string
@@ -23,15 +23,17 @@ export interface CommentData {
 }
 
 interface CommentThreadProps {
-    submissionId: number
+    submissionId: number | null
     projectId: number
     authorName: string
     initialComments: CommentData[]
+    /** When true, the comment section starts expanded and shows a more prominent header */
+    standalone?: boolean
 }
 
-export function CommentThread({ submissionId, projectId, authorName, initialComments }: CommentThreadProps) {
+export function CommentThread({ submissionId, projectId, authorName, initialComments, standalone }: CommentThreadProps) {
     const [comments, setComments] = useState(initialComments)
-    const [isOpen, setIsOpen] = useState(false)
+    const [isOpen, setIsOpen] = useState(!!standalone)
     const [newComment, setNewComment] = useState('')
     const [showNewForm, setShowNewForm] = useState(false)
     const [replyingTo, setReplyingTo] = useState<number | null>(null)
@@ -142,7 +144,7 @@ export function CommentThread({ submissionId, projectId, authorName, initialComm
                         : <ChevronRight className="w-3.5 h-3.5" />
                     }
                     <MessageSquare className="w-3.5 h-3.5" />
-                    <span>Comments{count > 0 ? ` (${count})` : ''}</span>
+                    <span>{standalone ? 'Speech Feedback' : 'Comments'}{count > 0 ? ` (${count})` : ''}</span>
                 </button>
 
                 {isOpen && !showNewForm && (

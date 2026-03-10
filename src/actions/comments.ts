@@ -32,7 +32,7 @@ async function verifyProjectAccess(projectId: number, userId: string, userEmail:
 
 export async function addComment(
     projectId: number,
-    submissionId: number,
+    submissionId: number | null,
     content: string
 ): Promise<{ success: boolean; comment?: CommentRow; error?: string }> {
     const session = await requireAuth()
@@ -51,6 +51,7 @@ export async function addComment(
             content: content.trim(),
         }).returning()
 
+        revalidateForAllLocales(`/projects/${projectId}/editor`)
         revalidateForAllLocales(`/projects/${projectId}/submissions`)
         return { success: true, comment }
     } catch (error) {
@@ -62,7 +63,7 @@ export async function addComment(
 export async function replyToComment(
     projectId: number,
     parentId: number,
-    submissionId: number,
+    submissionId: number | null,
     content: string
 ): Promise<{ success: boolean; comment?: CommentRow; error?: string }> {
     const session = await requireAuth()
@@ -81,6 +82,7 @@ export async function replyToComment(
             content: content.trim(),
         }).returning()
 
+        revalidateForAllLocales(`/projects/${projectId}/editor`)
         revalidateForAllLocales(`/projects/${projectId}/submissions`)
         return { success: true, comment }
     } catch (error) {
@@ -104,6 +106,7 @@ export async function resolveComment(
             .set({ resolvedAt: new Date(), updatedAt: new Date() })
             .where(eq(comments.id, commentId))
 
+        revalidateForAllLocales(`/projects/${projectId}/editor`)
         revalidateForAllLocales(`/projects/${projectId}/submissions`)
         return { success: true }
     } catch (error) {
@@ -127,6 +130,7 @@ export async function reopenComment(
             .set({ resolvedAt: null, updatedAt: new Date() })
             .where(eq(comments.id, commentId))
 
+        revalidateForAllLocales(`/projects/${projectId}/editor`)
         revalidateForAllLocales(`/projects/${projectId}/submissions`)
         return { success: true }
     } catch (error) {
@@ -153,6 +157,7 @@ export async function deleteComment(
     try {
         await db.delete(comments).where(eq(comments.id, commentId))
 
+        revalidateForAllLocales(`/projects/${projectId}/editor`)
         revalidateForAllLocales(`/projects/${projectId}/submissions`)
         return { success: true }
     } catch (error) {

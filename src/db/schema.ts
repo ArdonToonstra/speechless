@@ -187,8 +187,7 @@ export const comments = pgTable('comments', {
     .notNull()
     .references(() => projects.id, { onDelete: 'cascade' }),
   submissionId: integer('submission_id')
-    .notNull()
-    .references(() => submissions.id, { onDelete: 'cascade' }),
+    .references(() => submissions.id, { onDelete: 'cascade' }), // null = speech-level comment
   parentId: integer('parent_id'), // null = top-level; set = reply (no FK, self-reference)
   authorId: text('author_id')
     .notNull()

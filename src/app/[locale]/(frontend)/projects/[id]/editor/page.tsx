@@ -1,10 +1,11 @@
 import React from 'react'
 import { notFound, redirect } from 'next/navigation'
-import { eq, and } from 'drizzle-orm'
-import { db, projects, guests } from '@/db'
+import { eq, and, isNull, asc } from 'drizzle-orm'
+import { db, projects, guests, comments } from '@/db'
 import { getSession } from '@/actions/auth'
 import { InteractiveEditor } from '@/components/features/InteractiveEditor'
 import { StandardPageShell } from '@/components/layout/StandardPageShell'
+import { CommentThread } from '@/components/features/CommentThread'
 import { getLocale } from 'next-intl/server'
 
 export default async function EditorPage({ params }: { params: Promise<{ id: string }> }) {
@@ -30,9 +31,25 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
         if (!guest) notFound()
     }
 
+    const speechComments = await db.query.comments.findMany({
+        where: and(eq(comments.projectId, projectId), isNull(comments.submissionId)),
+        orderBy: [asc(comments.createdAt)],
+    })
+
     return (
         <StandardPageShell>
             <InteractiveEditor project={project as any} />
+            <div className="max-w-6xl mx-auto px-4 md:px-6 mt-6">
+                <div className="bg-card rounded-xl border border-border/50">
+                    <CommentThread
+                        submissionId={null}
+                        projectId={projectId}
+                        authorName={session.user.name}
+                        initialComments={speechComments}
+                        standalone
+                    />
+                </div>
+            </div>
         </StandardPageShell>
     )
 }
