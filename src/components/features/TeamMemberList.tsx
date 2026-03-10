@@ -1,10 +1,9 @@
 'use client'
 
 import React from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Settings, Trash2, Mail, Check, Clock } from 'lucide-react'
+import { Settings, Trash2 } from 'lucide-react'
 
 interface Owner {
     id: string
@@ -36,33 +35,15 @@ interface TeamMemberListProps {
 const roleConfig: Record<string, { label: string; className: string }> = {
     'owner': {
         label: 'Owner',
-        className: 'bg-amber-100 text-amber-800 border-amber-200',
+        className: 'bg-amber-50 text-amber-700 border-amber-200',
     },
     'speech-editor': {
         label: 'Speech-Editor',
-        className: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+        className: 'bg-indigo-50 text-indigo-700 border-indigo-200',
     },
     'collaborator': {
         label: 'Collaborator',
-        className: 'bg-slate-100 text-slate-600 border-slate-200',
-    },
-}
-
-const statusConfig: Record<string, { icon: React.ReactNode; label: string; className: string }> = {
-    'accepted': {
-        icon: <Check className="w-3 h-3" />,
-        label: 'Accepted',
-        className: 'text-emerald-600',
-    },
-    'invited': {
-        icon: <Clock className="w-3 h-3" />,
-        label: 'Pending',
-        className: 'text-amber-600',
-    },
-    'declined': {
-        icon: null,
-        label: 'Declined',
-        className: 'text-red-600',
+        className: 'bg-slate-50 text-slate-600 border-slate-200',
     },
 }
 
@@ -74,20 +55,13 @@ export function TeamMemberList({
     onEditRole,
     onDelete,
 }: TeamMemberListProps) {
-    const totalMembers = 1 + guests.length // Owner + guests
-
     return (
-        <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
-            <CardHeader className="border-b border-slate-100 bg-white/50 px-8 py-6">
-                <CardTitle className="text-xl font-semibold text-slate-800">
-                    Team Members ({totalMembers})
-                </CardTitle>
-                <CardDescription className="text-slate-500">
-                    Manage your project team and their permissions
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6 space-y-3">
-                {/* Owner Row */}
+        <div>
+            <h2 className="text-sm font-medium text-slate-500 mb-3">
+                Team ({1 + guests.length})
+            </h2>
+            <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-100 overflow-hidden">
+                {/* Owner */}
                 <MemberRow
                     name={owner.name}
                     email={owner.email}
@@ -95,11 +69,11 @@ export function TeamMemberList({
                     status="accepted"
                     isCurrentUser={owner.id === currentUserId}
                     canManage={false}
-                    onEdit={() => { }}
-                    onDelete={() => { }}
+                    onEdit={() => {}}
+                    onDelete={() => {}}
                 />
 
-                {/* Guest Rows */}
+                {/* Guests */}
                 {guests.map((guest) => (
                     <MemberRow
                         key={guest.id}
@@ -115,12 +89,12 @@ export function TeamMemberList({
                 ))}
 
                 {guests.length === 0 && (
-                    <div className="text-center py-8 text-slate-500">
-                        <p>No team members yet. Invite collaborators below!</p>
+                    <div className="px-4 py-6 text-center text-sm text-slate-400">
+                        No team members yet
                     </div>
                 )}
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     )
 }
 
@@ -146,59 +120,52 @@ function MemberRow({
     onDelete,
 }: MemberRowProps) {
     const roleInfo = roleConfig[role] || roleConfig['collaborator']
-    const statusInfo = statusConfig[status] || statusConfig['invited']
-    const displayName = name || 'Unnamed'
+    const displayName = name || email
     const initial = displayName.charAt(0).toUpperCase()
+    const isPending = role !== 'owner' && status === 'invited'
 
     return (
-        <div className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl hover:bg-slate-50/80 transition-all bg-white shadow-sm">
-            <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
-                    {initial}
-                </div>
-                <div>
-                    <div className="flex items-center gap-2">
-                        <p className="font-semibold text-slate-900">{displayName}</p>
-                        {isCurrentUser && (
-                            <span className="text-xs text-slate-400">(you)</span>
-                        )}
-                    </div>
-                    <div className="text-sm text-slate-500 flex items-center gap-3 flex-wrap mt-1">
-                        <span className="flex items-center gap-1.5">
-                            <Mail className="w-3.5 h-3.5" /> {email}
-                        </span>
-                        <Badge
-                            variant="outline"
-                            className={`text-xs font-medium border ${roleInfo.className}`}
-                        >
-                            {roleInfo.label}
-                        </Badge>
-                        {role !== 'owner' && status !== 'accepted' && (
-                            <span className={`flex items-center gap-1 text-xs ${statusInfo.className}`}>
-                                {statusInfo.icon} {statusInfo.label}
-                            </span>
-                        )}
-                    </div>
-                </div>
+        <div className="flex items-center gap-3 px-4 py-3">
+            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-sm font-medium shrink-0">
+                {initial}
             </div>
-
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-slate-900 truncate">{displayName}</span>
+                    {isCurrentUser && (
+                        <span className="text-xs text-slate-400">you</span>
+                    )}
+                    {isPending && (
+                        <span className="text-xs text-amber-500">pending</span>
+                    )}
+                </div>
+                {name && (
+                    <p className="text-xs text-slate-400 truncate">{email}</p>
+                )}
+            </div>
+            <Badge
+                variant="outline"
+                className={`text-[11px] font-medium shrink-0 ${roleInfo.className}`}
+            >
+                {roleInfo.label}
+            </Badge>
             {canManage && role !== 'owner' && (
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5 shrink-0">
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={onEdit}
-                        className="h-9 w-9 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                        className="h-7 w-7 text-slate-300 hover:text-slate-600"
                     >
-                        <Settings className="w-4 h-4" />
+                        <Settings className="w-3.5 h-3.5" />
                     </Button>
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={onDelete}
-                        className="h-9 w-9 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50"
+                        className="h-7 w-7 text-slate-300 hover:text-red-500"
                     >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                 </div>
             )}

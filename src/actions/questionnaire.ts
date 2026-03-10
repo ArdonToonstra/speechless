@@ -1,11 +1,12 @@
 'use server'
 
 import { db, projects, guests, submissions } from '@/db'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, ne } from 'drizzle-orm'
 import { getSession } from './auth'
 import { revalidateForAllLocales } from '@/lib/revalidation'
 import { requireAuth } from './auth'
 import type { QuestionItem, AnswerItem } from '@/db/schema'
+import { sendQuestionnaireInviteEmail } from '@/lib/email'
 
 export async function updateProjectQuestions(projectId: number, formData: FormData) {
     const session = await requireAuth()
@@ -46,6 +47,51 @@ export async function updateProjectQuestions(projectId: number, formData: FormDa
         console.error('Failed to update questions:', error)
         return { error: 'Failed to update questions' }
     }
+}
+
+export async function sendQuestionnaireToCollaborators(projectId: number) {
+    const session = await requireAuth()
+
+    const project = await db.query.projects.findFirst({
+        where: and(
+            eq(projects.id, projectId),
+            eq(projects.ownerId, session.user.id)
+        ),
+    })
+
+    if (!project) return { error: 'Project not found or unauthorized' }
+    if (!project.shareToken) return { error: 'Questionnaire has no share link yet' }
+
+    const projectGuests = await db.query.guests.findMany({
+        where: and(
+            eq(guests.projectId, projectId),
+            ne(guests.role, 'contributor')
+        ),
+    })
+
+    const eligible = projectGuests.filter(g => g.status !== 'declined' && g.email && !g.email.endsWith('@anonymous.local'))
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detoast.nl'
+    const questionnaireUrl = `${appUrl}/en/questionnaire/${project.shareToken}`
+    const ownerName = session.user.name || session.user.email
+
+    let sent = 0
+    for (const guest of eligible) {
+        try {
+            await sendQuestionnaireInviteEmail({
+                to: guest.email,
+                name: guest.name || undefined,
+                projectName: project.name,
+                questionnaireUrl,
+                ownerName,
+            })
+            sent++
+        } catch (err) {
+            console.error(`[QUESTIONNAIRE] Failed to send to ${guest.email}:`, err)
+        }
+    }
+
+    return { success: true, sent }
 }
 
 export async function submitQuestionnaire(data: {

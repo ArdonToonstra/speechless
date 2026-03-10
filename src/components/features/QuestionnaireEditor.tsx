@@ -2,14 +2,13 @@
 
 import React, { useState } from 'react'
 import { useLocale } from 'next-intl'
-import { updateProjectQuestions } from '@/actions/questionnaire'
+import { updateProjectQuestions, sendQuestionnaireToCollaborators } from '@/actions/questionnaire'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Trash2, Plus, GripVertical, Copy, Check, Link2, Mail, FileText, ChevronDown } from 'lucide-react'
+import { Trash2, Plus, GripVertical, Copy, Check, Link2, Mail, Loader2, FileText, ChevronDown } from 'lucide-react'
 import { toast } from 'sonner'
 import { getTemplatesForOccasion, type QuestionTemplate } from '@/data/question-templates'
 import {
@@ -41,6 +40,8 @@ interface QuestionnaireEditorProps {
     speechReceiverName?: string
     shareToken?: string
     occasionType?: string
+    guests?: Array<{ id: number; name: string | null; email: string }>
+    ownerName?: string
 }
 
 export function QuestionnaireEditor({
@@ -49,7 +50,9 @@ export function QuestionnaireEditor({
     initialDescription,
     speechReceiverName,
     shareToken,
-    occasionType = 'other'
+    occasionType = 'other',
+    guests = [],
+    ownerName,
 }: QuestionnaireEditorProps) {
     // Replace placeholder in initial questions
     const processedInitialQuestions = initialQuestions?.map(q => ({
@@ -62,6 +65,7 @@ export function QuestionnaireEditor({
     const [lastSaved, setLastSaved] = useState<Date | null>(null)
     const [linkCopied, setLinkCopied] = useState(false)
     const [confirmTemplate, setConfirmTemplate] = useState<QuestionTemplate | null>(null)
+    const [isSendingEmails, setIsSendingEmails] = useState(false)
     const locale = useLocale()
 
     // Get available templates for this occasion
@@ -232,30 +236,28 @@ export function QuestionnaireEditor({
             </Card>
 
             {/* Shareable Link Section */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
+            <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
+                <CardHeader className="border-b border-slate-100 bg-white/50 px-8 py-6">
+                    <CardTitle className="text-xl font-semibold text-slate-800 flex items-center gap-2">
                         <Link2 className="w-5 h-5" />
                         Share Questionnaire
                     </CardTitle>
-                    <CardDescription>Share this link with guests to collect their responses</CardDescription>
+                    <CardDescription className="text-slate-500">
+                        Share this link with guests to collect their responses
+                    </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="flex gap-2">
-                        <Input
-                            value={shareableLink}
-                            readOnly
-                            className="font-mono text-sm"
-                        />
+                <CardContent className="p-6 space-y-6">
+                    {/* Copy link (no URL shown) */}
+                    <div className="flex items-center gap-3">
                         <Button
                             onClick={copyLink}
-                            variant={linkCopied ? "default" : "outline"}
-                            className="shrink-0"
+                            variant="outline"
+                            className={linkCopied ? "bg-emerald-50 text-emerald-600 border-emerald-200 rounded-xl h-11 px-5" : "rounded-xl h-11 px-5"}
                         >
                             {linkCopied ? (
                                 <>
                                     <Check className="w-4 h-4 mr-2" />
-                                    Copied!
+                                    Link copied!
                                 </>
                             ) : (
                                 <>
@@ -264,13 +266,63 @@ export function QuestionnaireEditor({
                                 </>
                             )}
                         </Button>
+                        <span className="text-sm text-slate-400">Share with anyone to collect responses</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Mail className="w-4 h-4" />
-                        <span>Email sending:</span>
-                        <Badge variant="secondary" className="bg-amber-100 text-amber-800">
-                            Coming Soon
-                        </Badge>
+
+                    {/* Divider */}
+                    <div className="flex items-center gap-3">
+                        <hr className="flex-1 border-slate-100" />
+                        <span className="text-xs text-slate-400 font-medium uppercase tracking-wide">or</span>
+                        <hr className="flex-1 border-slate-100" />
+                    </div>
+
+                    {/* Send to collaborators */}
+                    <div className="space-y-3">
+                        <p className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                            <Mail className="w-4 h-4 text-slate-400" />
+                            Send to collaborators
+                        </p>
+                        {guests.length === 0 ? (
+                            <p className="text-sm text-slate-400">No collaborators yet. Add team members on the collaborators page.</p>
+                        ) : (
+                            <>
+                                <ul className="space-y-1.5">
+                                    {guests.map((g) => (
+                                        <li key={g.id} className="flex items-center gap-2 text-sm text-slate-600">
+                                            <span className="w-2 h-2 rounded-full bg-slate-300 shrink-0" />
+                                            <span className="font-medium">{g.name || g.email}</span>
+                                            {g.name && <span className="text-slate-400">{g.email}</span>}
+                                        </li>
+                                    ))}
+                                </ul>
+                                <Button
+                                    onClick={async () => {
+                                        setIsSendingEmails(true)
+                                        const result = await sendQuestionnaireToCollaborators(projectId)
+                                        setIsSendingEmails(false)
+                                        if (result.error) {
+                                            toast.error(result.error)
+                                        } else {
+                                            toast.success(`Questionnaire sent to ${result.sent} collaborator${result.sent === 1 ? '' : 's'}`)
+                                        }
+                                    }}
+                                    disabled={isSendingEmails}
+                                    className="rounded-xl h-11 px-5"
+                                >
+                                    {isSendingEmails ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                            Sending...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Mail className="w-4 h-4 mr-2" />
+                                            Send to All
+                                        </>
+                                    )}
+                                </Button>
+                            </>
+                        )}
                     </div>
                 </CardContent>
             </Card>

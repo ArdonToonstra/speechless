@@ -3,17 +3,17 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Link2, Copy, Check, RefreshCw, AlertCircle } from 'lucide-react'
 import { getMagicLink, regenerateMagicLink, type MagicLinkRole } from '@/actions/magic-links'
-import { format, formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { useLocale } from 'next-intl'
 
 interface MagicLinkGeneratorProps {
     projectId: number
+    compact?: boolean
 }
 
 interface MagicLink {
@@ -25,7 +25,7 @@ interface MagicLink {
     usageCount: number
 }
 
-export function MagicLinkGenerator({ projectId }: MagicLinkGeneratorProps) {
+export function MagicLinkGenerator({ projectId, compact = false }: MagicLinkGeneratorProps) {
     const [magicLink, setMagicLink] = useState<MagicLink | null>(null)
     const [selectedRole, setSelectedRole] = useState<MagicLinkRole>('collaborator')
     const [isLoading, setIsLoading] = useState(true)
@@ -80,8 +80,126 @@ export function MagicLinkGenerator({ projectId }: MagicLinkGeneratorProps) {
 
     const isExpired = magicLink ? new Date(magicLink.expiresAt) < new Date() : false
     const isAtLimit = magicLink ? magicLink.usageCount >= magicLink.usageLimit : false
-    const remainingUses = magicLink ? magicLink.usageLimit - magicLink.usageCount : 0
     const isDisabled = isExpired || isAtLimit
+
+    if (compact) {
+        if (isLoading) return <div className="py-2 text-sm text-slate-400">Loading link...</div>
+        if (error) return <div className="text-sm text-red-600">{error}</div>
+
+        return (
+            <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={copyToClipboard}
+                        disabled={isDisabled}
+                        className={cn(
+                            "h-9 rounded-lg flex-1 sm:flex-none",
+                            copied && "bg-emerald-50 text-emerald-600 border-emerald-200"
+                        )}
+                    >
+                        {copied ? (
+                            <><Check className="w-3.5 h-3.5 mr-1.5" /> Copied!</>
+                        ) : (
+                            <><Link2 className="w-3.5 h-3.5 mr-1.5" /> Copy invite link</>
+                        )}
+                    </Button>
+                    <Select
+                        value={selectedRole}
+                        onValueChange={(v) => setSelectedRole(v as MagicLinkRole)}
+                    >
+                        <SelectTrigger className="h-9 text-sm border-slate-200 rounded-lg flex-1 sm:flex-none sm:w-40">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="collaborator">Collaborator</SelectItem>
+                            <SelectItem value="speech-editor">Speech-Editor</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-slate-400">
+                    <span>
+                        {isExpired ? (
+                            <span className="text-red-500">Expired</span>
+                        ) : isAtLimit ? (
+                            <span className="text-amber-500">Limit reached</span>
+                        ) : magicLink ? (
+                            `Expires ${formatDistanceToNow(magicLink.expiresAt, { addSuffix: true })}`
+                        ) : null}
+                    </span>
+                    <span>&middot;</span>
+                    <button
+                        onClick={handleRegenerate}
+                        disabled={isRegenerating}
+                        className="hover:text-slate-600 underline underline-offset-2"
+                    >
+                        {isRegenerating ? 'regenerating...' : 'regenerate'}
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
+    // Standalone card mode (non-compact)
+    const inner = isLoading ? (
+        <div className="text-center py-4 text-slate-500 text-sm">Loading...</div>
+    ) : error ? (
+        <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-800 flex items-center gap-3">
+            <AlertCircle className="w-5 h-5" />
+            {error}
+        </div>
+    ) : (
+        <div className="space-y-4">
+            <div className="space-y-2">
+                <Label className="text-sm font-medium text-slate-700">
+                    New members will join as:
+                </Label>
+                <Select
+                    value={selectedRole}
+                    onValueChange={(v) => setSelectedRole(v as MagicLinkRole)}
+                >
+                    <SelectTrigger className="bg-white border-slate-200 h-11 rounded-xl">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="collaborator">Collaborator (View & submit input)</SelectItem>
+                        <SelectItem value="speech-editor">Speech-Editor (Edit speech & manage team)</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+            <div className="flex items-center gap-3">
+                <Button
+                    variant="outline"
+                    onClick={copyToClipboard}
+                    disabled={isDisabled}
+                    className={cn(
+                        "h-11 px-5 rounded-xl",
+                        copied && "bg-emerald-50 text-emerald-600 border-emerald-200"
+                    )}
+                >
+                    {copied ? (
+                        <><Check className="w-4 h-4 mr-2" /> Link copied!</>
+                    ) : (
+                        <><Copy className="w-4 h-4 mr-2" /> Copy Link</>
+                    )}
+                </Button>
+                <span className="text-sm text-slate-400">
+                    {isExpired ? 'Expired' : isAtLimit ? 'Usage limit reached' : magicLink ? `Expires ${formatDistanceToNow(magicLink.expiresAt, { addSuffix: true })}` : null}
+                </span>
+            </div>
+            <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleRegenerate}
+                disabled={isRegenerating}
+                className="text-slate-500 hover:text-slate-800 px-0"
+            >
+                <RefreshCw className={cn("w-4 h-4 mr-2", isRegenerating && "animate-spin")} />
+                {isRegenerating ? 'Regenerating...' : 'Regenerate link'}
+            </Button>
+        </div>
+    )
 
     return (
         <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
@@ -94,110 +212,8 @@ export function MagicLinkGenerator({ projectId }: MagicLinkGeneratorProps) {
                     Share this link to let anyone join as a team member
                 </CardDescription>
             </CardHeader>
-            <CardContent className="p-6 space-y-6">
-                {isLoading ? (
-                    <div className="text-center py-8 text-slate-500">
-                        Loading...
-                    </div>
-                ) : error ? (
-                    <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-800 flex items-center gap-3">
-                        <AlertCircle className="w-5 h-5" />
-                        {error}
-                    </div>
-                ) : (
-                    <>
-                        {/* Role Selection */}
-                        <div className="space-y-2">
-                            <Label className="text-sm font-medium text-slate-700">
-                                New members will join as:
-                            </Label>
-                            <Select
-                                value={selectedRole}
-                                onValueChange={(v) => setSelectedRole(v as MagicLinkRole)}
-                            >
-                                <SelectTrigger className="bg-white border-slate-200 h-11 rounded-xl">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="collaborator">Collaborator (View & submit input)</SelectItem>
-                                    <SelectItem value="speech-editor">Speech-Editor (Edit speech & manage team)</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {/* Link Display */}
-                        <div className="space-y-2">
-                            <div className="flex gap-2">
-                                <Input
-                                    value={fullLink}
-                                    readOnly
-                                    className={cn(
-                                        "bg-slate-50 border-slate-200 rounded-xl h-11 font-mono text-sm",
-                                        isDisabled && "opacity-50"
-                                    )}
-                                />
-                                <Button
-                                    variant="outline"
-                                    onClick={copyToClipboard}
-                                    disabled={isDisabled}
-                                    className={cn(
-                                        "h-11 px-4 rounded-xl shrink-0",
-                                        copied && "bg-emerald-50 text-emerald-600 border-emerald-200"
-                                    )}
-                                >
-                                    {copied ? (
-                                        <>
-                                            <Check className="w-4 h-4 mr-2" />
-                                            Copied
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Copy className="w-4 h-4 mr-2" />
-                                            Copy
-                                        </>
-                                    )}
-                                </Button>
-                            </div>
-                        </div>
-
-                        {/* Status & Meta */}
-                        <div className="flex flex-wrap items-center justify-between gap-4 text-sm">
-                            <div className="flex items-center gap-4 text-slate-500">
-                                {isExpired ? (
-                                    <span className="text-red-600 flex items-center gap-1">
-                                        <AlertCircle className="w-4 h-4" />
-                                        Expired
-                                    </span>
-                                ) : isAtLimit ? (
-                                    <span className="text-amber-600 flex items-center gap-1">
-                                        <AlertCircle className="w-4 h-4" />
-                                        Usage limit reached
-                                    </span>
-                                ) : (
-                                    <span>
-                                        Expires {magicLink && formatDistanceToNow(magicLink.expiresAt, { addSuffix: true })}
-                                    </span>
-                                )}
-                            </div>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleRegenerate}
-                                disabled={isRegenerating}
-                                className="text-slate-600 hover:text-slate-900"
-                            >
-                                <RefreshCw className={cn("w-4 h-4 mr-2", isRegenerating && "animate-spin")} />
-                                {isRegenerating ? 'Regenerating...' : 'Regenerate Link'}
-                            </Button>
-                        </div>
-
-                        {(isExpired || isAtLimit) && (
-                            <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl text-sm text-amber-800">
-                                This link is no longer valid. Click &quot;Regenerate Link&quot; to create a new one.
-                            </div>
-                        )}
-                    </>
-                )}
+            <CardContent className="p-6">
+                {inner}
             </CardContent>
         </Card>
     )

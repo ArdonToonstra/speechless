@@ -1,5 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, ne } from 'drizzle-orm'
 import { ClipboardList, PenLine } from 'lucide-react'
 import { db, projects, guests, submissions } from '@/db'
 import { getSession } from '@/actions/auth'
@@ -34,6 +34,10 @@ export default async function QuestionnairePage({ params }: { params: Promise<{ 
             text: q.text || q.question || ''
         }))
 
+        const projectGuests = await db.query.guests.findMany({
+            where: and(eq(guests.projectId, projectId), ne(guests.role, 'contributor')),
+        })
+
         return (
             <StandardPageShell>
                 <div className="max-w-4xl mx-auto space-y-8">
@@ -60,6 +64,8 @@ export default async function QuestionnairePage({ params }: { params: Promise<{ 
                         speechReceiverName={project.honoree || undefined}
                         shareToken={project.shareToken || undefined}
                         occasionType={project.occasionType || 'other'}
+                        guests={projectGuests.map(g => ({ id: g.id, name: g.name, email: g.email }))}
+                        ownerName={session.user.name || session.user.email}
                     />
                 </div>
             </StandardPageShell>

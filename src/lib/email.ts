@@ -213,6 +213,109 @@ export async function sendDeletionWarningEmail({ to, name }: SendDeletionWarning
     }
 }
 
+type SendCollaboratorInviteEmailProps = {
+    to: string
+    name?: string
+    projectName: string
+    projectUrl: string
+    role: 'collaborator' | 'speech-editor'
+    inviterName: string
+}
+
+export async function sendCollaboratorInviteEmail({ to, name, projectName, projectUrl, role, inviterName }: SendCollaboratorInviteEmailProps) {
+    if (process.env.NODE_ENV !== 'production' && !hasValidKeys) {
+        console.log('[EMAIL] Dev mode - Skipping collaborator invite email to:', to, 'Project:', projectName)
+        return { success: true, devMode: true }
+    }
+
+    if (!mailjet) {
+        throw new Error('Email service not configured - missing API keys')
+    }
+
+    const roleLabel = role === 'speech-editor' ? 'Speech-Editor' : 'Collaborator'
+    const roleDescription = role === 'speech-editor'
+        ? 'You can edit the speech and manage the team.'
+        : 'You can provide input and answer the questionnaire.'
+    const greeting = name ? `Hi ${name},` : 'Hi,'
+
+    console.log('[EMAIL] Sending collaborator invite email to:', to)
+    try {
+        const request = mailjet.post('send', { version: 'v3.1' }).request({
+            Messages: [
+                {
+                    From: { Email: 'noreply@detoast.nl', Name: 'Toast' },
+                    To: [{ Email: to }],
+                    Subject: `You've been invited to collaborate on "${projectName}"`,
+                    TextPart: `${greeting}\n\n${inviterName} has invited you to collaborate on "${projectName}" as a ${roleLabel}. ${roleDescription}\n\nOpen the project: ${projectUrl}`,
+                    HTMLPart: emailLayout(`
+                      <h2 style="margin:0 0 8px;font-size:20px;color:#166162;">You've been invited!</h2>
+                      <p style="margin:0 0 8px;color:#3a3a2e;font-size:15px;line-height:1.6;">${greeting}</p>
+                      <p style="margin:0 0 24px;color:#3a3a2e;font-size:15px;line-height:1.6;"><strong>${inviterName}</strong> has invited you to collaborate on <strong>"${projectName}"</strong> as a <strong>${roleLabel}</strong>. ${roleDescription}</p>
+                      <div style="text-align:center;margin:28px 0;">
+                        ${emailButton(projectUrl, 'Open Project')}
+                      </div>
+                      <p style="margin:0;font-size:13px;color:#93895E;">If you weren't expecting this invitation, you can safely ignore this email.</p>
+                    `),
+                },
+            ],
+        })
+        const result = await request
+        return result.body
+    } catch (error) {
+        console.error('Error sending collaborator invite email:', error)
+        throw new Error('Failed to send collaborator invite email')
+    }
+}
+
+type SendQuestionnaireInviteEmailProps = {
+    to: string
+    name?: string
+    projectName: string
+    questionnaireUrl: string
+    ownerName: string
+}
+
+export async function sendQuestionnaireInviteEmail({ to, name, projectName, questionnaireUrl, ownerName }: SendQuestionnaireInviteEmailProps) {
+    if (process.env.NODE_ENV !== 'production' && !hasValidKeys) {
+        console.log('[EMAIL] Dev mode - Skipping questionnaire invite email to:', to, 'Project:', projectName)
+        return { success: true, devMode: true }
+    }
+
+    if (!mailjet) {
+        throw new Error('Email service not configured - missing API keys')
+    }
+
+    const greeting = name ? `Hi ${name},` : 'Hi,'
+
+    console.log('[EMAIL] Sending questionnaire invite email to:', to)
+    try {
+        const request = mailjet.post('send', { version: 'v3.1' }).request({
+            Messages: [
+                {
+                    From: { Email: 'noreply@detoast.nl', Name: 'Toast' },
+                    To: [{ Email: to }],
+                    Subject: `${ownerName} wants your memories for "${projectName}"`,
+                    TextPart: `${greeting}\n\n${ownerName} is writing a speech for "${projectName}" and would love to hear your stories and memories. It only takes a few minutes!\n\nFill in the questionnaire: ${questionnaireUrl}`,
+                    HTMLPart: emailLayout(`
+                      <h2 style="margin:0 0 8px;font-size:20px;color:#166162;">Share your memories</h2>
+                      <p style="margin:0 0 8px;color:#3a3a2e;font-size:15px;line-height:1.6;">${greeting}</p>
+                      <p style="margin:0 0 24px;color:#3a3a2e;font-size:15px;line-height:1.6;"><strong>${ownerName}</strong> is writing a speech for <strong>"${projectName}"</strong> and would love to hear your stories and memories. It only takes a few minutes!</p>
+                      <div style="text-align:center;margin:28px 0;">
+                        ${emailButton(questionnaireUrl, 'Fill in Questionnaire')}
+                      </div>
+                      <p style="margin:0;font-size:13px;color:#93895E;">If you have any questions, reply to this email or reach out directly.</p>
+                    `),
+                },
+            ],
+        })
+        const result = await request
+        return result.body
+    } catch (error) {
+        console.error('Error sending questionnaire invite email:', error)
+        throw new Error('Failed to send questionnaire invite email')
+    }
+}
+
 type SendEmailChangeVerificationProps = {
     to: string
     code: string

@@ -4,11 +4,8 @@ import React, { useState } from 'react'
 import { inviteGuest, deleteGuest } from '@/actions/guests'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Plus, Mail, Link2, Check, Loader2 } from 'lucide-react'
+import { Plus, Check, Loader2 } from 'lucide-react'
 import {
     Dialog,
     DialogContent,
@@ -40,7 +37,6 @@ interface Guest {
     emailStatus: string
 }
 
-// Simplified type for editing - only requires fields used by RoleManagementDialog
 interface EditableGuest {
     id: number
     email: string
@@ -126,8 +122,8 @@ export function GuestManagement({
     }
 
     return (
-        <div className="space-y-8">
-            {/* Team Members List */}
+        <div className="space-y-6">
+            {/* Team list */}
             <TeamMemberList
                 owner={owner}
                 guests={guests}
@@ -137,113 +133,72 @@ export function GuestManagement({
                 onDelete={(guestId) => setConfirmDeleteId(guestId)}
             />
 
-            {/* Add Team Member Section */}
+            {/* Invite section */}
             {canManage && (
-                <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
-                    <CardHeader className="border-b border-slate-100 bg-white/50 px-8 py-6">
-                        <CardTitle className="text-xl font-semibold text-slate-800">
-                            Add Team Member
-                        </CardTitle>
-                        <CardDescription className="text-slate-500">
-                            Invite collaborators via email or share a magic link
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-6">
-                        {successMessage && (
-                            <div className="mb-6 p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-sm text-emerald-800 flex items-center gap-3 shadow-sm">
-                                <Check className="w-5 h-5 text-emerald-600" />
-                                {successMessage}
-                            </div>
-                        )}
+                <div className="space-y-3">
+                    <h2 className="text-sm font-medium text-slate-500">Invite</h2>
 
-                        {errorMessage && (
-                            <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-800">
-                                {errorMessage}
-                            </div>
-                        )}
+                    {successMessage && (
+                        <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-lg text-sm text-emerald-700 flex items-center gap-2">
+                            <Check className="w-4 h-4" />
+                            {successMessage}
+                        </div>
+                    )}
 
-                        <Tabs defaultValue="email" className="w-full">
-                            <TabsList className="grid w-full grid-cols-2 mb-6 bg-slate-100">
-                                <TabsTrigger value="email" className="gap-2 data-[state=active]:bg-white">
-                                    <Mail className="w-4 h-4" />
-                                    Via Email
-                                </TabsTrigger>
-                                <TabsTrigger value="link" className="gap-2 data-[state=active]:bg-white">
-                                    <Link2 className="w-4 h-4" />
-                                    Magic Link
-                                </TabsTrigger>
-                            </TabsList>
+                    {errorMessage && (
+                        <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+                            {errorMessage}
+                        </div>
+                    )}
 
-                            <TabsContent value="email">
-                                <form onSubmit={handleInvite} className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="name" className="text-sm font-medium text-slate-700">
-                                                Name (optional)
-                                            </Label>
-                                            <Input
-                                                id="name"
-                                                placeholder="e.g. Aunt May"
-                                                value={name}
-                                                onChange={(e) => setName(e.target.value)}
-                                                className="bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm h-11 rounded-xl"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="email" className="text-sm font-medium text-slate-700">
-                                                Email
-                                            </Label>
-                                            <Input
-                                                id="email"
-                                                type="email"
-                                                placeholder="name@example.com"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                required
-                                                className="bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm h-11 rounded-xl"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="role" className="text-sm font-medium text-slate-700">
-                                                Role
-                                            </Label>
-                                            <Select value={role} onValueChange={(v) => setRole(v as Role)}>
-                                                <SelectTrigger className="bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm h-11 rounded-xl">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="collaborator">Collaborator (Input only)</SelectItem>
-                                                    <SelectItem value="speech-editor">Speech-Editor (Edit speech)</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    </div>
-                                    <Button
-                                        type="submit"
-                                        disabled={isLoading || !email.trim()}
-                                        className="w-full md:w-auto rounded-xl shadow-sm px-6"
-                                    >
-                                        {isLoading ? (
-                                            <>
-                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                Sending...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Plus className="w-4 h-4 mr-2" />
-                                                Send Invite
-                                            </>
-                                        )}
-                                    </Button>
-                                </form>
-                            </TabsContent>
+                    {/* Email invite */}
+                    <div className="bg-white rounded-xl border border-slate-100 p-4">
+                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Via email</p>
+                        <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-2">
+                            <Input
+                                placeholder="Name (optional)"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="h-9 text-sm bg-white border-slate-200 rounded-lg sm:w-36"
+                            />
+                            <Input
+                                type="email"
+                                placeholder="Email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                className="h-9 text-sm bg-white border-slate-200 rounded-lg sm:flex-1"
+                            />
+                            <Select value={role} onValueChange={(v) => setRole(v as Role)}>
+                                <SelectTrigger className="h-9 text-sm border-slate-200 rounded-lg sm:w-40">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="collaborator">Collaborator</SelectItem>
+                                    <SelectItem value="speech-editor">Speech-Editor</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Button
+                                type="submit"
+                                size="sm"
+                                disabled={isLoading || !email.trim()}
+                                className="h-9 rounded-lg px-4 shrink-0"
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <><Plus className="w-4 h-4 mr-1" /> Send</>
+                                )}
+                            </Button>
+                        </form>
+                    </div>
 
-                            <TabsContent value="link">
-                                <MagicLinkGenerator projectId={projectId} />
-                            </TabsContent>
-                        </Tabs>
-                    </CardContent>
-                </Card>
+                    {/* Magic link */}
+                    <div className="bg-white rounded-xl border border-slate-100 p-4">
+                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Via link</p>
+                        <MagicLinkGenerator projectId={projectId} compact />
+                    </div>
+                </div>
             )}
 
             {/* Role Management Dialog */}
@@ -260,7 +215,7 @@ export function GuestManagement({
                     <DialogHeader>
                         <DialogTitle>Remove Team Member</DialogTitle>
                         <DialogDescription>
-                            Are you sure you want to remove this team member? They will no longer have access to this project.
+                            Are you sure? They will lose access to this project.
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>

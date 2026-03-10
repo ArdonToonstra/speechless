@@ -5,6 +5,7 @@ import { eq, and, ne } from 'drizzle-orm'
 import { revalidateForAllLocales } from '@/lib/revalidation'
 import { requireAuth } from './auth'
 import { generateToken } from '@/lib/tokens'
+import { sendCollaboratorInviteEmail } from '@/lib/email'
 
 export async function inviteGuest(projectId: number, formData: FormData) {
     const session = await requireAuth()
@@ -42,13 +43,30 @@ export async function inviteGuest(projectId: number, formData: FormData) {
             token,
         }).returning()
 
-        // Mock email sending (console log for now)
-        console.log(`[INVITE SYSTEM] Collaborator invite prepared for ${email}`)
-        console.log(`Magic link: ${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/invite/${guest.token}`)
-        console.log(`Project: ${projectId}, Role: ${role}`)
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detoast.nl'
+        const projectUrl = `${appUrl}/en/projects/${projectId}`
+        let emailStatus: 'sent' | 'pending' = 'pending'
+
+        try {
+            await sendCollaboratorInviteEmail({
+                to: email,
+                name: name || undefined,
+                projectName: project.name,
+                projectUrl,
+                role: (role || 'collaborator') as 'collaborator' | 'speech-editor',
+                inviterName: session.user.name || session.user.email,
+            })
+            emailStatus = 'sent'
+        } catch (err) {
+            console.error('[INVITE] Failed to send invite email:', err)
+        }
+
+        if (emailStatus === 'sent') {
+            await db.update(guests).set({ emailStatus: 'sent' }).where(eq(guests.id, guest.id))
+        }
 
         revalidateForAllLocales(`/projects/${projectId}/collaborators`)
-        return { success: true, message: 'Collaborator added. Email sending will be enabled in a future update.' }
+        return { success: true, message: 'Invite sent!' }
     } catch (error) {
         console.error('Failed to invite guest:', error)
         return { error: 'Failed to invite guest' }
