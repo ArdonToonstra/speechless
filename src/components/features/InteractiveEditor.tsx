@@ -4,9 +4,11 @@ import React, { useState, useCallback, useMemo } from 'react'
 import type { JSONContent } from '@tiptap/core'
 import { TiptapEditor } from '@/components/editor/TiptapEditor'
 import { Button } from '@/components/ui/button'
-import { Save, PenTool } from 'lucide-react'
+import { Save, PenTool, History } from 'lucide-react'
 import { updateProjectContent } from '@/actions/projects'
+import { createSnapshot } from '@/actions/snapshots'
 import { normalizeContent } from '@/lib/contentMigration'
+import { VersionHistory } from '@/components/features/VersionHistory'
 import { cn } from '@/lib/utils'
 
 interface Stats {
@@ -20,6 +22,7 @@ export function InteractiveEditor({ project }: { project: any }) {
     const [lastSaved, setLastSaved] = useState<Date | null>(new Date(project.updatedAt))
     const [focusMode, setFocusMode] = useState(false)
     const [stats, setStats] = useState<Stats>({ words: 0, chars: 0, readTime: 0 })
+    const [historyOpen, setHistoryOpen] = useState(false)
 
     // Convert content from Lexical to Tiptap if needed
     const initialContent = useMemo(() => {
@@ -31,6 +34,17 @@ export function InteractiveEditor({ project }: { project: any }) {
     // Debounce ref for auto-save
     const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
     const currentJsonRef = React.useRef<JSONContent | null>(null)
+
+    // Auto-snapshot throttle: at most one every 10 minutes during active editing
+    const lastSnapshotTimeRef = React.useRef<number>(0)
+    const AUTO_SNAPSHOT_INTERVAL = 10 * 60 * 1000 // 10 minutes
+
+    const maybeAutoSnapshot = useCallback(async (json: JSONContent) => {
+        const now = Date.now()
+        if (now - lastSnapshotTimeRef.current < AUTO_SNAPSHOT_INTERVAL) return
+        lastSnapshotTimeRef.current = now
+        await createSnapshot(String(project.id), json, stats.words)
+    }, [project.id, stats.words])
 
     const saveContent = useCallback(async (json: JSONContent) => {
         setSaving(true)
@@ -50,20 +64,29 @@ export function InteractiveEditor({ project }: { project: any }) {
 
         timeoutRef.current = setTimeout(() => {
             saveContent(json)
+            maybeAutoSnapshot(json)
         }, 2000) // Auto-save every 2 seconds of inactivity
-    }, [saveContent])
+    }, [saveContent, maybeAutoSnapshot])
 
     const onStatsChange = useCallback((newStats: Stats) => {
         setStats(newStats)
     }, [])
 
-    // Manual save trigger
-    const onManualSave = useCallback(() => {
+    // Manual save trigger — also creates a version snapshot
+    const onManualSave = useCallback(async () => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current)
         if (currentJsonRef.current) {
-            saveContent(currentJsonRef.current)
+            await saveContent(currentJsonRef.current)
+            await createSnapshot(String(project.id), currentJsonRef.current, stats.words)
+            lastSnapshotTimeRef.current = Date.now()
         }
-    }, [saveContent])
+    }, [saveContent, project.id, stats.words])
+
+    // When a version is restored, reload the page to reset the editor with new content
+    const handleRestore = useCallback((content: JSONContent) => {
+        // Force a full page reload to re-initialize the editor with restored content
+        window.location.reload()
+    }, [])
 
     const [mounted, setMounted] = React.useState(false)
 
@@ -129,6 +152,16 @@ export function InteractiveEditor({ project }: { project: any }) {
                                 <Button
                                     variant="ghost"
                                     size="sm"
+                                    onClick={() => setHistoryOpen(true)}
+                                    className="gap-2 h-9 px-4 rounded-lg hover:bg-slate-100 text-slate-700"
+                                >
+                                    <History className="w-4 h-4" />
+                                    <span className="hidden sm:inline">History</span>
+                                </Button>
+
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
                                     onClick={() => setFocusMode(true)}
                                     className="gap-2 h-9 px-4 rounded-lg hover:bg-slate-100 text-slate-700"
                                 >
@@ -174,6 +207,13 @@ export function InteractiveEditor({ project }: { project: any }) {
                     )}
                 </div>
             </main>
+
+            <VersionHistory
+                projectId={String(project.id)}
+                open={historyOpen}
+                onOpenChange={setHistoryOpen}
+                onRestore={handleRestore}
+            />
         </div>
     )
 }

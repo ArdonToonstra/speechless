@@ -200,6 +200,17 @@ export const comments = pgTable('comments', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
 
+export const contentSnapshots = pgTable('content_snapshots', {
+  id: serial('id').primaryKey(),
+  projectId: integer('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
+  content: jsonb('content').notNull(), // Tiptap JSONContent
+  wordCount: integer('word_count').notNull().default(0),
+  label: text('label'), // Optional user-provided label
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
 export const userFeedback = pgTable('user_feedback', {
   id: serial('id').primaryKey(),
   userId: text('user_id').notNull().unique().references(() => user.id, { onDelete: 'cascade' }),
@@ -254,6 +265,14 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   magicLinks: many(magicLinks),
   dateOptions: many(dateOptions),
   comments: many(comments),
+  contentSnapshots: many(contentSnapshots),
+}))
+
+export const contentSnapshotsRelations = relations(contentSnapshots, ({ one }) => ({
+  project: one(projects, {
+    fields: [contentSnapshots.projectId],
+    references: [projects.id],
+  }),
 }))
 
 export const guestsRelations = relations(guests, ({ one, many }) => ({
