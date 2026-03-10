@@ -108,14 +108,16 @@ export async function deleteAccount(formData: FormData) {
     }
 
     try {
-        // Verify the password is correct by attempting to use Better Auth
-        // We'll verify by checking if the account exists with the credential provider
-        const userAccount = await db.query.account.findFirst({
-            where: eq(account.userId, session.user.id),
-        })
-
-        if (!userAccount) {
-            return { error: 'Account not found' }
+        // Verify the password is correct before allowing deletion
+        try {
+            await auth.api.signInEmail({
+                body: {
+                    email: session.user.email,
+                    password,
+                },
+            })
+        } catch {
+            return { error: 'Incorrect password' }
         }
 
         // Delete user's projects (this will cascade to guests, invitations, submissions)

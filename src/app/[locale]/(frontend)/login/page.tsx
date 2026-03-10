@@ -8,6 +8,7 @@ import { signIn } from '@/lib/auth-client'
 import { Link, useRouter } from '@/i18n/navigation'
 import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import { isSafeRedirect } from '@/lib/utils'
 
 function LoginContent() {
     const [error, setError] = useState('')
@@ -35,7 +36,7 @@ function LoginContent() {
             setError(result.error.message || 'Invalid email or password')
             setLoading(false)
         } else {
-            router.push(redirect || (invite ? `/invite/${invite}` : '/dashboard'))
+            router.push(isSafeRedirect(redirect) ? redirect : (invite ? `/invite/${invite}` : '/dashboard'))
             router.refresh()
         }
     }

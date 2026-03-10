@@ -18,13 +18,45 @@ export type DateOptionWithResponses = {
         guest: {
             id: number
             name: string | null
-            email: string
+            email?: string
         }
     }[]
 }
 
 // Get all date options for a project with responses
-export async function getDateOptions(projectId: number): Promise<DateOptionWithResponses[]> {
+// Requires either a valid shareToken (public access) or an authenticated owner/member
+export async function getDateOptions(projectId: number, shareToken?: string): Promise<DateOptionWithResponses[]> {
+    let isOwner = false
+
+    if (shareToken) {
+        // Public access: verify share token matches the project
+        const project = await db.query.projects.findFirst({
+            where: and(eq(projects.id, projectId), eq(projects.shareToken, shareToken)),
+        })
+        if (!project) return []
+    } else {
+        // Authenticated access: verify user is owner or member
+        const session = await getSession()
+        if (!session?.user) return []
+
+        const project = await db.query.projects.findFirst({
+            where: eq(projects.id, projectId),
+        })
+        if (!project) return []
+
+        isOwner = project.ownerId === session.user.id
+        if (!isOwner) {
+            // Check if user is a guest/member of this project
+            const guest = await db.query.guests.findFirst({
+                where: and(
+                    eq(guests.projectId, projectId),
+                    eq(guests.email, session.user.email)
+                ),
+            })
+            if (!guest) return []
+        }
+    }
+
     const options = await db.query.dateOptions.findMany({
         where: eq(dateOptions.projectId, projectId),
         with: {
@@ -49,18 +81,11 @@ export async function getDateOptions(projectId: number): Promise<DateOptionWithR
             guest: {
                 id: r.guest.id,
                 name: r.guest.name,
-                email: r.guest.email
+                // Only expose emails to the project owner
+                ...(isOwner ? { email: r.guest.email } : {}),
             }
         }))
     }))
-}
-
-// Check if a project has any date options
-export async function hasDateOptions(projectId: number): Promise<boolean> {
-    const options = await db.query.dateOptions.findFirst({
-        where: eq(dateOptions.projectId, projectId)
-    })
-    return !!options
 }
 
 // Add a new date option
@@ -294,26 +319,17 @@ export async function submitDateResponseAnonymous(
     }
 }
 
-// Get date responses for a specific guest ID (used by anonymous voters)
-export async function getDateResponsesByGuestId(
-    guestId: number
-): Promise<Record<number, { response: string; note: string | null }>> {
-    const guest = await db.query.guests.findFirst({
-        where: eq(guests.id, guestId),
-        with: { dateResponses: true },
-    })
-
-    if (!guest) return {}
-
-    const responses: Record<number, { response: string; note: string | null }> = {}
-    for (const r of guest.dateResponses) {
-        responses[r.dateOptionId] = { response: r.response, note: r.note }
-    }
-    return responses
-}
-
 // Get collaborators eligible for scheduling share emails
 export async function getSchedulingCollaborators(projectId: number) {
+    const session = await getSession()
+    if (!session?.user) return []
+
+    // Verify ownership
+    const project = await db.query.projects.findFirst({
+        where: and(eq(projects.id, projectId), eq(projects.ownerId, session.user.id)),
+    })
+    if (!project) return []
+
     const projectGuests = await db.query.guests.findMany({
         where: and(
             eq(guests.projectId, projectId),

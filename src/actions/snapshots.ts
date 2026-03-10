@@ -25,6 +25,9 @@ export async function createSnapshot(
 ) {
     const session = await requireAuth()
     const pid = parseInt(projectId)
+    if (isNaN(pid)) return { error: 'Invalid project ID' }
+    if (wordCount < 0) return { error: 'Invalid word count' }
+    if (label && label.length > 200) return { error: 'Label too long (max 200 characters)' }
 
     const project = await verifyProjectOwnership(pid, session.user.id)
     if (!project) return { error: 'Unauthorized or not found' }
@@ -50,6 +53,7 @@ export async function createSnapshot(
 export async function getSnapshots(projectId: string) {
     const session = await requireAuth()
     const pid = parseInt(projectId)
+    if (isNaN(pid)) return { error: 'Invalid project ID', snapshots: [] }
 
     const project = await verifyProjectOwnership(pid, session.user.id)
     if (!project) return { error: 'Unauthorized or not found', snapshots: [] }
@@ -71,6 +75,7 @@ export async function getSnapshots(projectId: string) {
 export async function getSnapshotContent(snapshotId: number, projectId: string) {
     const session = await requireAuth()
     const pid = parseInt(projectId)
+    if (isNaN(pid)) return { error: 'Invalid project ID' }
 
     const project = await verifyProjectOwnership(pid, session.user.id)
     if (!project) return { error: 'Unauthorized or not found' }
@@ -90,6 +95,7 @@ export async function getSnapshotContent(snapshotId: number, projectId: string) 
 export async function restoreSnapshot(snapshotId: number, projectId: string) {
     const session = await requireAuth()
     const pid = parseInt(projectId)
+    if (isNaN(pid)) return { error: 'Invalid project ID' }
 
     const project = await verifyProjectOwnership(pid, session.user.id)
     if (!project) return { error: 'Unauthorized or not found' }
@@ -127,6 +133,8 @@ export async function restoreSnapshot(snapshotId: number, projectId: string) {
 export async function updateSnapshotLabel(snapshotId: number, projectId: string, label: string) {
     const session = await requireAuth()
     const pid = parseInt(projectId)
+    if (isNaN(pid)) return { error: 'Invalid project ID' }
+    if (label && label.length > 200) return { error: 'Label too long (max 200 characters)' }
 
     const project = await verifyProjectOwnership(pid, session.user.id)
     if (!project) return { error: 'Unauthorized or not found' }
@@ -144,6 +152,7 @@ export async function updateSnapshotLabel(snapshotId: number, projectId: string,
 export async function deleteSnapshot(snapshotId: number, projectId: string) {
     const session = await requireAuth()
     const pid = parseInt(projectId)
+    if (isNaN(pid)) return { error: 'Invalid project ID' }
 
     const project = await verifyProjectOwnership(pid, session.user.id)
     if (!project) return { error: 'Unauthorized or not found' }

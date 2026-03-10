@@ -17,7 +17,7 @@ export default async function PublicSchedulingPage({ params }: { params: Promise
 
     if (!project) notFound()
 
-    const options = await getDateOptions(project.id)
+    const options = await getDateOptions(project.id, token)
 
     if (options.length === 0) {
         return (

@@ -1,5 +1,15 @@
 import Mailjet from 'node-mailjet'
 
+/** Escape HTML special characters to prevent injection in email templates. */
+function escapeHtml(str: string): string {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+}
+
 // Check if valid API keys exist
 const hasValidKeys = process.env.MAILJET_API_KEY &&
     process.env.MAILJET_SECRET_KEY &&
@@ -182,6 +192,7 @@ export async function sendDeletionWarningEmail({ to, name }: SendDeletionWarning
 
     console.log('[EMAIL] Sending deletion warning email to:', to)
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detoast.nl'
+    const safeName = escapeHtml(name)
     try {
         const request = mailjet.post('send', { version: 'v3.1' }).request({
             Messages: [
@@ -195,7 +206,7 @@ export async function sendDeletionWarningEmail({ to, name }: SendDeletionWarning
                     TextPart: `Hi ${name},\n\nYour Toast account has been inactive for 5 months. If we don't see you log in within the next month, your account and all associated data will be permanently deleted.\n\nTo keep your account, simply log in at ${appUrl}/login.\n\nIf you no longer need your account, no action is required.\n\nThe Toast Team`,
                     HTMLPart: emailLayout(`
                       <h2 style="margin:0 0 8px;font-size:20px;color:#166162;">Your account will be deleted soon</h2>
-                      <p style="margin:0 0 16px;color:#3a3a2e;font-size:15px;line-height:1.6;">Hi ${name},</p>
+                      <p style="margin:0 0 16px;color:#3a3a2e;font-size:15px;line-height:1.6;">Hi ${safeName},</p>
                       <p style="margin:0 0 28px;color:#3a3a2e;font-size:15px;line-height:1.6;">Your Toast account has been inactive for <strong>5 months</strong>. If we don't see you log in within the next month, your account and all associated data will be <strong>permanently deleted</strong>.</p>
                       <div style="text-align:center;margin:28px 0;">
                         ${emailButton(`${appUrl}/login`, 'Log in to keep my account')}
@@ -236,7 +247,11 @@ export async function sendCollaboratorInviteEmail({ to, name, projectName, proje
     const roleDescription = role === 'speech-editor'
         ? 'You can edit the speech and manage the team.'
         : 'You can provide input and answer the questionnaire.'
-    const greeting = name ? `Hi ${name},` : 'Hi,'
+    const safeName = name ? escapeHtml(name) : null
+    const safeInviterName = escapeHtml(inviterName)
+    const safeProjectName = escapeHtml(projectName)
+    const greeting = safeName ? `Hi ${safeName},` : 'Hi,'
+    const textGreeting = name ? `Hi ${name},` : 'Hi,'
 
     console.log('[EMAIL] Sending collaborator invite email to:', to)
     try {
@@ -246,11 +261,11 @@ export async function sendCollaboratorInviteEmail({ to, name, projectName, proje
                     From: { Email: 'noreply@detoast.nl', Name: 'Toast' },
                     To: [{ Email: to }],
                     Subject: `You've been invited to collaborate on "${projectName}"`,
-                    TextPart: `${greeting}\n\n${inviterName} has invited you to collaborate on "${projectName}" as a ${roleLabel}. ${roleDescription}\n\nOpen the project: ${projectUrl}`,
+                    TextPart: `${textGreeting}\n\n${inviterName} has invited you to collaborate on "${projectName}" as a ${roleLabel}. ${roleDescription}\n\nOpen the project: ${projectUrl}`,
                     HTMLPart: emailLayout(`
                       <h2 style="margin:0 0 8px;font-size:20px;color:#166162;">You've been invited!</h2>
                       <p style="margin:0 0 8px;color:#3a3a2e;font-size:15px;line-height:1.6;">${greeting}</p>
-                      <p style="margin:0 0 24px;color:#3a3a2e;font-size:15px;line-height:1.6;"><strong>${inviterName}</strong> has invited you to collaborate on <strong>"${projectName}"</strong> as a <strong>${roleLabel}</strong>. ${roleDescription}</p>
+                      <p style="margin:0 0 24px;color:#3a3a2e;font-size:15px;line-height:1.6;"><strong>${safeInviterName}</strong> has invited you to collaborate on <strong>"${safeProjectName}"</strong> as a <strong>${roleLabel}</strong>. ${roleDescription}</p>
                       <div style="text-align:center;margin:28px 0;">
                         ${emailButton(projectUrl, 'Open Project')}
                       </div>
@@ -285,7 +300,11 @@ export async function sendQuestionnaireInviteEmail({ to, name, projectName, ques
         throw new Error('Email service not configured - missing API keys')
     }
 
-    const greeting = name ? `Hi ${name},` : 'Hi,'
+    const safeName = name ? escapeHtml(name) : null
+    const safeOwnerName = escapeHtml(ownerName)
+    const safeProjectName = escapeHtml(projectName)
+    const greeting = safeName ? `Hi ${safeName},` : 'Hi,'
+    const textGreeting = name ? `Hi ${name},` : 'Hi,'
 
     console.log('[EMAIL] Sending questionnaire invite email to:', to)
     try {
@@ -295,11 +314,11 @@ export async function sendQuestionnaireInviteEmail({ to, name, projectName, ques
                     From: { Email: 'noreply@detoast.nl', Name: 'Toast' },
                     To: [{ Email: to }],
                     Subject: `${ownerName} wants your memories for "${projectName}"`,
-                    TextPart: `${greeting}\n\n${ownerName} is writing a speech for "${projectName}" and would love to hear your stories and memories. It only takes a few minutes!\n\nFill in the questionnaire: ${questionnaireUrl}`,
+                    TextPart: `${textGreeting}\n\n${ownerName} is writing a speech for "${projectName}" and would love to hear your stories and memories. It only takes a few minutes!\n\nFill in the questionnaire: ${questionnaireUrl}`,
                     HTMLPart: emailLayout(`
                       <h2 style="margin:0 0 8px;font-size:20px;color:#166162;">Share your memories</h2>
                       <p style="margin:0 0 8px;color:#3a3a2e;font-size:15px;line-height:1.6;">${greeting}</p>
-                      <p style="margin:0 0 24px;color:#3a3a2e;font-size:15px;line-height:1.6;"><strong>${ownerName}</strong> is writing a speech for <strong>"${projectName}"</strong> and would love to hear your stories and memories. It only takes a few minutes!</p>
+                      <p style="margin:0 0 24px;color:#3a3a2e;font-size:15px;line-height:1.6;"><strong>${safeOwnerName}</strong> is writing a speech for <strong>"${safeProjectName}"</strong> and would love to hear your stories and memories. It only takes a few minutes!</p>
                       <div style="text-align:center;margin:28px 0;">
                         ${emailButton(questionnaireUrl, 'Fill in Questionnaire')}
                       </div>
@@ -334,7 +353,11 @@ export async function sendSchedulingInviteEmail({ to, name, projectName, schedul
         throw new Error('Email service not configured - missing API keys')
     }
 
-    const greeting = name ? `Hi ${name},` : 'Hi,'
+    const safeName = name ? escapeHtml(name) : null
+    const safeOwnerName = escapeHtml(ownerName)
+    const safeProjectName = escapeHtml(projectName)
+    const greeting = safeName ? `Hi ${safeName},` : 'Hi,'
+    const textGreeting = name ? `Hi ${name},` : 'Hi,'
 
     console.log('[EMAIL] Sending scheduling invite email to:', to)
     try {
@@ -344,11 +367,11 @@ export async function sendSchedulingInviteEmail({ to, name, projectName, schedul
                     From: { Email: 'noreply@detoast.nl', Name: 'Toast' },
                     To: [{ Email: to }],
                     Subject: `${ownerName} needs your availability for "${projectName}"`,
-                    TextPart: `${greeting}\n\n${ownerName} is planning "${projectName}" and needs to know when you're available. It only takes a minute!\n\nPick your dates: ${schedulingUrl}`,
+                    TextPart: `${textGreeting}\n\n${ownerName} is planning "${projectName}" and needs to know when you're available. It only takes a minute!\n\nPick your dates: ${schedulingUrl}`,
                     HTMLPart: emailLayout(`
                       <h2 style="margin:0 0 8px;font-size:20px;color:#166162;">When are you available?</h2>
                       <p style="margin:0 0 8px;color:#3a3a2e;font-size:15px;line-height:1.6;">${greeting}</p>
-                      <p style="margin:0 0 24px;color:#3a3a2e;font-size:15px;line-height:1.6;"><strong>${ownerName}</strong> is planning <strong>"${projectName}"</strong> and needs to know when you're available. It only takes a minute!</p>
+                      <p style="margin:0 0 24px;color:#3a3a2e;font-size:15px;line-height:1.6;"><strong>${safeOwnerName}</strong> is planning <strong>"${safeProjectName}"</strong> and needs to know when you're available. It only takes a minute!</p>
                       <div style="text-align:center;margin:28px 0;">
                         ${emailButton(schedulingUrl, 'Pick Your Dates')}
                       </div>

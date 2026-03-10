@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTranslations } from 'next-intl'
+import { isSafeRedirect } from '@/lib/utils'
 
 function VerifyEmailContent() {
     const router = useRouter()
@@ -40,7 +41,7 @@ function VerifyEmailContent() {
             if (result.error) {
                 setError(result.error.message || t('errorVerification'))
             } else {
-                router.push(redirect || (invite ? `/invite/${invite}` : '/dashboard'))
+                router.push(isSafeRedirect(redirect) ? redirect : (invite ? `/invite/${invite}` : '/dashboard'))
             }
         } catch (err) {
             setError(t('errorOccurred'))

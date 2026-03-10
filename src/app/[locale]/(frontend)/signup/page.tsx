@@ -9,6 +9,7 @@ import { Link, useRouter } from '@/i18n/navigation'
 import { useSearchParams } from 'next/navigation'
 import { Check, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { isSafeRedirect } from '@/lib/utils'
 
 function validatePasswordStrength(password: string) {
     return {
@@ -92,7 +93,7 @@ function SignupContent() {
             setError(result.error.message || 'Failed to create account')
             setLoading(false)
         } else {
-            const redirectParam = redirect ? `&redirect=${encodeURIComponent(redirect)}` : (invite ? `&invite=${invite}` : '')
+            const redirectParam = isSafeRedirect(redirect) ? `&redirect=${encodeURIComponent(redirect)}` : (invite ? `&invite=${invite}` : '')
             router.push(`/verify-email?email=${encodeURIComponent(email)}${redirectParam}`)
         }
     }
