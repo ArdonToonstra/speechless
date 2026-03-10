@@ -1,6 +1,6 @@
 import React from 'react'
 import { notFound, redirect } from 'next/navigation'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, ne } from 'drizzle-orm'
 import { Users } from 'lucide-react'
 import { db, projects, guests } from '@/db'
 import { getSession } from '@/actions/auth'
@@ -41,7 +41,7 @@ export default async function CollaboratorsPage({ params }: { params: Promise<{ 
     if (!isOwner && !guestRecord) notFound()
 
     const guestList = await db.query.guests.findMany({
-        where: eq(guests.projectId, projectId),
+        where: and(eq(guests.projectId, projectId), ne(guests.role, 'contributor')),
         orderBy: (guests, { desc }) => [desc(guests.createdAt)],
     })
 
