@@ -5,15 +5,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Mail, Plus, X, Eye, Clock, Package, AlertCircle, Sparkles } from 'lucide-react'
+import { Mail, Plus, X, Eye, Package, Sparkles } from 'lucide-react'
 import { prepareSpeechInvites, validatePostcardOption } from '@/actions/invites'
 import { useRouter } from '@/i18n/navigation'
+import { cn } from '@/lib/utils'
 
 interface Project {
     id: number
@@ -35,7 +33,6 @@ interface Guest {
     email: string
     name: string | null
 }
-import { cn } from '@/lib/utils'
 
 interface InviteSenderProps {
     project: Project
@@ -50,7 +47,6 @@ interface AdditionalRecipient {
 export function InviteSender({ project, guests }: InviteSenderProps) {
     const router = useRouter()
 
-    // State
     const [selectedGuestIds, setSelectedGuestIds] = useState<number[]>([])
     const [additionalRecipients, setAdditionalRecipients] = useState<AdditionalRecipient[]>([])
     const [newEmail, setNewEmail] = useState('')
@@ -62,7 +58,6 @@ export function InviteSender({ project, guests }: InviteSenderProps) {
     const [showPreview, setShowPreview] = useState(false)
     const [postcardEligibility, setPostcardEligibility] = useState<{ eligible: boolean; daysUntilEvent: number } | null>(null)
 
-    // Get default template for current message type
     const defaultTemplate = useMemo(() => {
         const templates = project.emailTemplates || {}
         if (messageType === 'attendee') {
@@ -86,12 +81,10 @@ See you there!`
         }
     }, [messageType, project])
 
-    // Initialize custom message with default template
     useEffect(() => {
         setCustomMessage(defaultTemplate)
     }, [defaultTemplate])
 
-    // Check postcard eligibility
     useEffect(() => {
         const checkEligibility = async () => {
             const result = await validatePostcardOption(project.id)
@@ -100,7 +93,6 @@ See you there!`
         checkEligibility()
     }, [project.id])
 
-    // Handlers
     const toggleGuest = (guestId: number) => {
         setSelectedGuestIds(prev =>
             prev.includes(guestId)
@@ -175,7 +167,6 @@ See you there!`
         if (result.success) {
             alert(result.message)
             router.refresh()
-            // Reset form
             setSelectedGuestIds([])
             setAdditionalRecipients([])
         } else {
@@ -184,226 +175,180 @@ See you there!`
     }
 
     return (
-        <div className="space-y-8">
-            {/* Recipient Selection */}
-            <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
-                <CardHeader className="border-b border-slate-100 bg-white/50 px-8 py-6">
-                    <CardTitle className="text-xl font-semibold text-slate-800">Select Recipients</CardTitle>
-                    <CardDescription className="text-slate-500">Choose collaborators or add additional email addresses</CardDescription>
-                </CardHeader>
-                <CardContent className="p-8 space-y-6">
-                    {/* Existing Guests */}
-                    {guests.length > 0 && (
-                        <div>
-                            <Label className="text-sm font-medium text-slate-700 mb-3 block">Collaborators ({guests.length})</Label>
-                            <div className="space-y-2 max-h-64 overflow-y-auto border border-slate-200 rounded-xl p-2 bg-slate-50/50">
-                                {guests.map((guest) => (
-                                    <div key={guest.id} className="flex items-center gap-3 p-3 hover:bg-white hover:shadow-sm rounded-lg transition-all cursor-pointer" onClick={() => toggleGuest(guest.id)}>
-                                        <Checkbox
-                                            checked={selectedGuestIds.includes(guest.id)}
-                                            onCheckedChange={() => toggleGuest(guest.id)}
-                                            className="data-[state=checked]:bg-primary data-[state=checked]:border-primary border-slate-300"
-                                        />
-                                        <div className="flex-1">
-                                            <p className="text-sm font-semibold text-slate-900">{guest.name || 'Unnamed'}</p>
-                                            <p className="text-xs text-slate-500">{guest.email}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+        <div className="space-y-6">
+            {/* Recipients */}
+            <div className="space-y-3">
+                <h2 className="text-sm font-medium text-slate-500">Recipients</h2>
+
+                {/* Collaborators */}
+                {guests.length > 0 && (
+                    <div className="bg-white rounded-xl border border-slate-100 p-4">
+                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Collaborators ({guests.length})</p>
+                        <div className="space-y-1 max-h-48 overflow-y-auto">
+                            {guests.map((guest) => (
+                                <div key={guest.id} className="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-50 rounded-lg cursor-pointer" onClick={() => toggleGuest(guest.id)}>
+                                    <Checkbox
+                                        checked={selectedGuestIds.includes(guest.id)}
+                                        onCheckedChange={() => toggleGuest(guest.id)}
+                                        className="data-[state=checked]:bg-primary data-[state=checked]:border-primary border-slate-300"
+                                    />
+                                    <span className="text-sm font-medium text-slate-900 flex-1">{guest.name || 'Unnamed'}</span>
+                                    <span className="text-xs text-slate-400">{guest.email}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Additional recipients */}
+                <div className="bg-white rounded-xl border border-slate-100 p-4">
+                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Additional recipients</p>
+                    <div className="flex gap-2 mb-2">
+                        <Input
+                            placeholder="Name (optional)"
+                            value={newName}
+                            onChange={(e) => setNewName(e.target.value)}
+                            className="h-9 text-sm bg-white border-slate-200 rounded-lg sm:w-36"
+                        />
+                        <Input
+                            type="email"
+                            placeholder="email@example.com"
+                            value={newEmail}
+                            onChange={(e) => setNewEmail(e.target.value)}
+                            className="h-9 text-sm bg-white border-slate-200 rounded-lg flex-1"
+                        />
+                        <Button onClick={addRecipient} variant="outline" size="icon" className="h-9 w-9 rounded-lg border-slate-200 shrink-0">
+                            <Plus className="w-4 h-4 text-slate-600" />
+                        </Button>
+                    </div>
+                    {additionalRecipients.length > 0 && (
+                        <div className="space-y-1">
+                            {additionalRecipients.map((recipient, index) => (
+                                <div key={index} className="flex items-center gap-2 px-2 py-1.5 rounded-lg">
+                                    <span className="text-sm font-medium text-slate-900 flex-1">{recipient.name || 'Unnamed'}</span>
+                                    <span className="text-xs text-slate-400">{recipient.email}</span>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => removeRecipient(index)}
+                                        className="h-7 w-7 text-slate-300 hover:text-red-500 hover:bg-red-50"
+                                    >
+                                        <X className="w-3.5 h-3.5" />
+                                    </Button>
+                                </div>
+                            ))}
                         </div>
                     )}
+                    <p className="text-xs text-slate-400 mt-2">Total: <strong className="text-slate-600">{totalRecipients}</strong> recipient{totalRecipients !== 1 ? 's' : ''}</p>
+                </div>
+            </div>
 
-                    {/* Additional Recipients */}
-                    <div>
-                        <Label className="text-sm font-medium text-slate-700 mb-3 block">Additional Recipients</Label>
-                        <div className="flex gap-3 mb-3">
-                            <Input
-                                placeholder="Name (optional)"
-                                value={newName}
-                                onChange={(e) => setNewName(e.target.value)}
-                                className="flex-1 bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm h-11 rounded-xl"
-                            />
-                            <Input
-                                type="email"
-                                placeholder="email@example.com"
-                                value={newEmail}
-                                onChange={(e) => setNewEmail(e.target.value)}
-                                className="flex-1 bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm h-11 rounded-xl"
-                            />
-                            <Button onClick={addRecipient} variant="outline" size="icon" className="h-11 w-11 rounded-xl border-slate-200 hover:bg-slate-50">
-                                <Plus className="w-5 h-5 text-slate-600" />
-                            </Button>
+            {/* Message */}
+            <div className="space-y-3">
+                <h2 className="text-sm font-medium text-slate-500">Message</h2>
+
+                {/* Message type */}
+                <div className="bg-white rounded-xl border border-slate-100 p-4">
+                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Type</p>
+                    <RadioGroup value={messageType} onValueChange={(v: any) => setMessageType(v)} className="grid grid-cols-2 gap-2">
+                        <div className={cn(
+                            "flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-all",
+                            messageType === 'attendee' ? "border-primary bg-primary/5" : "border-slate-200 hover:bg-slate-50"
+                        )}>
+                            <RadioGroupItem value="attendee" id="attendee" />
+                            <Label htmlFor="attendee" className="cursor-pointer text-sm">
+                                <span className="font-medium text-slate-900">Attendee</span>
+                                <span className="block text-[11px] text-slate-400">Includes venue details</span>
+                            </Label>
                         </div>
-                        {additionalRecipients.length > 0 && (
-                            <div className="space-y-2">
-                                {additionalRecipients.map((recipient, index) => (
-                                    <div key={index} className="flex items-center justify-between p-3 bg-white border border-slate-100 shadow-sm rounded-xl">
-                                        <div>
-                                            <p className="text-sm font-medium text-slate-900">{recipient.name || 'Unnamed'}</p>
-                                            <p className="text-xs text-slate-500">{recipient.email}</p>
-                                        </div>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => removeRecipient(index)}
-                                            className="h-8 w-8 rounded-lg hover:bg-red-50 hover:text-red-600"
-                                        >
-                                            <X className="w-4 h-4" />
-                                        </Button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="pt-4 border-t border-slate-100">
-                        <p className="text-sm text-slate-500">
-                            Total recipients: <strong className="text-slate-900">{totalRecipients}</strong>
-                        </p>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Message Type & Template */}
-            <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
-                <CardHeader className="border-b border-slate-100 bg-white/50 px-8 py-6">
-                    <CardTitle className="text-xl font-semibold text-slate-800">Message & Template</CardTitle>
-                    <CardDescription className="text-slate-500">Customize your invitation message</CardDescription>
-                </CardHeader>
-                <CardContent className="p-8 space-y-8">
-                    {/* Message Type */}
-                    <div>
-                        <Label className="text-sm font-medium text-slate-700 mb-4 block">Message Type</Label>
-                        <RadioGroup value={messageType} onValueChange={(v: any) => setMessageType(v)} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className={cn(
-                                "flex items-start space-x-3 p-4 border rounded-xl cursor-pointer transition-all",
-                                messageType === 'attendee' ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-slate-200 hover:bg-slate-50 hover:border-slate-300"
-                            )}>
-                                <RadioGroupItem value="attendee" id="attendee" className="mt-1" />
-                                <Label htmlFor="attendee" className="flex-1 cursor-pointer">
-                                    <span className="font-semibold text-slate-900">Attendee Message</span>
-                                    <span className="block text-xs text-slate-500 mt-1 leading-relaxed">
-                                        For guests attending the event. Includes venue details.
-                                    </span>
-                                </Label>
-                            </div>
-                            <div className={cn(
-                                "flex items-start space-x-3 p-4 border rounded-xl cursor-pointer transition-all",
-                                messageType === 'receiver' ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-slate-200 hover:bg-slate-50 hover:border-slate-300"
-                            )}>
-                                <RadioGroupItem value="receiver" id="receiver" className="mt-1" />
-                                <Label htmlFor="receiver" className="flex-1 cursor-pointer">
-                                    <span className="font-semibold text-slate-900">Receiver Message</span>
-                                    <span className="block text-xs text-slate-500 mt-1 leading-relaxed">
-                                        For the person receiving the speech. Focuses on the surprise.
-                                    </span>
-                                </Label>
-                            </div>
-                        </RadioGroup>
-                    </div>
-
-                    {/* Message Editor */}
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <Label className="text-sm font-medium text-slate-700">Message Template</Label>
-                            <Button variant="ghost" size="sm" onClick={resetTemplate} className="text-xs h-8 text-primary hover:text-primary/80 hover:bg-primary/5">
-                                Reset to Default
-                            </Button>
+                        <div className={cn(
+                            "flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-all",
+                            messageType === 'receiver' ? "border-primary bg-primary/5" : "border-slate-200 hover:bg-slate-50"
+                        )}>
+                            <RadioGroupItem value="receiver" id="receiver" />
+                            <Label htmlFor="receiver" className="cursor-pointer text-sm">
+                                <span className="font-medium text-slate-900">Receiver</span>
+                                <span className="block text-[11px] text-slate-400">Surprise-focused</span>
+                            </Label>
                         </div>
-                        <Textarea
-                            value={customMessage}
-                            onChange={(e) => setCustomMessage(e.target.value)}
-                            rows={10}
-                            className="font-mono text-sm bg-slate-50 border-slate-200 focus:border-primary focus:ring-primary shadow-inner rounded-xl leading-relaxed p-4"
-                        />
-                        <p className="text-xs text-slate-500">
-                            Available placeholders: <code className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">{'{name}'}</code>,{' '}
-                            <code className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">{'{date}'}</code>,{' '}
-                            <code className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">{'{venue}'}</code>,{' '}
-                            <code className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">{'{time}'}</code>,{' '}
-                            <code className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">{'{address}'}</code>
-                        </p>
-                    </div>
+                    </RadioGroup>
+                </div>
 
-                    {/* Preview Button */}
+                {/* Template editor */}
+                <div className="bg-white rounded-xl border border-slate-100 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Template</p>
+                        <button onClick={resetTemplate} className="text-xs text-primary hover:underline">
+                            Reset
+                        </button>
+                    </div>
+                    <Textarea
+                        value={customMessage}
+                        onChange={(e) => setCustomMessage(e.target.value)}
+                        rows={8}
+                        className="font-mono text-sm bg-slate-50 border-slate-200 rounded-lg leading-relaxed p-3"
+                    />
+                    <p className="text-[11px] text-slate-400">
+                        Placeholders: <code className="bg-slate-100 px-1 rounded">{'{name}'}</code>{' '}
+                        <code className="bg-slate-100 px-1 rounded">{'{date}'}</code>{' '}
+                        <code className="bg-slate-100 px-1 rounded">{'{venue}'}</code>{' '}
+                        <code className="bg-slate-100 px-1 rounded">{'{time}'}</code>{' '}
+                        <code className="bg-slate-100 px-1 rounded">{'{address}'}</code>
+                    </p>
                     <Dialog open={showPreview} onOpenChange={setShowPreview}>
                         <DialogTrigger asChild>
-                            <Button variant="outline" className="w-full h-11 rounded-xl border-slate-200 hover:bg-slate-50 text-slate-700">
-                                <Eye className="w-4 h-4 mr-2" />
-                                Preview Message
+                            <Button variant="outline" size="sm" className="h-9 rounded-lg w-full text-slate-600">
+                                <Eye className="w-3.5 h-3.5 mr-1.5" />
+                                Preview
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-md rounded-2xl">
+                        <DialogContent className="sm:max-w-md">
                             <DialogHeader>
                                 <DialogTitle>Message Preview</DialogTitle>
                                 <DialogDescription>
                                     This is how your message will appear to recipients
                                 </DialogDescription>
                             </DialogHeader>
-                            <div className="bg-slate-50 p-6 rounded-xl border border-slate-100 whitespace-pre-wrap font-serif text-slate-800 leading-relaxed shadow-inner">
+                            <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 whitespace-pre-wrap font-serif text-sm text-slate-800 leading-relaxed">
                                 {renderPreview()}
                             </div>
                         </DialogContent>
                     </Dialog>
-                </CardContent>
-            </Card>
-
-            {/* Postcard Option */}
-            <Card className="relative overflow-hidden border-none shadow-sm rounded-2xl bg-white">
-                <div className="absolute top-4 right-4 z-10">
-                    <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-100 border-amber-200">
-                        <Sparkles className="w-3 h-3 mr-1" />
-                        Coming Soon
-                    </Badge>
                 </div>
-                <CardHeader className="border-b border-slate-100 bg-white/50 px-8 py-6">
-                    <CardTitle className="flex items-center gap-2 text-xl font-semibold text-slate-800">
-                        <Package className="w-5 h-5 text-slate-400" />
-                        Postcard Delivery
-                    </CardTitle>
-                    <CardDescription className="text-slate-500">Send a physical postcard in addition to email</CardDescription>
-                </CardHeader>
-                <CardContent className="p-8 opacity-60 pointer-events-none select-none grayscale-[0.5]">
-                    <div className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-slate-50/50">
-                        <div className="flex items-center gap-4">
-                            <Checkbox
-                                disabled
-                                checked={sendViaPostcard}
-                                onCheckedChange={(checked) => setSendViaPostcard(checked as boolean)}
-                            />
-                            <div>
-                                <Label className="font-semibold text-slate-900">Send via Physical Postcard</Label>
-                                <p className="text-xs text-slate-500 mt-1">$2.99 per postcard • Worldwide shipping</p>
-                            </div>
+            </div>
+
+            {/* Postcard (Coming Soon) */}
+            <div className="space-y-3">
+                <h2 className="text-sm font-medium text-slate-500">
+                    Extras
+                    <span className="ml-2 text-[11px] font-normal text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">Coming Soon</span>
+                </h2>
+                <div className="bg-white rounded-xl border border-slate-100 p-4 opacity-50 pointer-events-none">
+                    <div className="flex items-center gap-3">
+                        <Checkbox disabled checked={sendViaPostcard} onCheckedChange={(checked) => setSendViaPostcard(checked as boolean)} />
+                        <div>
+                            <p className="text-sm font-medium text-slate-900 flex items-center gap-1.5">
+                                <Package className="w-3.5 h-3.5 text-slate-400" />
+                                Physical Postcard
+                            </p>
+                            <p className="text-xs text-slate-400">$2.99 per postcard · Worldwide shipping</p>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    {postcardEligibility && !postcardEligibility.eligible && (
-                        <Alert variant="destructive" className="mt-4 rounded-xl">
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertDescription>
-                                <Clock className="w-3 h-3 inline mr-1" />
-                                Postcards require at least 5 days before the event. You have {postcardEligibility.daysUntilEvent} days remaining.
-                            </AlertDescription>
-                        </Alert>
-                    )}
-                </CardContent>
-            </Card>
-
-            {/* Send Button */}
+            {/* Send */}
             <Button
                 onClick={handleSend}
                 disabled={isSending || totalRecipients === 0}
-                className="w-full rounded-xl shadow-lg shadow-primary/20 h-12 text-lg font-medium"
-                size="lg"
+                className="w-full rounded-lg h-10"
             >
-                <Mail className="w-5 h-5 mr-2" />
+                <Mail className="w-4 h-4 mr-2" />
                 {isSending ? 'Preparing...' : `Prepare ${totalRecipients} Invite${totalRecipients !== 1 ? 's' : ''}`}
             </Button>
 
             {totalRecipients === 0 && (
-                <p className="text-sm text-center text-slate-400 animate-pulse">
+                <p className="text-xs text-center text-slate-400">
                     Select at least one recipient to prepare invites
                 </p>
             )}

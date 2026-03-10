@@ -9,7 +9,6 @@ import {
 import { db, projects, guests, submissions } from '@/db'
 import { getSession } from '@/actions/auth'
 import { StandardPageShell } from '@/components/layout/StandardPageShell'
-import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ProgressChecklist, type WorkflowStep } from '@/components/features/ProgressChecklist'
 import { Users, ClipboardList, Inbox, PenTool } from 'lucide-react'
@@ -229,25 +228,23 @@ export default async function ProgressPage({ params }: { params: Promise<{ id: s
                 </div>
 
                 {/* Stats grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {stats.map(stat => (
                         <Link key={stat.label} href={`/projects/${projectId}/${stat.href}`}>
-                            <Card className="hover:border-primary/40 transition-colors cursor-pointer">
-                                <CardContent className="pt-5 pb-4 px-5">
-                                    <div className="flex items-center gap-2 mb-1 text-muted-foreground">
-                                        <stat.icon className="w-3.5 h-3.5" />
-                                        <span className="text-xs font-medium uppercase tracking-wide">{stat.label}</span>
-                                    </div>
-                                    <p className="text-3xl font-bold">{stat.value}</p>
-                                </CardContent>
-                            </Card>
+                            <div className="bg-white rounded-xl border border-slate-100 px-4 py-3 hover:border-primary/40 transition-colors cursor-pointer">
+                                <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
+                                    <stat.icon className="w-3 h-3" />
+                                    <span className="text-[11px] font-medium uppercase tracking-wide">{stat.label}</span>
+                                </div>
+                                <p className="text-2xl font-bold">{stat.value}</p>
+                            </div>
                         </Link>
                     ))}
                 </div>
 
                 {/* Workflow checklist */}
                 <div>
-                    <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">{t('workflow')}</h2>
+                    <h2 className="text-sm font-medium text-slate-500 mb-3">{t('workflow')}</h2>
                     <ProgressChecklist steps={steps} projectId={projectId} />
                 </div>
             </div>

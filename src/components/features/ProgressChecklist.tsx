@@ -15,7 +15,6 @@ import {
     CalendarClock,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
 import { toggleProgressCheck } from '@/actions/progress'
 
 export type StepIconName =
@@ -79,7 +78,7 @@ export function ProgressChecklist({ steps: initialSteps, projectId }: ProgressCh
     }
 
     return (
-        <div className="space-y-2">
+        <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-100 overflow-hidden">
             {steps.map((step, index) => {
                 const isChecked = step.manuallyChecked
                 const isFilled = step.autoFilled && !isChecked
@@ -90,23 +89,23 @@ export function ProgressChecklist({ steps: initialSteps, projectId }: ProgressCh
                     <div
                         key={step.id}
                         className={cn(
-                            "flex items-start gap-4 p-4 rounded-xl border transition-all",
-                            isChecked && "bg-emerald-50/60 border-emerald-200",
-                            isFilled && "bg-emerald-50/30 border-emerald-200/50",
-                            isPending && "bg-card border-border opacity-70",
+                            "flex items-center gap-3 px-4 py-3 transition-all",
+                            isChecked && "bg-emerald-50/60",
+                            isFilled && "bg-emerald-50/30",
+                            isPending && "opacity-70",
                         )}
                     >
                         {/* Step indicator circle */}
                         <div className={cn(
-                            "mt-0.5 w-7 h-7 rounded-full flex items-center justify-center shrink-0",
+                            "w-6 h-6 rounded-full flex items-center justify-center shrink-0",
                             isChecked && "bg-emerald-500 text-white",
                             isFilled && "bg-emerald-100 text-emerald-700",
-                            isPending && "bg-muted text-muted-foreground",
+                            isPending && "bg-slate-100 text-slate-400",
                         )}>
                             {isChecked ? (
-                                <Check className="w-4 h-4" />
+                                <Check className="w-3.5 h-3.5" />
                             ) : (
-                                <span className="text-xs font-bold">{index + 1}</span>
+                                <span className="text-[11px] font-bold">{index + 1}</span>
                             )}
                         </div>
 
@@ -115,32 +114,25 @@ export function ProgressChecklist({ steps: initialSteps, projectId }: ProgressCh
                             href={`/projects/${projectId}/${step.href}`}
                             className="flex-1 min-w-0"
                         >
-                            <div className="flex items-center gap-2 mb-0.5">
+                            <div className="flex items-center gap-2">
                                 <Icon className={cn(
-                                    "w-4 h-4 shrink-0",
+                                    "w-3.5 h-3.5 shrink-0",
                                     isChecked && "text-emerald-600",
                                     isFilled && "text-emerald-500",
-                                    isPending && "text-muted-foreground",
+                                    isPending && "text-slate-400",
                                 )} />
                                 <span className={cn(
-                                    "font-semibold text-sm",
+                                    "font-medium text-sm",
                                     isChecked && "text-emerald-800",
                                     isFilled && "text-emerald-900",
-                                    isPending && "text-muted-foreground",
+                                    isPending && "text-slate-500",
                                 )}>
                                     {step.label}
                                 </span>
                                 {step.stat && (
-                                    <Badge variant="secondary" className="text-xs ml-1">
-                                        {step.stat}
-                                    </Badge>
+                                    <span className="text-xs text-slate-400 ml-1">{step.stat}</span>
                                 )}
                             </div>
-                            {!isChecked && (
-                                <p className="text-xs text-muted-foreground leading-relaxed">
-                                    {step.description}
-                                </p>
-                            )}
                         </Link>
 
                         {/* Checkbox toggle */}
@@ -152,10 +144,10 @@ export function ProgressChecklist({ steps: initialSteps, projectId }: ProgressCh
                             }}
                             title={isChecked ? 'Mark as incomplete' : 'Mark as complete'}
                             className={cn(
-                                "mt-0.5 w-5 h-5 rounded flex items-center justify-center shrink-0 transition-all",
+                                "w-5 h-5 rounded flex items-center justify-center shrink-0 transition-all",
                                 isChecked && "bg-emerald-500 text-white",
                                 isFilled && "border-2 border-emerald-400 bg-emerald-50",
-                                isPending && "border border-muted-foreground/30 bg-transparent",
+                                isPending && "border border-slate-300 bg-transparent",
                             )}
                         >
                             {isChecked && <Check className="w-3 h-3" />}

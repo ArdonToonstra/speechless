@@ -6,10 +6,9 @@ import { updateProjectQuestions, sendQuestionnaireToCollaborators } from '@/acti
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Trash2, Plus, GripVertical, Copy, Check, Link2, Mail, Loader2, FileText, ChevronDown } from 'lucide-react'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 import { getTemplatesForOccasion, type QuestionTemplate } from '@/data/question-templates'
 import {
     DropdownMenu,
@@ -30,7 +29,7 @@ import {
 
 interface Question {
     text: string
-    id?: string // for key purposes if needed, though index works for simple list
+    id?: string
 }
 
 interface QuestionnaireEditorProps {
@@ -54,7 +53,6 @@ export function QuestionnaireEditor({
     guests = [],
     ownerName,
 }: QuestionnaireEditorProps) {
-    // Replace placeholder in initial questions
     const processedInitialQuestions = initialQuestions?.map(q => ({
         text: speechReceiverName ? q.text.replace(/\{speechReceiverName\}/g, speechReceiverName) : q.text
     })) || []
@@ -68,10 +66,8 @@ export function QuestionnaireEditor({
     const [isSendingEmails, setIsSendingEmails] = useState(false)
     const locale = useLocale()
 
-    // Get available templates for this occasion
     const templates = getTemplatesForOccasion(occasionType)
 
-    // Generate shareable link using share token (non-guessable)
     const shareableLink = shareToken
         ? `${typeof window !== 'undefined' ? window.location.origin : ''}/${locale}/questionnaire/${shareToken}`
         : `${typeof window !== 'undefined' ? window.location.origin : ''}/${locale}/questionnaire/${projectId}`
@@ -99,7 +95,6 @@ export function QuestionnaireEditor({
     }
 
     const loadTemplate = (template: QuestionTemplate) => {
-        // If there are existing questions, ask for confirmation
         if (questions.length > 0 && questions.some(q => q.text.trim())) {
             setConfirmTemplate(template)
         } else {
@@ -108,7 +103,6 @@ export function QuestionnaireEditor({
     }
 
     const applyTemplate = (template: QuestionTemplate) => {
-        // Replace placeholder with actual name if available
         const processedQuestions = template.questions.map(q => ({
             text: speechReceiverName
                 ? q.text.replace(/\{speechReceiverName\}/g, speechReceiverName)
@@ -135,30 +129,32 @@ export function QuestionnaireEditor({
         }
     }, [questions, description, projectId])
 
-    // Auto-save effect
     React.useEffect(() => {
         const timeoutId = setTimeout(() => {
             handleSave()
-        }, 1000) // 1s debounce
+        }, 1000)
 
         return () => clearTimeout(timeoutId)
     }, [handleSave])
 
     return (
         <div className="space-y-6">
-            <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
-                <CardHeader className="border-b border-slate-100 bg-white/50 px-8 py-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle className="text-xl font-semibold text-slate-800">Questionnaire</CardTitle>
-                            <CardDescription className="text-slate-500">Customize the questions your guests will answer.</CardDescription>
-                        </div>
+            {/* Questions section */}
+            <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-sm font-medium text-slate-500">Questions</h2>
+                    <div className="flex items-center gap-3">
+                        {lastSaved && (
+                            <span className="text-xs text-slate-400">
+                                Saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                        )}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="gap-2">
-                                    <FileText className="w-4 h-4" />
-                                    Load Template
-                                    <ChevronDown className="w-4 h-4" />
+                                <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+                                    <FileText className="w-3.5 h-3.5" />
+                                    Template
+                                    <ChevronDown className="w-3 h-3" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-72">
@@ -179,153 +175,115 @@ export function QuestionnaireEditor({
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
-                </CardHeader>
-                <CardContent className="p-8 space-y-8">
-                    <div className="space-y-3">
-                        <Label htmlFor="description" className="text-sm font-medium text-slate-700">Greeting / Instructions</Label>
+                </div>
+
+                <div className="bg-white rounded-xl border border-slate-100 p-4 space-y-3">
+                    <div className="space-y-2">
+                        <label className="text-xs text-slate-500">Greeting / Instructions</label>
                         <Textarea
-                            id="description"
                             placeholder="Welcome! We'd love your input..."
                             value={description}
                             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
-                            className="min-h-[100px] bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm rounded-xl resize-y"
+                            className="min-h-[80px] bg-white border-slate-200 text-sm rounded-lg resize-y"
                         />
                     </div>
 
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <Label className="text-sm font-medium text-slate-700">Questions</Label>
-                            {lastSaved && (
-                                <p className="text-xs text-slate-400">
-                                    Saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </p>
-                            )}
-                        </div>
-                        <div className="space-y-3">
-                            {questions.map((q, index) => (
-                                <div key={index} className="flex items-start gap-3 group">
-                                    <div className="mt-3.5 text-slate-300 cursor-move hover:text-slate-500 transition-colors">
-                                        <GripVertical className="w-5 h-5" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <Input
-                                            value={q.text}
-                                            onChange={(e) => updateQuestion(index, e.target.value)}
-                                            placeholder={`Question ${index + 1}`}
-                                            className="bg-white border-slate-200 focus:border-primary focus:ring-primary shadow-sm h-11 rounded-xl"
-                                        />
-                                    </div>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => removeQuestion(index)}
-                                        className="h-11 w-11 rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
-                                    >
-                                        <Trash2 className="w-5 h-5" />
-                                    </Button>
+                    <div className="space-y-2">
+                        {questions.map((q, index) => (
+                            <div key={index} className="flex items-center gap-2 group">
+                                <div className="text-slate-300 cursor-move hover:text-slate-500 transition-colors">
+                                    <GripVertical className="w-4 h-4" />
                                 </div>
-                            ))}
-                        </div>
-                        <Button variant="outline" size="sm" onClick={addQuestion} className="w-full border-dashed border-slate-300 rounded-xl h-11 hover:bg-slate-50 hover:border-slate-400 text-slate-600">
-                            <Plus className="w-4 h-4 mr-2" /> Add Question
-                        </Button>
+                                <Input
+                                    value={q.text}
+                                    onChange={(e) => updateQuestion(index, e.target.value)}
+                                    placeholder={`Question ${index + 1}`}
+                                    className="bg-white border-slate-200 h-9 text-sm rounded-lg flex-1"
+                                />
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => removeQuestion(index)}
+                                    className="h-7 w-7 text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
+                                >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
+                            </div>
+                        ))}
                     </div>
+                    <Button variant="outline" size="sm" onClick={addQuestion} className="w-full border-dashed border-slate-300 rounded-lg h-9 hover:bg-slate-50 hover:border-slate-400 text-slate-600 text-sm">
+                        <Plus className="w-3.5 h-3.5 mr-1.5" /> Add Question
+                    </Button>
+                </div>
+            </div>
 
+            {/* Share section - aligned with collaborators page style */}
+            <div className="space-y-3">
+                <h2 className="text-sm font-medium text-slate-500">Share</h2>
 
-                </CardContent>
-            </Card>
-
-            {/* Shareable Link Section */}
-            <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
-                <CardHeader className="border-b border-slate-100 bg-white/50 px-8 py-6">
-                    <CardTitle className="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                        <Link2 className="w-5 h-5" />
-                        Share Questionnaire
-                    </CardTitle>
-                    <CardDescription className="text-slate-500">
-                        Share this link with guests to collect their responses
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="p-6 space-y-6">
-                    {/* Copy link (no URL shown) */}
-                    <div className="flex items-center gap-3">
+                {/* Via link */}
+                <div className="bg-white rounded-xl border border-slate-100 p-4">
+                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Via link</p>
+                    <div className="flex items-center gap-2">
                         <Button
                             onClick={copyLink}
                             variant="outline"
-                            className={linkCopied ? "bg-emerald-50 text-emerald-600 border-emerald-200 rounded-xl h-11 px-5" : "rounded-xl h-11 px-5"}
+                            size="sm"
+                            className={cn(
+                                "h-9 rounded-lg",
+                                linkCopied && "bg-emerald-50 text-emerald-600 border-emerald-200"
+                            )}
                         >
                             {linkCopied ? (
-                                <>
-                                    <Check className="w-4 h-4 mr-2" />
-                                    Link copied!
-                                </>
+                                <><Check className="w-3.5 h-3.5 mr-1.5" /> Copied!</>
                             ) : (
-                                <>
-                                    <Copy className="w-4 h-4 mr-2" />
-                                    Copy Link
-                                </>
+                                <><Link2 className="w-3.5 h-3.5 mr-1.5" /> Copy questionnaire link</>
                             )}
                         </Button>
-                        <span className="text-sm text-slate-400">Share with anyone to collect responses</span>
                     </div>
+                </div>
 
-                    {/* Divider */}
-                    <div className="flex items-center gap-3">
-                        <hr className="flex-1 border-slate-100" />
-                        <span className="text-xs text-slate-400 font-medium uppercase tracking-wide">or</span>
-                        <hr className="flex-1 border-slate-100" />
-                    </div>
-
-                    {/* Send to collaborators */}
-                    <div className="space-y-3">
-                        <p className="text-sm font-medium text-slate-700 flex items-center gap-2">
-                            <Mail className="w-4 h-4 text-slate-400" />
-                            Send to collaborators
-                        </p>
-                        {guests.length === 0 ? (
-                            <p className="text-sm text-slate-400">No collaborators yet. Add team members on the collaborators page.</p>
-                        ) : (
-                            <>
-                                <ul className="space-y-1.5">
-                                    {guests.map((g) => (
-                                        <li key={g.id} className="flex items-center gap-2 text-sm text-slate-600">
-                                            <span className="w-2 h-2 rounded-full bg-slate-300 shrink-0" />
-                                            <span className="font-medium">{g.name || g.email}</span>
-                                            {g.name && <span className="text-slate-400">{g.email}</span>}
-                                        </li>
-                                    ))}
-                                </ul>
-                                <Button
-                                    onClick={async () => {
-                                        setIsSendingEmails(true)
-                                        const result = await sendQuestionnaireToCollaborators(projectId)
-                                        setIsSendingEmails(false)
-                                        if (result.error) {
-                                            toast.error(result.error)
-                                        } else {
-                                            toast.success(`Questionnaire sent to ${result.sent} collaborator${result.sent === 1 ? '' : 's'}`)
-                                        }
-                                    }}
-                                    disabled={isSendingEmails}
-                                    className="rounded-xl h-11 px-5"
-                                >
-                                    {isSendingEmails ? (
-                                        <>
-                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                            Sending...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Mail className="w-4 h-4 mr-2" />
-                                            Send to All
-                                        </>
-                                    )}
-                                </Button>
-                            </>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
+                {/* Via email */}
+                <div className="bg-white rounded-xl border border-slate-100 p-4">
+                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Via email</p>
+                    {guests.length === 0 ? (
+                        <p className="text-sm text-slate-400">No collaborators yet. Add team members on the collaborators page.</p>
+                    ) : (
+                        <div className="space-y-3">
+                            <div className="space-y-1">
+                                {guests.map((g) => (
+                                    <div key={g.id} className="flex items-center gap-2 text-sm text-slate-600">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300 shrink-0" />
+                                        <span className="font-medium">{g.name || g.email}</span>
+                                        {g.name && <span className="text-slate-400 text-xs">{g.email}</span>}
+                                    </div>
+                                ))}
+                            </div>
+                            <Button
+                                onClick={async () => {
+                                    setIsSendingEmails(true)
+                                    const result = await sendQuestionnaireToCollaborators(projectId)
+                                    setIsSendingEmails(false)
+                                    if (result.error) {
+                                        toast.error(result.error)
+                                    } else {
+                                        toast.success(`Questionnaire sent to ${result.sent} collaborator${result.sent === 1 ? '' : 's'}`)
+                                    }
+                                }}
+                                disabled={isSendingEmails}
+                                size="sm"
+                                className="h-9 rounded-lg px-4"
+                            >
+                                {isSendingEmails ? (
+                                    <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Sending...</>
+                                ) : (
+                                    <><Mail className="w-3.5 h-3.5 mr-1.5" /> Send to All</>
+                                )}
+                            </Button>
+                        </div>
+                    )}
+                </div>
+            </div>
 
             {/* Confirmation Dialog for Template Loading */}
             <Dialog open={!!confirmTemplate} onOpenChange={() => setConfirmTemplate(null)}>

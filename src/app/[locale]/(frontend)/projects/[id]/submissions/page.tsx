@@ -8,7 +8,6 @@ import { SubmissionsList } from '@/components/features/SubmissionsList'
 import { AnswersByQuestion } from '@/components/features/AnswersByQuestion'
 import { StandardPageShell } from '@/components/layout/StandardPageShell'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
 import { getLocale, getTranslations } from 'next-intl/server'
 
 export default async function SubmissionsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -46,19 +45,15 @@ export default async function SubmissionsPage({ params }: { params: Promise<{ id
                     <div className="p-2 bg-primary/10 rounded-lg">
                         <Inbox className="w-6 h-6 text-primary" />
                     </div>
-                    <div className="flex items-center gap-3">
-                        <div>
-                            <h1 className="text-2xl font-bold">{t('title')}</h1>
-                            <p className="text-muted-foreground">{t('description')}</p>
-                        </div>
-                        <Badge variant="secondary" className="text-sm">
-                            {projectSubmissions.length}
-                        </Badge>
+                    <div>
+                        <h1 className="text-2xl font-bold">{t('title')}</h1>
+                        <p className="text-muted-foreground">{t('description')}</p>
                     </div>
+                    <span className="text-sm text-slate-400 ml-auto">{projectSubmissions.length} total</span>
                 </div>
 
                 <Tabs defaultValue="by-question" className="w-full">
-                    <TabsList className="mb-6 bg-slate-100">
+                    <TabsList className="mb-4 bg-slate-100">
                         <TabsTrigger value="by-question" className="text-sm">
                             {t('byQuestion')}
                         </TabsTrigger>
