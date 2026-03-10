@@ -2,7 +2,7 @@
 
 import { eq, and } from 'drizzle-orm'
 import { revalidateForAllLocales } from '@/lib/revalidation'
-import { db, projects, comments } from '@/db'
+import { db, projects, comments, guests } from '@/db'
 import { requireAuth } from './auth'
 
 type CommentRow = typeof comments.$inferSelect
@@ -13,6 +13,23 @@ async function verifyOwner(projectId: number, userId: string) {
     })
 }
 
+/** Returns true if user is owner or an accepted collaborator on the project */
+async function verifyProjectAccess(projectId: number, userId: string, userEmail: string) {
+    const project = await db.query.projects.findFirst({
+        where: eq(projects.id, projectId),
+    })
+    if (!project) return false
+    if (project.ownerId === userId) return true
+    const guest = await db.query.guests.findFirst({
+        where: and(
+            eq(guests.projectId, projectId),
+            eq(guests.email, userEmail),
+            eq(guests.status, 'accepted'),
+        ),
+    })
+    return !!guest
+}
+
 export async function addComment(
     projectId: number,
     submissionId: number,
@@ -20,7 +37,7 @@ export async function addComment(
 ): Promise<{ success: boolean; comment?: CommentRow; error?: string }> {
     const session = await requireAuth()
 
-    if (!await verifyOwner(projectId, session.user.id)) {
+    if (!await verifyProjectAccess(projectId, session.user.id, session.user.email)) {
         return { success: false, error: 'Project not found or unauthorized' }
     }
 
@@ -50,7 +67,7 @@ export async function replyToComment(
 ): Promise<{ success: boolean; comment?: CommentRow; error?: string }> {
     const session = await requireAuth()
 
-    if (!await verifyOwner(projectId, session.user.id)) {
+    if (!await verifyProjectAccess(projectId, session.user.id, session.user.email)) {
         return { success: false, error: 'Project not found or unauthorized' }
     }
 
@@ -78,7 +95,7 @@ export async function resolveComment(
 ): Promise<{ success: boolean; error?: string }> {
     const session = await requireAuth()
 
-    if (!await verifyOwner(projectId, session.user.id)) {
+    if (!await verifyProjectAccess(projectId, session.user.id, session.user.email)) {
         return { success: false, error: 'Unauthorized' }
     }
 
@@ -101,7 +118,7 @@ export async function reopenComment(
 ): Promise<{ success: boolean; error?: string }> {
     const session = await requireAuth()
 
-    if (!await verifyOwner(projectId, session.user.id)) {
+    if (!await verifyProjectAccess(projectId, session.user.id, session.user.email)) {
         return { success: false, error: 'Unauthorized' }
     }
 
@@ -124,8 +141,13 @@ export async function deleteComment(
 ): Promise<{ success: boolean; error?: string }> {
     const session = await requireAuth()
 
-    if (!await verifyOwner(projectId, session.user.id)) {
-        return { success: false, error: 'Unauthorized' }
+    const isOwner = await verifyOwner(projectId, session.user.id)
+    if (!isOwner) {
+        // Collaborators can only delete their own comments
+        const comment = await db.query.comments.findFirst({
+            where: and(eq(comments.id, commentId), eq(comments.authorId, session.user.id)),
+        })
+        if (!comment) return { success: false, error: 'Unauthorized' }
     }
 
     try {

@@ -1,8 +1,8 @@
 import React from 'react'
 import { notFound, redirect } from 'next/navigation'
-import { eq, desc, asc } from 'drizzle-orm'
+import { eq, and, desc, asc } from 'drizzle-orm'
 import { Inbox } from 'lucide-react'
-import { db, projects, submissions, comments } from '@/db'
+import { db, projects, submissions, comments, guests } from '@/db'
 import { getSession } from '@/actions/auth'
 import { SubmissionsList } from '@/components/features/SubmissionsList'
 import { AnswersByQuestion } from '@/components/features/AnswersByQuestion'
@@ -24,6 +24,13 @@ export default async function SubmissionsPage({ params }: { params: Promise<{ id
     })
 
     if (!project) notFound()
+
+    if (project.ownerId !== session.user.id) {
+        const guest = await db.query.guests.findFirst({
+            where: and(eq(guests.projectId, projectId), eq(guests.email, session.user.email), eq(guests.status, 'accepted')),
+        })
+        if (!guest) notFound()
+    }
 
     const projectSubmissions = await db.query.submissions.findMany({
         where: eq(submissions.projectId, projectId),
