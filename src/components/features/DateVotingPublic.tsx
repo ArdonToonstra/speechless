@@ -2,77 +2,138 @@
 
 import React, { useState } from 'react'
 import { format } from 'date-fns'
-import { Clock, Check, X, HelpCircle, MessageSquare } from 'lucide-react'
+import { Clock, Check, X, HelpCircle, MessageSquare, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { submitDateResponse, type DateOptionWithResponses } from '@/actions/scheduling'
+import { submitDateResponseAnonymous, type DateOptionWithResponses } from '@/actions/scheduling'
 import { toast } from 'sonner'
 
-interface DateVotingProps {
-    projectId: number
+interface DateVotingPublicProps {
+    shareToken: string
     projectName: string
     options: DateOptionWithResponses[]
-    userResponses: Record<number, { response: string; note: string | null }>
 }
 
-export function DateVoting({ projectId, projectName, options, userResponses }: DateVotingProps) {
+export function DateVotingPublic({ shareToken, projectName, options }: DateVotingPublicProps) {
+    const [guestName, setGuestName] = useState('')
+    const [started, setStarted] = useState(false)
+    const [guestId, setGuestId] = useState<number | null>(null)
+    const [responses, setResponses] = useState<Record<number, 'yes' | 'no' | 'maybe'>>({})
+    const [isSubmitted, setIsSubmitted] = useState(false)
+
+    if (isSubmitted) {
+        return (
+            <div className="bg-white rounded-xl border border-slate-100 p-10 text-center">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                    <Check className="w-6 h-6 text-emerald-600" />
+                </div>
+                <h2 className="text-lg font-bold mb-1">Thanks, {guestName}!</h2>
+                <p className="text-sm text-slate-500">Your availability has been recorded.</p>
+            </div>
+        )
+    }
+
+    if (!started) {
+        return (
+            <div className="bg-white rounded-xl border border-slate-100 p-6 space-y-4">
+                <div className="space-y-1.5">
+                    <label className="text-xs text-slate-500">Your name</label>
+                    <div className="relative">
+                        <User className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+                        <Input
+                            placeholder="Enter your name"
+                            value={guestName}
+                            onChange={(e) => setGuestName(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && guestName.trim() && setStarted(true)}
+                            className="pl-9 h-9 text-sm bg-white border-slate-200 rounded-lg"
+                        />
+                    </div>
+                </div>
+                <Button
+                    onClick={() => setStarted(true)}
+                    disabled={!guestName.trim()}
+                    size="sm"
+                    className="w-full h-9 rounded-lg"
+                >
+                    Continue
+                </Button>
+            </div>
+        )
+    }
+
     return (
         <div className="space-y-3">
-            {options.length === 0 ? (
-                <div className="bg-white rounded-xl border border-dashed border-slate-200 p-10 text-center">
-                    <p className="text-sm text-slate-400">No dates have been proposed yet.</p>
+            <p className="text-xs text-slate-400 text-center">
+                Voting as <span className="font-medium text-slate-600">{guestName}</span>
+            </p>
+            {options.map((opt) => (
+                <VotingCardPublic
+                    key={opt.id}
+                    option={opt}
+                    shareToken={shareToken}
+                    guestName={guestName}
+                    guestId={guestId}
+                    onGuestId={setGuestId}
+                    currentResponse={responses[opt.id]}
+                    onResponse={(r) => setResponses(prev => ({ ...prev, [opt.id]: r }))}
+                />
+            ))}
+            {Object.keys(responses).length === options.length && (
+                <div className="pt-2">
+                    <Button
+                        onClick={() => setIsSubmitted(true)}
+                        size="sm"
+                        className="w-full h-9 rounded-lg"
+                    >
+                        Done
+                    </Button>
                 </div>
-            ) : (
-                options.map((opt) => (
-                    <VotingCard
-                        key={opt.id}
-                        option={opt}
-                        projectId={projectId}
-                        initialResponse={userResponses[opt.id]?.response as 'yes' | 'no' | 'maybe' | undefined}
-                        initialNote={userResponses[opt.id]?.note || ''}
-                    />
-                ))
             )}
         </div>
     )
 }
 
-function VotingCard({
+function VotingCardPublic({
     option,
-    projectId,
-    initialResponse,
-    initialNote
+    shareToken,
+    guestName,
+    guestId,
+    onGuestId,
+    currentResponse,
+    onResponse,
 }: {
-    option: DateOptionWithResponses,
-    projectId: number,
-    initialResponse?: 'yes' | 'no' | 'maybe',
-    initialNote?: string
+    option: DateOptionWithResponses
+    shareToken: string
+    guestName: string
+    guestId: number | null
+    onGuestId: (id: number) => void
+    currentResponse?: 'yes' | 'no' | 'maybe'
+    onResponse: (r: 'yes' | 'no' | 'maybe') => void
 }) {
-    const [response, setResponse] = useState<'yes' | 'no' | 'maybe' | undefined>(initialResponse)
-    const [note, setNote] = useState(initialNote || '')
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [noteOpen, setNoteOpen] = useState(!!initialNote)
+    const [note, setNote] = useState('')
+    const [noteOpen, setNoteOpen] = useState(false)
 
     const handleVote = async (value: 'yes' | 'no' | 'maybe') => {
-        setResponse(value)
+        onResponse(value)
         setIsSubmitting(true)
 
-        const result = await submitDateResponse(option.id, projectId, value, note)
+        const result = await submitDateResponseAnonymous(shareToken, guestName, option.id, value, note)
 
         setIsSubmitting(false)
-        if (!result.success) {
+        if (result.success) {
+            if (result.guestId) onGuestId(result.guestId)
+        } else {
             toast.error(result.error || 'Failed to save response')
         }
     }
 
     const handleNoteSave = async () => {
-        if (!response) return
-
+        if (!currentResponse) return
         setIsSubmitting(true)
-        const result = await submitDateResponse(option.id, projectId, response, note)
+        const result = await submitDateResponseAnonymous(shareToken, guestName, option.id, currentResponse, note)
         setIsSubmitting(false)
-
         if (result.success) {
             toast.success('Note saved')
         } else {
@@ -83,9 +144,9 @@ function VotingCard({
     return (
         <div className={cn(
             "bg-white rounded-xl border overflow-hidden transition-all",
-            response === 'yes' ? "border-emerald-200" :
-                response === 'no' ? "border-rose-200" :
-                    response === 'maybe' ? "border-amber-200" :
+            currentResponse === 'yes' ? "border-emerald-200" :
+                currentResponse === 'no' ? "border-rose-200" :
+                    currentResponse === 'maybe' ? "border-amber-200" :
                         "border-slate-100"
         )}>
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3">
@@ -111,7 +172,7 @@ function VotingCard({
                                 </span>
                             )}
                             {option.note && (
-                                <span className="italic truncate">"{option.note}"</span>
+                                <span className="italic truncate">&quot;{option.note}&quot;</span>
                             )}
                         </div>
                     </div>
@@ -120,11 +181,11 @@ function VotingCard({
                 {/* Vote buttons */}
                 <div className="flex items-center gap-1.5 shrink-0">
                     <Button
-                        variant={response === 'yes' ? 'default' : 'outline'}
+                        variant={currentResponse === 'yes' ? 'default' : 'outline'}
                         size="sm"
                         className={cn(
                             "h-8 px-3 rounded-lg text-xs gap-1.5",
-                            response === 'yes' ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "hover:text-emerald-700 hover:border-emerald-200 hover:bg-emerald-50"
+                            currentResponse === 'yes' ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "hover:text-emerald-700 hover:border-emerald-200 hover:bg-emerald-50"
                         )}
                         onClick={() => handleVote('yes')}
                         disabled={isSubmitting}
@@ -133,11 +194,11 @@ function VotingCard({
                         Yes
                     </Button>
                     <Button
-                        variant={response === 'maybe' ? 'default' : 'outline'}
+                        variant={currentResponse === 'maybe' ? 'default' : 'outline'}
                         size="sm"
                         className={cn(
                             "h-8 px-3 rounded-lg text-xs gap-1.5",
-                            response === 'maybe' ? "bg-amber-500 hover:bg-amber-600 text-white" : "hover:text-amber-700 hover:border-amber-200 hover:bg-amber-50"
+                            currentResponse === 'maybe' ? "bg-amber-500 hover:bg-amber-600 text-white" : "hover:text-amber-700 hover:border-amber-200 hover:bg-amber-50"
                         )}
                         onClick={() => handleVote('maybe')}
                         disabled={isSubmitting}
@@ -146,11 +207,11 @@ function VotingCard({
                         Maybe
                     </Button>
                     <Button
-                        variant={response === 'no' ? 'default' : 'outline'}
+                        variant={currentResponse === 'no' ? 'default' : 'outline'}
                         size="sm"
                         className={cn(
                             "h-8 px-3 rounded-lg text-xs gap-1.5",
-                            response === 'no' ? "bg-rose-600 hover:bg-rose-700 text-white" : "hover:text-rose-700 hover:border-rose-200 hover:bg-rose-50"
+                            currentResponse === 'no' ? "bg-rose-600 hover:bg-rose-700 text-white" : "hover:text-rose-700 hover:border-rose-200 hover:bg-rose-50"
                         )}
                         onClick={() => handleVote('no')}
                         disabled={isSubmitting}
@@ -162,7 +223,7 @@ function VotingCard({
             </div>
 
             {/* Note section */}
-            {response && (
+            {currentResponse && (
                 <div className="px-4 pb-3">
                     {!noteOpen ? (
                         <button

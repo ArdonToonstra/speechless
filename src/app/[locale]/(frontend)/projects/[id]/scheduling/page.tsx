@@ -1,8 +1,8 @@
 import React from 'react'
 import { notFound, redirect } from 'next/navigation'
-import { eq } from 'drizzle-orm'
+import { eq, and, ne } from 'drizzle-orm'
 import { CalendarDays } from 'lucide-react'
-import { db, projects } from '@/db'
+import { db, projects, guests } from '@/db'
 import { getSession } from '@/actions/auth'
 import { getDateOptions, getMyDateResponses } from '@/actions/scheduling'
 import { DateScheduler } from '@/components/features/DateScheduler'
@@ -35,6 +35,17 @@ export default async function SchedulingPage({ params }: { params: Promise<{ id:
     const options = await getDateOptions(projectId)
     const t = await getTranslations('projects.scheduling')
 
+    // Fetch collaborators for share section (owner only)
+    let projectGuests: Array<{ id: number; name: string | null; email: string }> = []
+    if (isOwner) {
+        const allGuests = await db.query.guests.findMany({
+            where: and(eq(guests.projectId, projectId), ne(guests.role, 'contributor')),
+        })
+        projectGuests = allGuests
+            .filter(g => g.status !== 'declined' && g.email && !g.email.endsWith('@anonymous.local'))
+            .map(g => ({ id: g.id, name: g.name, email: g.email }))
+    }
+
     return (
         <StandardPageShell>
             <div className="max-w-4xl mx-auto space-y-8">
@@ -49,7 +60,12 @@ export default async function SchedulingPage({ params }: { params: Promise<{ id:
                 </div>
 
                 {isOwner ? (
-                    <DateScheduler projectId={project.id} initialOptions={options} />
+                    <DateScheduler
+                        projectId={project.id}
+                        initialOptions={options}
+                        shareToken={project.shareToken}
+                        guests={projectGuests}
+                    />
                 ) : (
                     <DateVoting
                         projectId={project.id}

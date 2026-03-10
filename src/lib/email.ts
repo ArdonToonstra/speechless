@@ -316,6 +316,55 @@ export async function sendQuestionnaireInviteEmail({ to, name, projectName, ques
     }
 }
 
+type SendSchedulingInviteEmailProps = {
+    to: string
+    name?: string
+    projectName: string
+    schedulingUrl: string
+    ownerName: string
+}
+
+export async function sendSchedulingInviteEmail({ to, name, projectName, schedulingUrl, ownerName }: SendSchedulingInviteEmailProps) {
+    if (process.env.NODE_ENV !== 'production' && !hasValidKeys) {
+        console.log('[EMAIL] Dev mode - Skipping scheduling invite email to:', to, 'Project:', projectName)
+        return { success: true, devMode: true }
+    }
+
+    if (!mailjet) {
+        throw new Error('Email service not configured - missing API keys')
+    }
+
+    const greeting = name ? `Hi ${name},` : 'Hi,'
+
+    console.log('[EMAIL] Sending scheduling invite email to:', to)
+    try {
+        const request = mailjet.post('send', { version: 'v3.1' }).request({
+            Messages: [
+                {
+                    From: { Email: 'noreply@detoast.nl', Name: 'Toast' },
+                    To: [{ Email: to }],
+                    Subject: `${ownerName} needs your availability for "${projectName}"`,
+                    TextPart: `${greeting}\n\n${ownerName} is planning "${projectName}" and needs to know when you're available. It only takes a minute!\n\nPick your dates: ${schedulingUrl}`,
+                    HTMLPart: emailLayout(`
+                      <h2 style="margin:0 0 8px;font-size:20px;color:#166162;">When are you available?</h2>
+                      <p style="margin:0 0 8px;color:#3a3a2e;font-size:15px;line-height:1.6;">${greeting}</p>
+                      <p style="margin:0 0 24px;color:#3a3a2e;font-size:15px;line-height:1.6;"><strong>${ownerName}</strong> is planning <strong>"${projectName}"</strong> and needs to know when you're available. It only takes a minute!</p>
+                      <div style="text-align:center;margin:28px 0;">
+                        ${emailButton(schedulingUrl, 'Pick Your Dates')}
+                      </div>
+                      <p style="margin:0;font-size:13px;color:#93895E;">If you have any questions, reach out directly.</p>
+                    `),
+                },
+            ],
+        })
+        const result = await request
+        return result.body
+    } catch (error) {
+        console.error('Error sending scheduling invite email:', error)
+        throw new Error('Failed to send scheduling invite email')
+    }
+}
+
 type SendEmailChangeVerificationProps = {
     to: string
     code: string

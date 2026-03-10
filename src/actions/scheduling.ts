@@ -1,6 +1,6 @@
 'use server'
 
-import { eq, and } from 'drizzle-orm'
+import { eq, and, ne } from 'drizzle-orm'
 import { revalidateForAllLocales } from '@/lib/revalidation'
 import { db, dateOptions, dateResponses, guests, projects } from '@/db'
 import { getSession } from './auth'
@@ -202,4 +202,125 @@ export async function getMyDateResponses(projectId: number): Promise<Record<numb
     }
 
     return responses
+}
+
+// Submit a date response via share token (anonymous or logged-in)
+export async function submitDateResponseAnonymous(
+    shareToken: string,
+    guestName: string,
+    dateOptionId: number,
+    response: 'yes' | 'no' | 'maybe',
+    note?: string
+): Promise<{ success: boolean; error?: string; guestId?: number }> {
+    try {
+        // Verify project by share token
+        const project = await db.query.projects.findFirst({
+            where: eq(projects.shareToken, shareToken),
+        })
+
+        if (!project) {
+            return { success: false, error: 'Invalid share link' }
+        }
+
+        // Verify the date option belongs to this project
+        const option = await db.query.dateOptions.findFirst({
+            where: and(
+                eq(dateOptions.id, dateOptionId),
+                eq(dateOptions.projectId, project.id)
+            ),
+        })
+
+        if (!option) {
+            return { success: false, error: 'Date option not found' }
+        }
+
+        // Check if user is logged in — if so, find their existing guest record
+        const session = await getSession()
+        let guest
+
+        if (session?.user) {
+            guest = await db.query.guests.findFirst({
+                where: and(
+                    eq(guests.projectId, project.id),
+                    eq(guests.email, session.user.email)
+                ),
+            })
+        }
+
+        // If no existing guest, find or create by name (anonymous)
+        if (!guest) {
+            const anonEmail = `${guestName.toLowerCase().replace(/\s+/g, '_')}@anonymous.local`
+
+            guest = await db.query.guests.findFirst({
+                where: and(
+                    eq(guests.projectId, project.id),
+                    eq(guests.email, anonEmail)
+                ),
+            })
+
+            if (!guest) {
+                const [created] = await db.insert(guests).values({
+                    email: anonEmail,
+                    name: guestName,
+                    projectId: project.id,
+                    role: 'contributor',
+                    status: 'accepted',
+                }).returning()
+                guest = created
+            }
+        }
+
+        await db.insert(dateResponses)
+            .values({
+                dateOptionId,
+                guestId: guest.id,
+                response,
+                note: note || null,
+            })
+            .onConflictDoUpdate({
+                target: [dateResponses.dateOptionId, dateResponses.guestId],
+                set: {
+                    response,
+                    note: note || null,
+                    updatedAt: new Date(),
+                },
+            })
+
+        revalidateForAllLocales(`/projects/${project.id}/scheduling`)
+        return { success: true, guestId: guest.id }
+    } catch (error) {
+        console.error('Error submitting anonymous date response:', error)
+        return { success: false, error: 'Failed to submit response' }
+    }
+}
+
+// Get date responses for a specific guest ID (used by anonymous voters)
+export async function getDateResponsesByGuestId(
+    guestId: number
+): Promise<Record<number, { response: string; note: string | null }>> {
+    const guest = await db.query.guests.findFirst({
+        where: eq(guests.id, guestId),
+        with: { dateResponses: true },
+    })
+
+    if (!guest) return {}
+
+    const responses: Record<number, { response: string; note: string | null }> = {}
+    for (const r of guest.dateResponses) {
+        responses[r.dateOptionId] = { response: r.response, note: r.note }
+    }
+    return responses
+}
+
+// Get collaborators eligible for scheduling share emails
+export async function getSchedulingCollaborators(projectId: number) {
+    const projectGuests = await db.query.guests.findMany({
+        where: and(
+            eq(guests.projectId, projectId),
+            ne(guests.role, 'contributor')
+        ),
+    })
+    return projectGuests
+        .filter(g => g.status !== 'declined' && g.email && !g.email.endsWith('@anonymous.local'))
+        .map(g => ({ id: g.id, name: g.name, email: g.email }))
 }
