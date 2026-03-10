@@ -43,7 +43,10 @@ export function InteractiveEditor({ project }: { project: any }) {
         const now = Date.now()
         if (now - lastSnapshotTimeRef.current < AUTO_SNAPSHOT_INTERVAL) return
         lastSnapshotTimeRef.current = now
-        await createSnapshot(String(project.id), json, stats.words)
+        const result = await createSnapshot(String(project.id), json, stats.words)
+        if (result.error) {
+            console.error('Auto-snapshot failed:', result.error)
+        }
     }, [project.id, stats.words])
 
     const saveContent = useCallback(async (json: JSONContent) => {
@@ -77,8 +80,12 @@ export function InteractiveEditor({ project }: { project: any }) {
         if (timeoutRef.current) clearTimeout(timeoutRef.current)
         if (currentJsonRef.current) {
             await saveContent(currentJsonRef.current)
-            await createSnapshot(String(project.id), currentJsonRef.current, stats.words)
-            lastSnapshotTimeRef.current = Date.now()
+            const result = await createSnapshot(String(project.id), currentJsonRef.current, stats.words)
+            if (result.error) {
+                console.error('Snapshot failed:', result.error)
+            } else {
+                lastSnapshotTimeRef.current = Date.now()
+            }
         }
     }, [saveContent, project.id, stats.words])
 
