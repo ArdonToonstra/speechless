@@ -194,6 +194,8 @@ export const comments = pgTable('comments', {
     .references(() => user.id, { onDelete: 'cascade' }),
   authorName: text('author_name').notNull(),
   content: text('content').notNull(),
+  commentMarkId: text('comment_mark_id').unique(), // UUID linking to Tiptap mark; null for submission comments/replies
+  selectedText: text('selected_text'), // text that was selected when comment was created
   resolvedAt: timestamp('resolved_at'), // null = open; set = resolved
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),

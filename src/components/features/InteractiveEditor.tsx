@@ -17,7 +17,9 @@ interface Stats {
     readTime: number
 }
 
-export function InteractiveEditor({ project }: { project: any }) {
+import type { SpeechComment } from '@/components/editor/CommentSidebar'
+
+export function InteractiveEditor({ project, children, speechComments = [], authorName = '' }: { project: any; children?: React.ReactNode; speechComments?: SpeechComment[]; authorName?: string }) {
     const [saving, setSaving] = useState(false)
     const [lastSaved, setLastSaved] = useState<Date | null>(new Date(project.updatedAt))
     const [focusMode, setFocusMode] = useState(false)
@@ -203,6 +205,9 @@ export function InteractiveEditor({ project }: { project: any }) {
                             submissions={project.submissions || []}
                             speechReceiverName={project.honoree || 'them'}
                             placeholder="Start writing your speech..."
+                            speechComments={speechComments}
+                            projectId={project.id}
+                            authorName={authorName}
                         />
                     </div>
 

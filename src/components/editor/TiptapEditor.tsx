@@ -36,8 +36,10 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { SPEECH_TEMPLATES } from './templates'
 import { HemingwayPanel } from './HemingwayPanel'
+import { CommentSidebar, type SpeechComment } from './CommentSidebar'
 import { analyzeText, AnalysisResult } from '@/lib/textAnalysis'
 import { HemingwayExtension } from './extensions/HemingwayExtension'
+import { CommentMark } from './extensions/CommentMark'
 
 interface TiptapEditorProps {
     initialContent?: any // Tiptap Content type (string | JSON | null)
@@ -48,6 +50,9 @@ interface TiptapEditorProps {
     questions?: QuestionItem[]
     submissions?: any[] // We can use 'any' or import the type if we want to be strict
     speechReceiverName?: string
+    speechComments?: SpeechComment[]
+    projectId?: number
+    authorName?: string
 }
 
 const ButtonBase = React.forwardRef<
@@ -94,7 +99,10 @@ export function TiptapEditor({
     placeholder = "Start writing your speech...",
     questions = [],
     submissions = [],
-    speechReceiverName = 'them'
+    speechReceiverName = 'them',
+    speechComments = [],
+    projectId,
+    authorName = '',
 }: TiptapEditorProps) {
     const locale = useLocale()
     const language = locale === 'nl' ? 'nl' : 'en'
@@ -105,6 +113,12 @@ export function TiptapEditor({
     const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null)
     const [isAnalyzing, setIsAnalyzing] = useState(false)
     const analysisTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+    // Comments state
+    const [commentsOpen, setCommentsOpen] = useState(false)
+    const [activeCommentId, setActiveCommentId] = useState<string | null>(null)
+    const [currentSelectedText, setCurrentSelectedText] = useState('')
+    const [hasSelection, setHasSelection] = useState(false)
 
     // Group answers logic
     const groupedAnswers = useMemo(() => {
@@ -197,7 +211,8 @@ export function TiptapEditor({
             Highlight.configure({
                 multicolor: true
             }),
-            HemingwayExtension
+            HemingwayExtension,
+            CommentMark,
         ],
         content: initialContent || '',
         immediatelyRender: false,
@@ -232,7 +247,21 @@ export function TiptapEditor({
             if (hemingwayEnabledRef.current) {
                 runDebouncedAnalysis(text)
             }
-        }
+        },
+        onSelectionUpdate: ({ editor }) => {
+            const { from, to, empty } = editor.state.selection
+            setHasSelection(!empty)
+            if (!empty) {
+                setCurrentSelectedText(editor.state.doc.textBetween(from, to, ' '))
+            } else {
+                setCurrentSelectedText('')
+            }
+            // Detect if cursor is inside a comment mark
+            const $from = editor.state.selection.$from
+            const marks = $from.marks()
+            const commentMark = marks.find(m => m.type.name === 'commentMark')
+            setActiveCommentId(commentMark?.attrs.commentId ?? null)
+        },
     })
 
     // Keep editor ref in sync
@@ -334,16 +363,16 @@ export function TiptapEditor({
         }, 500)
     }, [editor])
 
-    // Toggle Hemingway mode
+    // Toggle Hemingway mode (mutually exclusive with comments)
     const toggleHemingway = useCallback(() => {
         const newState = !hemingwayEnabled
         setHemingwayEnabled(newState)
 
-        if (newState && editor) {
-            runDebouncedAnalysis(editor.getText({ blockSeparator: '\n' }))
+        if (newState) {
+            setCommentsOpen(false) // close comments when opening hemingway
+            if (editor) runDebouncedAnalysis(editor.getText({ blockSeparator: '\n' }))
         } else {
             setAnalysisResult(null)
-            // Clear decorations when disabling Hemingway mode
             if (editor && !editor.isDestroyed) {
                 editor.view.dispatch(
                     editor.view.state.tr.setMeta('hemingwayAnalysis', null)
@@ -351,6 +380,55 @@ export function TiptapEditor({
             }
         }
     }, [hemingwayEnabled, editor, runDebouncedAnalysis])
+
+    // Toggle comments panel (mutually exclusive with hemingway)
+    const toggleComments = useCallback(() => {
+        const newState = !commentsOpen
+        setCommentsOpen(newState)
+        if (newState && hemingwayEnabled) {
+            setHemingwayEnabled(false)
+            setAnalysisResult(null)
+            if (editor && !editor.isDestroyed) {
+                editor.view.dispatch(
+                    editor.view.state.tr.setMeta('hemingwayAnalysis', null)
+                )
+            }
+        }
+    }, [commentsOpen, hemingwayEnabled, editor])
+
+    // Create a comment on the current selection, apply mark, return the markId
+    const handleCreateComment = useCallback(async (content: string): Promise<string | null> => {
+        if (!editor || editor.state.selection.empty) return null
+        const commentId = crypto.randomUUID()
+        editor.chain().focus().setComment(commentId).run()
+        return commentId
+    }, [editor])
+
+    // Remove a comment mark from the editor
+    const handleDeleteMark = useCallback((commentMarkId: string) => {
+        if (!editor) return
+        editor.chain().focus().unsetComment(commentMarkId).run()
+    }, [editor])
+
+    // Scroll to a comment mark in the editor
+    const handleCommentClick = useCallback((commentMarkId: string) => {
+        if (!editor) return
+        const { doc } = editor.state
+        let targetPos: number | null = null
+        doc.descendants((node, pos) => {
+            if (targetPos !== null) return false
+            for (const mark of node.marks) {
+                if (mark.type.name === 'commentMark' && mark.attrs.commentId === commentMarkId) {
+                    targetPos = pos
+                    return false
+                }
+            }
+        })
+        if (targetPos !== null) {
+            editor.chain().focus().setTextSelection(targetPos).run()
+            setActiveCommentId(commentMarkId)
+        }
+    }, [editor])
 
     // Initial stats calculation
     useEffect(() => {
@@ -526,6 +604,30 @@ export function TiptapEditor({
                             </Popover>
                         )}
 
+                        {/* Comments pill */}
+                        {projectId && (
+                            <button
+                                type="button"
+                                onClick={toggleComments}
+                                onMouseDown={(e) => e.preventDefault()}
+                                title="Comments"
+                                className={cn(
+                                    "flex items-center gap-1.5 h-7 px-3 rounded-full text-xs font-medium transition-all duration-150",
+                                    commentsOpen
+                                        ? "bg-primary/10 text-primary ring-1 ring-primary/30"
+                                        : "bg-muted/40 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                                )}
+                            >
+                                <MessageSquare className="w-3.5 h-3.5" />
+                                Comments
+                                {speechComments.length > 0 && (
+                                    <span className="bg-primary/15 text-primary text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none">
+                                        {speechComments.filter(c => !c.parentId).length}
+                                    </span>
+                                )}
+                            </button>
+                        )}
+
                         {/* Writing Assistant pill */}
                         <button
                             type="button"
@@ -545,19 +647,19 @@ export function TiptapEditor({
                 </div>
             )}
 
-            {/* Editor with Hemingway Panel */}
+            {/* Editor with Side Panel */}
             <div className={cn(
                 "relative flex-grow flex",
-                hemingwayEnabled ? "flex-col lg:flex-row" : ""
+                (hemingwayEnabled || commentsOpen) ? "flex-col lg:flex-row" : ""
             )}>
                 {/* Editor Content */}
                 <div className={cn(
                     "flex-grow relative",
-                    hemingwayEnabled ? "lg:w-2/3" : "w-full"
+                    (hemingwayEnabled || commentsOpen) ? "lg:w-2/3" : "w-full"
                 )}>
                     <EditorContent editor={editor} />
 
-                    {/* Placeholder and Hemingway highlight styling */}
+                    {/* Placeholder, Hemingway, and Comment highlight styling */}
                     <style jsx global>{`
             .ProseMirror p.is-editor-empty:first-child::before {
               content: attr(data-placeholder);
@@ -639,6 +741,23 @@ export function TiptapEditor({
             .ProseMirror ol li::marker {
               color: currentColor;
             }
+
+            /* Comment highlight styles */
+            .ProseMirror .comment-highlight {
+              background-color: rgb(254 249 195 / 0.7); /* yellow-100 */
+              border-bottom: 2px solid rgb(234 179 8); /* yellow-500 */
+              border-radius: 1px;
+              padding: 1px 0;
+              cursor: pointer;
+              transition: background-color 0.15s;
+            }
+            .ProseMirror .comment-highlight:hover {
+              background-color: rgb(254 240 138 / 0.8); /* yellow-200 */
+            }
+            .dark .ProseMirror .comment-highlight {
+              background-color: rgb(113 63 18 / 0.3);
+              border-bottom-color: rgb(202 138 4);
+            }
           `}</style>
                 </div>
 
@@ -648,6 +767,23 @@ export function TiptapEditor({
                         <HemingwayPanel
                             result={analysisResult}
                             isAnalyzing={isAnalyzing}
+                        />
+                    </div>
+                )}
+
+                {/* Comments Panel */}
+                {commentsOpen && !readOnly && projectId && (
+                    <div className="lg:w-1/3 border-l border-border">
+                        <CommentSidebar
+                            projectId={projectId}
+                            authorName={authorName}
+                            initialComments={speechComments}
+                            activeCommentId={activeCommentId}
+                            selectedText={currentSelectedText}
+                            hasSelection={hasSelection}
+                            onCreateComment={handleCreateComment}
+                            onDeleteMark={handleDeleteMark}
+                            onCommentClick={handleCommentClick}
                         />
                     </div>
                 )}

@@ -33,7 +33,9 @@ async function verifyProjectAccess(projectId: number, userId: string, userEmail:
 export async function addComment(
     projectId: number,
     submissionId: number | null,
-    content: string
+    content: string,
+    commentMarkId?: string,
+    selectedText?: string,
 ): Promise<{ success: boolean; comment?: CommentRow; error?: string }> {
     const session = await requireAuth()
 
@@ -49,6 +51,8 @@ export async function addComment(
             authorId: session.user.id,
             authorName: session.user.name,
             content: content.trim(),
+            commentMarkId: commentMarkId || null,
+            selectedText: selectedText || null,
         }).returning()
 
         revalidateForAllLocales(`/projects/${projectId}/editor`)
