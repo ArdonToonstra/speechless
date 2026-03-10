@@ -467,5 +467,33 @@
     "label": "Language",
     "en": "EN",
     "nl": "NL"
+  },
+  "editor": {
+    "hemingway": {
+      "writingAssistant": "Writing Assistant",
+      "analyzing": "Analyzing...",
+      "startTyping": "Start typing to see analysis",
+      "great": "Great!",
+      "suggestions": "{count} suggestions",
+      "suggestion": "{count} suggestion",
+      "grade": "Grade {level}",
+      "gradeEasy": "Easy to understand",
+      "gradeGood": "Good for most audiences",
+      "gradeComplex": "Fairly complex",
+      "gradeVeryComplex": "Very complex",
+      "words": "words",
+      "minRead": "min read",
+      "suggestionLabel": "Suggestions",
+      "veryHardToRead": "Very Hard to Read",
+      "hardToRead": "Hard to Read",
+      "passiveVoice": "Passive Voice",
+      "adverbs": "Adverbs",
+      "simplerAlternatives": "Simpler Alternatives",
+      "speechTips": "Speech Tips",
+      "tipGrade": "Aim for Grade 6-8 for maximum audience engagement",
+      "tipSentences": "Short sentences are easier to deliver with confidence",
+      "tipActiveVoice": "Active voice sounds more dynamic when spoken",
+      "tipReadingTime": "Reading time assumes 150 words/minute for speeches"
+    }
   }
 }

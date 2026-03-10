@@ -22,7 +22,7 @@
     "collaborators": "Bijdragers",
     "questionnaire": "Vragenlijst",
     "submissions": "Inzendingen",
-    "editor": "Toespraakeditor",
+    "editor": "Speech",
     "scheduling": "Planning",
     "location": "Locatie",
     "invites": "Uitnodigingen sturen",
@@ -448,7 +448,7 @@
       "welcomeToTeam": "Welkom in het team!",
       "youveJoined": "Je hebt je aangesloten bij \"{project}\" als {role}.",
       "viewProject": "Project bekijken",
-      "speechEditor": "Toespraakeditor",
+      "speechEditor": "Speech",
       "collaborator": "Medewerker"
     },
     "share": {
@@ -467,5 +467,33 @@
     "label": "Taal",
     "en": "EN",
     "nl": "NL"
+  },
+  "editor": {
+    "hemingway": {
+      "writingAssistant": "Schrijfassistent",
+      "analyzing": "Analyseren...",
+      "startTyping": "Begin met typen om de analyse te zien",
+      "great": "Goed!",
+      "suggestions": "{count} suggesties",
+      "suggestion": "{count} suggestie",
+      "grade": "Niveau {level}",
+      "gradeEasy": "Makkelijk te begrijpen",
+      "gradeGood": "Goed voor de meeste mensen",
+      "gradeComplex": "Redelijk complex",
+      "gradeVeryComplex": "Zeer complex",
+      "words": "woorden",
+      "minRead": "min spreektijd",
+      "suggestionLabel": "Suggesties",
+      "veryHardToRead": "Zeer moeilijk leesbaar",
+      "hardToRead": "Moeilijk leesbaar",
+      "passiveVoice": "Lijdende vorm",
+      "adverbs": "Bijwoorden",
+      "simplerAlternatives": "Eenvoudigere alternatieven",
+      "speechTips": "Spreektips",
+      "tipGrade": "Streef naar niveau 6-8 voor maximale betrokkenheid",
+      "tipSentences": "Korte zinnen zijn makkelijker voor te dragen",
+      "tipActiveVoice": "Bedrijvende vorm klinkt dynamischer bij uitspreken",
+      "tipReadingTime": "Spreektijd: 150 woorden per minuut"
+    }
   }
 }

@@ -2,6 +2,7 @@
 
 
 import React, { useCallback, useEffect, useState, useRef, useMemo } from 'react'
+import { useLocale } from 'next-intl'
 import { useEditor, EditorContent, Editor } from '@tiptap/react'
 import type { JSONContent } from '@tiptap/core'
 import { QuestionItem } from '@/db/schema'
@@ -95,6 +96,11 @@ export function TiptapEditor({
     submissions = [],
     speechReceiverName = 'them'
 }: TiptapEditorProps) {
+    const locale = useLocale()
+    const language = locale === 'nl' ? 'nl' : 'en'
+    const languageRef = useRef<'en' | 'nl'>(language)
+    useEffect(() => { languageRef.current = language }, [language])
+
     const [hemingwayEnabled, setHemingwayEnabled] = useState(false)
     const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null)
     const [isAnalyzing, setIsAnalyzing] = useState(false)
@@ -158,7 +164,7 @@ export function TiptapEditor({
         setIsAnalyzing(true)
         analysisTimeoutRef.current = setTimeout(async () => {
             try {
-                const result = await analyzeText(text)
+                const result = await analyzeText(text, languageRef.current)
                 setAnalysisResult(result)
 
                 // Update highlights using the ref

@@ -1,6 +1,6 @@
 /**
  * Text Analysis Engine for Hemingway-style writing feedback
- * Uses retext plugins for sentence analysis and text-readability for grade level
+ * Supports English (retext plugins) and Dutch (custom regex analysis)
  */
 
 import { unified } from 'unified'
@@ -44,8 +44,8 @@ export interface AnalysisResult {
     stats: AnalysisStats
 }
 
-// Common adverbs to detect and highlight
-const ADVERB_PATTERNS = [
+// Common English adverbs to detect and highlight
+const ENGLISH_ADVERB_PATTERNS = [
     'really', 'very', 'extremely', 'absolutely', 'actually', 'basically',
     'certainly', 'clearly', 'completely', 'definitely', 'entirely', 'especially',
     'essentially', 'exactly', 'fairly', 'frankly', 'generally', 'honestly',
@@ -55,12 +55,131 @@ const ADVERB_PATTERNS = [
     'totally', 'truly', 'usually', 'virtually'
 ]
 
+// Dutch filler/weakener adverbs (bijwoorden) to detect and highlight
+const DUTCH_ADVERB_PATTERNS = [
+    'heel', 'erg', 'echt', 'zeer', 'enorm', 'gewoon', 'eigenlijk',
+    'toch', 'even', 'duidelijk', 'zeker', 'vanzelfsprekend',
+    'uiteraard', 'natuurlijk', 'kennelijk', 'blijkbaar', 'letterlijk',
+    'totaal', 'compleet', 'volledig', 'absoluut', 'volkomen', 'werkelijk',
+    'inderdaad', 'nogal', 'tamelijk', 'enigszins', 'redelijk',
+    'waarschijnlijk', 'misschien', 'mogelijk', 'wellicht', 'vermoedelijk',
+    'uitermate', 'buitengewoon', 'bijzonder', 'beslist', 'stellig',
+    'simpelweg', 'ronduit', 'gewoonweg'
+]
+
 /**
- * Analyze text for readability issues
+ * Automated Readability Index — language-neutral grade level formula
+ * Based on character count and word/sentence counts (no syllable counting needed)
  */
-export async function analyzeText(text: string): Promise<AnalysisResult> {
+function calculateARI(text: string, wordCount: number, sentenceCount: number): number {
+    if (wordCount === 0 || sentenceCount === 0) return 0
+    const charCount = text.replace(/\s/g, '').length
+    const ari = 4.71 * (charCount / wordCount) + 0.5 * (wordCount / sentenceCount) - 21.43
+    return Math.max(0, ari)
+}
+
+/**
+ * Detect hard/very-hard sentences in Dutch text using word count thresholds
+ */
+function analyzeDutchSentences(text: string): TextIssue[] {
+    const issues: TextIssue[] = []
+    const sentenceRegex = /[^.!?]+[.!?]*/g
+    let match
+    while ((match = sentenceRegex.exec(text)) !== null) {
+        const sentence = match[0]
+        const words = sentence.trim().split(/\s+/).filter(w => w.length > 0)
+        const wordCount = words.length
+        if (wordCount >= 14) {
+            const isVeryHard = wordCount >= 22
+            issues.push({
+                type: isVeryHard ? 'very-hard-sentence' : 'hard-sentence',
+                start: match.index,
+                end: match.index + sentence.length,
+                message: isVeryHard ? 'Zeer moeilijk leesbaar' : 'Moeilijk leesbaar',
+                suggestion: isVeryHard
+                    ? 'Deze zin is erg lang. Probeer hem op te splitsen in 2-3 kortere zinnen.'
+                    : 'Probeer deze zin op te splitsen in kortere zinnen.'
+            })
+        }
+    }
+    return issues
+}
+
+/**
+ * Detect Dutch passive voice (lijdende vorm) using worden-forms + ge- past participles.
+ * Matches: wordt/worden/werd/werden followed by a ge- past participle within the same clause.
+ */
+function analyzeDutchPassive(text: string): TextIssue[] {
+    const issues: TextIssue[] = []
+    // Matches worden-form + up to 80 chars (not crossing sentence boundary) + ge- past participle
+    const passiveRegex = /\b(wordt|worden|werd|werden)\b[^.!?]{0,80}?\b(ge\w{2,}(?:en|d|t))\b/gi
+    let match
+    while ((match = passiveRegex.exec(text)) !== null) {
+        issues.push({
+            type: 'passive',
+            start: match.index,
+            end: match.index + match[0].length,
+            message: 'Lijdende vorm gedetecteerd',
+            suggestion: 'Gebruik de bedrijvende vorm voor een krachtigere zin.'
+        })
+    }
+    return issues
+}
+
+/**
+ * Analyze Dutch text — custom regex-based analysis (no retext-english required)
+ */
+function analyzeDutchText(text: string): AnalysisResult {
     const issues: TextIssue[] = []
 
+    // Sentence difficulty
+    issues.push(...analyzeDutchSentences(text))
+
+    // Passive voice (lijdende vorm)
+    issues.push(...analyzeDutchPassive(text))
+
+    // Adverbs (bijwoorden)
+    const adverbRegex = new RegExp(`\\b(${DUTCH_ADVERB_PATTERNS.join('|')})\\b`, 'gi')
+    let match
+    while ((match = adverbRegex.exec(text)) !== null) {
+        issues.push({
+            type: 'adverb',
+            start: match.index,
+            end: match.index + match[0].length,
+            message: `"${match[0]}" — overweeg dit bijwoord weg te laten`,
+            suggestion: 'Sterke werkwoorden werken vaak beter dan bijwoorden.'
+        })
+    }
+
+    // Stats
+    const words = text.split(/\s+/).filter(w => w.length > 0)
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0)
+    const wordCount = words.length
+    const sentenceCount = sentences.length
+    const gradeLevel = calculateARI(text, wordCount, sentenceCount)
+    const readingTime = Math.ceil(wordCount / 150)
+
+    const stats: AnalysisStats = {
+        passiveCount: issues.filter(i => i.type === 'passive').length,
+        hardSentences: issues.filter(i => i.type === 'hard-sentence').length,
+        veryHardSentences: issues.filter(i => i.type === 'very-hard-sentence').length,
+        adverbs: issues.filter(i => i.type === 'adverb').length,
+        simplerAlternatives: 0, // Not available for Dutch (retext-simplify is English-only)
+        gradeLevel: Math.round(gradeLevel * 10) / 10,
+        readingTime,
+        wordCount,
+        sentenceCount
+    }
+
+    return { issues, stats }
+}
+
+/**
+ * Analyze text for readability issues.
+ * @param text - Plain text content to analyze
+ * @param language - 'en' uses retext plugins; 'nl' uses custom Dutch analysis
+ */
+export async function analyzeText(text: string, language: 'en' | 'nl' = 'en'): Promise<AnalysisResult> {
     if (!text || text.trim().length === 0) {
         return {
             issues: [],
@@ -78,7 +197,13 @@ export async function analyzeText(text: string): Promise<AnalysisResult> {
         }
     }
 
-    // Run retext analysis
+    if (language === 'nl') {
+        return analyzeDutchText(text)
+    }
+
+    // English analysis using retext plugins
+    const issues: TextIssue[] = []
+
     const processor = unified()
         .use(retextEnglish)
         .use(retextPassive)
@@ -116,11 +241,7 @@ export async function analyzeText(text: string): Promise<AnalysisResult> {
                 suggestion: 'Consider using active voice'
             })
         } else if (msg.source === 'retext-readability') {
-            // Determine severity based on sentence length (word count)
-            // retext-readability puts the actual sentence text in msg.actual
-            // Hemingway Editor approach: 
-            // - 14-21 words and hard = "hard to read" (yellow)
-            // - 22+ words and hard = "very hard to read" (red)
+            // Hemingway approach: 14-21 words = hard (yellow), 22+ = very hard (red)
             const sentenceText = typeof msg.actual === 'string' ? msg.actual : text.slice(start, end)
             const wordCount = sentenceText.split(/\s+/).filter((w: string) => w.length > 0).length
             const isVeryHard = wordCount >= 22
@@ -145,7 +266,7 @@ export async function analyzeText(text: string): Promise<AnalysisResult> {
     }
 
     // Detect adverbs
-    const adverbRegex = new RegExp(`\\b(${ADVERB_PATTERNS.join('|')})\\b`, 'gi')
+    const adverbRegex = new RegExp(`\\b(${ENGLISH_ADVERB_PATTERNS.join('|')})\\b`, 'gi')
     let match
     while ((match = adverbRegex.exec(text)) !== null) {
         issues.push({
@@ -163,7 +284,7 @@ export async function analyzeText(text: string): Promise<AnalysisResult> {
     const wordCount = words.length
     const sentenceCount = sentences.length
 
-    // Calculate grade level using text-readability
+    // Calculate grade level using text-readability (Flesch-Kincaid)
     let gradeLevel = 0
     try {
         gradeLevel = rs.fleschKincaidGrade(text) || 0
@@ -175,7 +296,6 @@ export async function analyzeText(text: string): Promise<AnalysisResult> {
     // Reading time: average 150 words per minute for speeches
     const readingTime = Math.ceil(wordCount / 150)
 
-    // Count issues by type
     const stats: AnalysisStats = {
         passiveCount: issues.filter(i => i.type === 'passive').length,
         hardSentences: issues.filter(i => i.type === 'hard-sentence').length,
@@ -208,25 +328,5 @@ export function getIssueColor(type: IssueType): string {
             return 'border-b-2 border-green-500'
         default:
             return ''
-    }
-}
-
-/**
- * Get a human-readable label for an issue type
- */
-export function getIssueLabel(type: IssueType): string {
-    switch (type) {
-        case 'passive':
-            return 'Passive Voice'
-        case 'hard-sentence':
-            return 'Hard to Read'
-        case 'very-hard-sentence':
-            return 'Very Hard to Read'
-        case 'adverb':
-            return 'Adverb'
-        case 'simpler-alternative':
-            return 'Simpler Alternative'
-        default:
-            return 'Issue'
     }
 }
