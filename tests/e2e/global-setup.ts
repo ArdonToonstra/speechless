@@ -48,20 +48,44 @@ async function globalSetup(_config: FullConfig) {
     // Wait for redirect to verify-email page (URL includes ?email=... query params)
     await page.waitForURL(/\/en\/verify-email/, { timeout: 15_000 })
 
-    // Use the dev-only "Get Code" button to auto-fill the OTP, then wait for the
-    // input to have a value (JS sets the .value property, not the HTML attribute)
-    await page.click('button:has-text("Get Code")')
+    // Fetch OTP directly from the dev-only API — more reliable than clicking the UI button
+    const codeRes = await page.request.get(
+      `${BASE_URL}/api/auth/test-code?email=${encodeURIComponent(TEST_EMAIL)}`,
+    )
+    const codeBody = await codeRes.json()
+    console.log('[setup] test-code response:', JSON.stringify(codeBody))
+
+    if (!codeBody.code) {
+      throw new Error(`[setup] Failed to get OTP code: ${JSON.stringify(codeBody)}`)
+    }
+
+    // Fill the controlled React input by typing — triggers onChange and updates state
+    await page.locator('input[maxlength="6"]').fill(String(codeBody.code))
+
+    // Wait for React state to propagate so the submit button becomes enabled
     await page.waitForFunction(
       () => {
-        const input = document.querySelector('input[maxlength="6"]') as HTMLInputElement | null
-        return input !== null && input.value.length === 6
+        const btn = document.querySelector('button[type="submit"]') as HTMLButtonElement | null
+        return btn !== null && !btn.disabled
       },
-      { timeout: 10_000 },
+      undefined,          // no arg passed to the page function
+      { timeout: 5_000 }, // actual options
     )
 
     // Submit verification
-    await page.click('button[type="submit"]:has-text("Verify Email")')
-    await page.waitForURL(`${BASE_URL}/en/dashboard`, { timeout: 15_000 })
+    await page.click('button[type="submit"]')
+
+    // Better Auth doesn't auto-login after OTP verification — it redirects to /login.
+    // Wait for either dashboard (if auto-logged-in) or login page, then handle both.
+    await page.waitForURL(/\/(dashboard|login)/, { timeout: 15_000 })
+
+    if (page.url().includes('/login')) {
+      await page.fill('input#email', TEST_EMAIL)
+      await page.fill('input#password', TEST_PASSWORD)
+      await page.click('button[type="submit"]')
+      await page.waitForURL(`${BASE_URL}/en/dashboard`, { timeout: 15_000 })
+    }
+
     console.log('[setup] Signed up and verified test account')
   }
 

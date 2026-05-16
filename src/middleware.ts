@@ -22,7 +22,7 @@ export default function middleware(request: NextRequest) {
             const localeMatch = pathname.match(localePattern)
             const locale = localeMatch ? localeMatch[1] : routing.defaultLocale
             const loginUrl = new URL(`/${locale}/login`, request.url)
-            loginUrl.searchParams.set('redirect', pathname)
+            loginUrl.searchParams.set('redirect', withoutLocale)
             return NextResponse.redirect(loginUrl)
         }
     }

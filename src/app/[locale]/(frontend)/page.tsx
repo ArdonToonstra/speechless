@@ -111,13 +111,13 @@ export default async function Page() {
                 </div>
 
                 {/* Visual Timeline */}
-                <div className="w-full max-w-5xl px-4 py-24 relative">
+                <div className="w-full max-w-5xl px-4 py-12 md:py-24 relative">
                     {/* Connecting Line */}
                     <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-border to-transparent"></div>
 
                     {/* Step 1: Gather & Invite */}
-                    <div className="relative flex flex-col md:flex-row items-center gap-8 md:gap-16 mb-32 group">
-                        <div className="md:w-1/2 text-left md:text-right md:pr-12 relative z-10 order-2 md:order-1">
+                    <div className="relative flex flex-col md:flex-row items-center gap-8 md:gap-16 mb-14 md:mb-32 group">
+                        <div className="md:w-1/2 text-left md:text-right pl-12 md:pl-0 md:pr-12 relative z-10 order-1 md:order-1">
                             <div className="inline-block px-3 py-1 bg-primary/10 dark:bg-primary/20 text-primary rounded-full text-xs font-bold mb-3 tracking-wider uppercase">{t('step1Badge')}</div>
                             <h3 className="text-3xl font-serif font-bold mb-4 text-foreground">{t('step1Title')}</h3>
                             <p className="text-muted-foreground text-lg leading-relaxed">
@@ -129,7 +129,7 @@ export default async function Page() {
                         <div className="absolute left-4 md:left-1/2 -ml-[9px] w-5 h-5 rounded-full border-4 border-background bg-primary z-20"></div>
 
                         {/* Step 1 Visual: Invite Card */}
-                        <div className="md:w-1/2 w-full pl-12 md:pl-0 order-1 md:order-2">
+                        <div className="md:w-1/2 w-full pl-12 md:pl-0 order-2 md:order-2">
                             <div className="bg-card border border-border/50 rounded-xl shadow-xl overflow-hidden max-w-sm mx-auto md:mx-0 p-6 space-y-4">
                                 <div className="text-sm font-semibold text-foreground">{t('previewInviteCollaborators')}</div>
                                 <div className="flex gap-2">
@@ -152,10 +152,10 @@ export default async function Page() {
                     </div>
 
                     {/* Step 2: Co-Create */}
-                    <div className="relative flex flex-col md:flex-row items-center gap-8 md:gap-16 mb-32 group">
+                    <div className="relative flex flex-col md:flex-row items-center gap-8 md:gap-16 mb-14 md:mb-32 group">
                         {/* Step 2 Visual: Feedback */}
-                        <div className="md:w-1/2 w-full pl-12 md:pl-0 order-1">
-                            <div className="bg-card border border-border/50 rounded-xl shadow-xl overflow-hidden aspect-[4/3] md:aspect-auto md:h-64 relative p-6 md:p-8 flex flex-col">
+                        <div className="md:w-1/2 w-full pl-12 md:pl-0 order-2 md:order-1">
+                            <div className="bg-card border border-border/50 rounded-xl shadow-xl overflow-hidden md:h-64 relative p-6 md:p-8 flex flex-col">
                                 <div className="space-y-3 opacity-50 blur-[1px]">
                                     <div className="h-2 w-full bg-foreground/10 rounded"></div>
                                     <div className="h-2 w-5/6 bg-foreground/10 rounded"></div>
@@ -179,7 +179,7 @@ export default async function Page() {
                         {/* Center Node */}
                         <div className="absolute left-4 md:left-1/2 -ml-[9px] w-5 h-5 rounded-full border-4 border-background bg-amber-500 z-20"></div>
 
-                        <div className="md:w-1/2 text-left md:pl-12 relative z-10 order-2">
+                        <div className="md:w-1/2 text-left pl-12 md:pl-12 relative z-10 order-1 md:order-2">
                             <div className="inline-block px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full text-xs font-bold mb-3 tracking-wider uppercase">{t('step2Badge')}</div>
                             <h3 className="text-3xl font-serif font-bold mb-4 text-foreground">{t('step2Title')}</h3>
                             <p className="text-muted-foreground text-lg leading-relaxed">
@@ -189,8 +189,8 @@ export default async function Page() {
                     </div>
 
                     {/* Step 3: Location */}
-                    <div className="relative flex flex-col md:flex-row items-center gap-8 md:gap-16 mb-32 group">
-                        <div className="md:w-1/2 text-left md:text-right md:pr-12 relative z-10 order-2 md:order-1">
+                    <div className="relative flex flex-col md:flex-row items-center gap-8 md:gap-16 mb-14 md:mb-32 group">
+                        <div className="md:w-1/2 text-left md:text-right pl-12 md:pl-0 md:pr-12 relative z-10 order-1 md:order-1">
                             <div className="inline-block px-3 py-1 bg-primary/10 dark:bg-primary/20 text-primary rounded-full text-xs font-bold mb-3 tracking-wider uppercase">{t('step3Badge')}</div>
                             <h3 className="text-3xl font-serif font-bold mb-4 text-foreground">{t('step3Title')}</h3>
                             <p className="text-muted-foreground text-lg leading-relaxed">
@@ -202,7 +202,7 @@ export default async function Page() {
                         <div className="absolute left-4 md:left-1/2 -ml-[9px] w-5 h-5 rounded-full border-4 border-background bg-primary z-20"></div>
 
                         {/* Step 3 Visual: Location Card */}
-                        <div className="md:w-1/2 w-full pl-12 md:pl-0 order-1 md:order-2">
+                        <div className="md:w-1/2 w-full pl-12 md:pl-0 order-2 md:order-2">
                             <div className="bg-card border border-border/50 rounded-xl shadow-xl overflow-hidden max-w-sm mx-auto md:mx-0">
                                 {/* Image Placeholder */}
                                 <div className="h-40 bg-muted relative">
@@ -235,7 +235,7 @@ export default async function Page() {
                     {/* Step 4: Tickets */}
                     <div className="relative flex flex-col md:flex-row items-center gap-8 md:gap-16 group">
                         {/* Step 4 Visual: Tickets */}
-                        <div className="md:w-1/2 w-full pl-12 md:pl-0 order-1">
+                        <div className="md:w-1/2 w-full pl-12 md:pl-0 order-2 md:order-1">
                             <div className="relative max-w-sm mx-auto md:ml-auto md:mr-0 space-y-4 pr-4">
                                 {/* Golden Ticket */}
                                 <div className="relative bg-gradient-to-r from-amber-200 via-amber-300 to-amber-200 text-amber-900 rounded-lg shadow-lg p-5 border border-amber-400/50 transform rotate-2 hover:rotate-0 transition-all duration-300 z-10 mx-4">
@@ -266,7 +266,7 @@ export default async function Page() {
                         {/* Center Node */}
                         <div className="absolute left-4 md:left-1/2 -ml-[9px] w-5 h-5 rounded-full border-4 border-background bg-amber-400 z-20"></div>
 
-                        <div className="md:w-1/2 text-left md:pl-12 relative z-10 order-2">
+                        <div className="md:w-1/2 text-left pl-12 md:pl-12 relative z-10 order-1 md:order-2">
                             <div className="inline-block px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full text-xs font-bold mb-3 tracking-wider uppercase">{t('step4Badge')}</div>
                             <h3 className="text-3xl font-serif font-bold mb-4 text-foreground">{t('step4Title')}</h3>
                             <p className="text-muted-foreground text-lg leading-relaxed">
@@ -279,13 +279,13 @@ export default async function Page() {
             </div>
 
             {/* CTA Section */}
-            <div className="w-full py-24 bg-card mt-0 border-t border-border/50 text-center px-4">
-                <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6 text-foreground">{t('ctaTitle')}</h2>
-                <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
+            <div className="w-full py-16 md:py-24 bg-card mt-0 border-t border-border/50 text-center px-6 md:px-4">
+                <h2 className="text-3xl md:text-5xl font-serif font-bold mb-5 md:mb-6 text-foreground">{t('ctaTitle')}</h2>
+                <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 md:mb-10">
                     {t('ctaDescription')}
                 </p>
                 <div className="flex gap-4 justify-center">
-                    <Link href="/signup" className="px-10 py-5 bg-primary hover:opacity-90 text-primary-foreground font-bold rounded-full text-xl shadow-xl transition-all transform hover:scale-105">
+                    <Link href="/signup" className="px-7 py-4 md:px-10 md:py-5 bg-primary hover:opacity-90 text-primary-foreground font-bold rounded-full text-lg md:text-xl shadow-xl transition-all transform hover:scale-105">
                         {t('ctaCta')}
                     </Link>
                 </div>

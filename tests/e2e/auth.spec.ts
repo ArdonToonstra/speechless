@@ -15,7 +15,16 @@ test.describe('Authentication', () => {
     await page.fill('input#email', TEST_EMAIL)
     await page.fill('input#password', TEST_PASSWORD)
     await page.click('button[type="submit"]')
-    await expect(page).toHaveURL(/\/en\/dashboard/)
+
+    // Capture the error message if login fails, so we can diagnose it
+    const errorLocator = page.locator('.bg-red-50, .text-red-600').first()
+    await Promise.race([
+      page.waitForURL(/\/en\/dashboard/, { timeout: 10_000 }),
+      errorLocator.waitFor({ state: 'visible', timeout: 10_000 }).then(async () => {
+        const msg = await errorLocator.textContent()
+        throw new Error(`Login failed with error: "${msg?.trim()}"`)
+      }),
+    ])
   })
 
   test('login with wrong password shows error', async ({ page }) => {

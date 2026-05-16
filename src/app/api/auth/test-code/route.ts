@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/db'
 import { verification } from '@/db/schema'
-import { eq, desc } from 'drizzle-orm'
+import { eq, desc, like } from 'drizzle-orm'
 
 export async function GET(request: NextRequest) {
   // Only allow in non-production environments
@@ -23,11 +23,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Get the most recent verification code for this email
+    // Better Auth stores OTPs with identifier `${type}-otp-${email}`,
+    // e.g. "email-verification-otp-user@example.com".
+    // The value field is stored as `${otp}:${attemptCount}`, e.g. "123456:0".
     const codes = await db
       .select()
       .from(verification)
-      .where(eq(verification.identifier, email))
+      .where(like(verification.identifier, `%-otp-${email}`))
       .orderBy(desc(verification.createdAt))
       .limit(1)
 
@@ -38,13 +40,17 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const code = codes[0]
-    const isExpired = code.expiresAt && new Date(code.expiresAt) < new Date()
+    const record = codes[0]
+    const isExpired = record.expiresAt && new Date(record.expiresAt) < new Date()
+
+    // Extract the plain OTP by splitting off the trailing :attemptCount
+    const lastColon = record.value.lastIndexOf(':')
+    const otp = lastColon !== -1 ? record.value.slice(0, lastColon) : record.value
 
     return NextResponse.json({
       email,
-      code: code.value,
-      expiresAt: code.expiresAt,
+      code: otp,
+      expiresAt: record.expiresAt,
       isExpired,
     })
   } catch (error) {
