@@ -68,7 +68,7 @@ test.describe('Scheduling', () => {
     await addButton.click()
 
     // A date card should now be visible
-    await expect(page.locator('[class*="border"][class*="rounded"]').first()).toBeVisible({
+    await expect(page.locator('div[class*="overflow-hidden"][class*="rounded"]').first()).toBeVisible({
       timeout: 5_000,
     })
   })
