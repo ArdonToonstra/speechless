@@ -47,8 +47,9 @@ test.describe('Authentication', () => {
     await page.click('button[type="submit"]')
     await expect(page).toHaveURL(/\/en\/dashboard/)
 
-    // Open user menu and log out
-    await page.click('button:has-text("Log out")')
+    // Open user avatar dropdown, then click Log out
+    await page.click('button.rounded-full')
+    await page.click('button[type="submit"]:has-text("Log out")')
     await expect(page).toHaveURL(/\/en\/login/, { timeout: 10_000 })
 
     // Navigating to dashboard should redirect back to login

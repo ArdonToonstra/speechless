@@ -3,9 +3,7 @@ import { test, expect, type Page } from '@playwright/test'
 const TEST_PROJECT_NAME = '[TEST] Editor Project'
 
 async function createProject(page: Page): Promise<string> {
-  await page.goto('/en/dashboard')
-  await page.click('text=Create New Project')
-  await expect(page).toHaveURL(/\/en\/onboarding/)
+  await page.goto('/en/onboarding')
   await page.click('text=Speech for the Occasion')
   await page.click('text=Continue')
   await page.click('text=Wedding')

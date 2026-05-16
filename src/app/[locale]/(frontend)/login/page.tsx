@@ -37,7 +37,6 @@ function LoginContent() {
             setLoading(false)
         } else {
             router.push(isSafeRedirect(redirect) ? redirect : (invite ? `/invite/${invite}` : '/dashboard'))
-            router.refresh()
         }
     }
 

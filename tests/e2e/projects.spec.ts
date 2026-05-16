@@ -4,9 +4,7 @@ const TEST_PROJECT_NAME = '[TEST] Playwright Project'
 
 /** Walk through the onboarding wizard to create a test project. Returns the project URL. */
 async function createTestProject(page: Page, name = TEST_PROJECT_NAME): Promise<string> {
-  await page.goto('/en/dashboard')
-  await page.click('text=Create New Project')
-  await expect(page).toHaveURL(/\/en\/onboarding/)
+  await page.goto('/en/onboarding')
 
   // Step 1: Speech type
   await page.click('text=Speech for the Occasion')
@@ -51,7 +49,8 @@ test.describe('Projects', () => {
 
   test('dashboard has a Create New Project link', async ({ page }) => {
     await page.goto('/en/dashboard')
-    await expect(page.getByText('Create New Project')).toBeVisible()
+    // Empty state shows "Start First Project"; populated state shows "Create New Project" — both link to /onboarding
+    await expect(page.locator('a[href*="/onboarding"]').first()).toBeVisible()
   })
 
   test('create a project via onboarding and land on project page', async ({ page }) => {
