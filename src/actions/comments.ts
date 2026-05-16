@@ -108,7 +108,7 @@ export async function resolveComment(
     try {
         await db.update(comments)
             .set({ resolvedAt: new Date(), updatedAt: new Date() })
-            .where(eq(comments.id, commentId))
+            .where(and(eq(comments.id, commentId), eq(comments.projectId, projectId)))
 
         revalidateForAllLocales(`/projects/${projectId}/editor`)
         revalidateForAllLocales(`/projects/${projectId}/submissions`)
@@ -132,7 +132,7 @@ export async function reopenComment(
     try {
         await db.update(comments)
             .set({ resolvedAt: null, updatedAt: new Date() })
-            .where(eq(comments.id, commentId))
+            .where(and(eq(comments.id, commentId), eq(comments.projectId, projectId)))
 
         revalidateForAllLocales(`/projects/${projectId}/editor`)
         revalidateForAllLocales(`/projects/${projectId}/submissions`)
@@ -151,15 +151,19 @@ export async function deleteComment(
 
     const isOwner = await verifyOwner(projectId, session.user.id)
     if (!isOwner) {
-        // Collaborators can only delete their own comments
+        // Collaborators can only delete their own comments on this project
         const comment = await db.query.comments.findFirst({
-            where: and(eq(comments.id, commentId), eq(comments.authorId, session.user.id)),
+            where: and(
+                eq(comments.id, commentId),
+                eq(comments.projectId, projectId),
+                eq(comments.authorId, session.user.id)
+            ),
         })
         if (!comment) return { success: false, error: 'Unauthorized' }
     }
 
     try {
-        await db.delete(comments).where(eq(comments.id, commentId))
+        await db.delete(comments).where(and(eq(comments.id, commentId), eq(comments.projectId, projectId)))
 
         revalidateForAllLocales(`/projects/${projectId}/editor`)
         revalidateForAllLocales(`/projects/${projectId}/submissions`)

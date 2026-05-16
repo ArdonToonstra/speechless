@@ -7,6 +7,7 @@ import { Share2, Copy, Check, Globe, Lock } from 'lucide-react'
 import { generateMagicLink, toggleSharing } from '@/actions/sharing'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { toast } from 'sonner'
 
 interface ShareDialogProps {
     projectId: string
@@ -32,7 +33,7 @@ export function ShareDialog({ projectId, initialToken, initialEnabled }: ShareDi
             setToken(res.token)
             setEnabled(true) // Auto-enable when generating
         } else {
-            alert('Failed to generate link')
+            toast.error('Failed to generate link')
         }
         setLoading(false)
     }
@@ -44,15 +45,18 @@ export function ShareDialog({ projectId, initialToken, initialEnabled }: ShareDi
         if (res.success) {
             setEnabled(newState)
         } else {
-            alert('Failed to update settings')
+            toast.error('Failed to update settings')
         }
         setLoading(false)
     }
 
     const copyToClipboard = () => {
-        navigator.clipboard.writeText(shareUrl)
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            setCopied(true)
+            setTimeout(() => setCopied(false), 2000)
+        }).catch(() => {
+            toast.error('Failed to copy link')
+        })
     }
 
     if (!isOpen) {

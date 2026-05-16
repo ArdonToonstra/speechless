@@ -1,4 +1,5 @@
 import { test, expect, type Page, type BrowserContext } from '@playwright/test'
+import { AUTH_FILE } from './constants'
 
 const TEST_PROJECT_NAME = '[TEST] Questionnaire Project'
 
@@ -37,20 +38,23 @@ test.describe('Questionnaire', () => {
   let projectId: string
 
   test.beforeAll(async ({ browser }) => {
-    const page = await browser.newPage()
+    const context = await browser.newContext({ storageState: AUTH_FILE })
+    const page = await context.newPage()
     projectId = await createProject(page)
-    await page.close()
+    await context.close()
   })
 
   test.afterAll(async ({ browser }) => {
-    const page = await browser.newPage()
+    const context = await browser.newContext({ storageState: AUTH_FILE })
+    const page = await context.newPage()
     await deleteProject(page, projectId)
-    await page.close()
+    await context.close()
   })
 
   test('questionnaire page loads and shows the editor', async ({ page }) => {
     await page.goto(`/en/projects/${projectId}/questionnaire`)
-    await expect(page.getByText('Questionnaire')).toBeVisible()
+    // Use h1/h2 to avoid strict mode with sidebar nav links that also contain "Questionnaire"
+    await expect(page.locator('h1, h2').filter({ hasText: /Questionnaire/i }).first()).toBeVisible({ timeout: 10_000 })
   })
 
   test('owner can add a custom question', async ({ page }) => {
@@ -94,12 +98,21 @@ test.describe('Questionnaire', () => {
 
     // Step 1: enter submitter name
     await guestPage.fill('input#submitterName', 'Playwright Guest')
-    await guestPage.click('text=Continue')
 
-    // Answer any text question(s)
-    const textareas = guestPage.locator('textarea')
-    if (await textareas.count() > 0) {
-      await textareas.first().fill('My favourite memory from Playwright.')
+    // Advance through any intermediate steps (questions), then submit
+    let advanced = false
+    const continueBtn = guestPage.locator('button:has-text("Continue")')
+    if (await continueBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
+      await continueBtn.click()
+      advanced = true
+    }
+
+    // Answer text questions if we advanced past the name step
+    if (advanced) {
+      const textareas = guestPage.locator('textarea')
+      if (await textareas.count() > 0) {
+        await textareas.first().fill('My favourite memory from Playwright.')
+      }
     }
 
     // Submit the form
@@ -123,10 +136,15 @@ test.describe('Questionnaire', () => {
     const guestPage = await guestContext.newPage()
     await guestPage.goto(link)
     await guestPage.fill('input#submitterName', 'Submissions Test Guest')
-    await guestPage.click('text=Continue')
-    const textareas = guestPage.locator('textarea')
-    if (await textareas.count() > 0) {
-      await textareas.first().fill('Submission check answer.')
+
+    // Advance through any intermediate steps (questions), then submit
+    const continueBtn = guestPage.locator('button:has-text("Continue")')
+    if (await continueBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
+      await continueBtn.click()
+      const textareas = guestPage.locator('textarea')
+      if (await textareas.count() > 0) {
+        await textareas.first().fill('Submission check answer.')
+      }
     }
     await guestPage.click('button:has-text("Submit")')
     await expect(guestPage.getByText(/thank you/i)).toBeVisible({ timeout: 10_000 })

@@ -1,7 +1,7 @@
 import React from 'react'
 import { notFound, redirect } from 'next/navigation'
-import { eq } from 'drizzle-orm'
-import { db, projects, userFeedback } from '@/db'
+import { eq, and } from 'drizzle-orm'
+import { db, projects, guests, userFeedback } from '@/db'
 import { getSession } from '@/actions/auth'
 import { ProjectSidebar } from '@/components/features/ProjectSidebar'
 import { getLocale } from 'next-intl/server'
@@ -32,6 +32,18 @@ export default async function ProjectLayout({
     })
 
     if (!project) notFound()
+
+    // Verify the session user owns the project or is an accepted collaborator
+    if (project.ownerId !== session.user.id) {
+        const guest = await db.query.guests.findFirst({
+            where: and(
+                eq(guests.projectId, projectId),
+                eq(guests.email, session.user.email),
+                eq(guests.status, 'accepted')
+            ),
+        })
+        if (!guest) notFound()
+    }
 
     const hasDateOptions = project.dateOptions && project.dateOptions.length > 0
     const showScheduling = !project.dateKnown || hasDateOptions

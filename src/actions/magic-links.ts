@@ -1,7 +1,7 @@
 'use server'
 
 import { db, magicLinks, projects, guests } from '@/db'
-import { eq, and, gt } from 'drizzle-orm'
+import { eq, and, gt, sql } from 'drizzle-orm'
 import { revalidateForAllLocales } from '@/lib/revalidation'
 import { requireAuth } from './auth'
 import { generateToken } from '@/lib/tokens'
@@ -16,7 +16,7 @@ export async function getMagicLink(projectId: number) {
 
     try {
         // Verify user can manage (owner or speech-editor)
-        const canManage = await checkManagePermission(projectId, session.user.id)
+        const canManage = await checkManagePermission(projectId, session.user.id, session.user.email)
         if (!canManage) {
             return { error: 'Unauthorized' }
         }
@@ -67,7 +67,7 @@ export async function regenerateMagicLink(projectId: number, role: MagicLinkRole
 
     try {
         // Verify user can manage
-        const canManage = await checkManagePermission(projectId, session.user.id)
+        const canManage = await checkManagePermission(projectId, session.user.id, session.user.email)
         if (!canManage) {
             return { error: 'Unauthorized' }
         }
@@ -157,9 +157,9 @@ export async function joinViaMagicLink(token: string) {
             token: generateToken(),
         })
 
-        // Increment usage count
+        // Increment usage count atomically to handle concurrent joins
         await db.update(magicLinks)
-            .set({ usageCount: magicLink.usageCount + 1 })
+            .set({ usageCount: sql`${magicLinks.usageCount} + 1` })
             .where(eq(magicLinks.id, magicLink.id))
 
         revalidateForAllLocales(`/projects/${magicLink.projectId}/collaborators`)
@@ -215,10 +215,9 @@ export async function getMagicLinkInfo(token: string) {
 }
 
 /**
- * Helper: Check if user can manage project (owner or speech-editor)
+ * Helper: Check if user can manage project (owner or accepted speech-editor)
  */
-async function checkManagePermission(projectId: number, userId: string): Promise<boolean> {
-    // Check if owner
+async function checkManagePermission(projectId: number, userId: string, userEmail: string): Promise<boolean> {
     const project = await db.query.projects.findFirst({
         where: and(
             eq(projects.id, projectId),
@@ -228,18 +227,14 @@ async function checkManagePermission(projectId: number, userId: string): Promise
 
     if (project) return true
 
-    // Check if speech-editor (need to look up by email from user)
-    // For now, we'll need to get the user's email from somewhere
-    // This is a simplified check - in production you'd look up the user
     const guestWithRole = await db.query.guests.findFirst({
         where: and(
             eq(guests.projectId, projectId),
+            eq(guests.email, userEmail),
             eq(guests.role, 'speech-editor'),
             eq(guests.status, 'accepted')
         ),
     })
 
-    // Note: This check is incomplete - we'd need to match the guest email with the user
-    // For now, only owners can manage. This can be enhanced later.
-    return false
+    return !!guestWithRole
 }

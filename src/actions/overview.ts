@@ -2,6 +2,8 @@
 
 import { db, projects } from '@/db'
 import { eq, and } from 'drizzle-orm'
+import { redirect } from 'next/navigation'
+import { getLocale } from 'next-intl/server'
 import { revalidateForAllLocales } from '@/lib/revalidation'
 import { requireAuth } from './auth'
 
@@ -78,11 +80,12 @@ export async function deleteProject(projectId: number) {
         }
 
         await db.delete(projects).where(eq(projects.id, projectId))
-
         revalidateForAllLocales('/dashboard')
-        return { success: true, redirect: '/dashboard' }
     } catch (error) {
         console.error('Failed to delete project:', error)
         return { error: 'Failed to delete project' }
     }
+
+    const locale = await getLocale()
+    redirect(`/${locale}/dashboard`)
 }

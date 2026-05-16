@@ -1,7 +1,8 @@
 'use server'
 
-import { headers } from 'next/headers'
+import { headers, cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { getLocale } from 'next-intl/server'
 import { auth } from '@/lib/auth'
 
 /**
@@ -29,7 +30,8 @@ export async function getCurrentUser() {
 export async function requireAuth() {
   const session = await getSession()
   if (!session) {
-    redirect('/login')
+    const locale = await getLocale()
+    redirect(`/${locale}/login`)
   }
   return session
 }
@@ -115,5 +117,14 @@ export async function logout() {
   await auth.api.signOut({
     headers: await headers(),
   })
-  redirect('/')
+  // Explicitly clear all better-auth cookies so the session cache doesn't keep the user logged in
+  // (Better Auth's cookieCache has a 5-minute TTL; signOut alone only deletes from DB)
+  const cookieStore = await cookies()
+  cookieStore.getAll().forEach((cookie) => {
+    if (cookie.name.startsWith('better-auth')) {
+      cookieStore.delete(cookie.name)
+    }
+  })
+  const locale = await getLocale()
+  redirect(`/${locale}/login`)
 }

@@ -112,9 +112,14 @@ export async function saveInviteTemplate(
 export async function validatePostcardOption(
     projectId: number
 ): Promise<{ eligible: boolean; daysUntilEvent: number }> {
+    const session = await requireAuth()
+
     try {
         const project = await db.query.projects.findFirst({
-            where: eq(projects.id, projectId),
+            where: and(
+                eq(projects.id, projectId),
+                eq(projects.ownerId, session.user.id)
+            ),
         })
 
         if (!project || !project.occasionDate) {

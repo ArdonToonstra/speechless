@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { useRouter } from '@/i18n/navigation'
 import { updateProjectMetadata, deleteProject } from '@/actions/overview'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -51,8 +50,6 @@ const OCCASION_TYPES = [
 ]
 
 export function ProjectOverview({ project }: ProjectOverviewProps) {
-    const router = useRouter()
-
     // Form state
     const [title, setTitle] = useState(project.name)
     const [speechType, setSpeechType] = useState<string>(project.speechType || 'gift')
@@ -115,12 +112,9 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
         setIsDeleting(true)
         const result = await deleteProject(project.id)
 
-        if (result.error) {
+        if (result?.error) {
             toast.error(result.error)
             setIsDeleting(false)
-        } else {
-            toast.success('Project deleted successfully')
-            router.push('/dashboard')
         }
     }
 

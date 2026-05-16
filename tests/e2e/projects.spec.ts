@@ -63,9 +63,11 @@ test.describe('Projects', () => {
 
   test('newly created project appears on dashboard', async ({ page }) => {
     const projectUrl = await createTestProject(page)
+    // Extract ID for a targeted check — avoids strict mode with stale same-named projects
+    const projectId = projectUrl.match(/\/en\/projects\/(\d+)/)?.[1]
 
     await page.goto('/en/dashboard')
-    await expect(page.getByText(TEST_PROJECT_NAME)).toBeVisible()
+    await expect(page.locator(`a[href*="/projects/${projectId}"]`)).toBeVisible()
 
     // Clean up
     await deleteTestProject(page, projectUrl)
@@ -73,10 +75,11 @@ test.describe('Projects', () => {
 
   test('deleted project is removed from dashboard', async ({ page }) => {
     const projectUrl = await createTestProject(page)
+    const projectId = projectUrl.match(/\/en\/projects\/(\d+)/)?.[1]
     await deleteTestProject(page, projectUrl)
 
     await page.goto('/en/dashboard')
-    // Project name should no longer be visible
-    await expect(page.getByText(TEST_PROJECT_NAME)).not.toBeVisible()
+    // The specific project link should no longer exist
+    await expect(page.locator(`a[href*="/projects/${projectId}"]`)).not.toBeVisible()
   })
 })

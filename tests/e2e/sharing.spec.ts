@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { AUTH_FILE } from './constants'
 
 const TEST_PROJECT_NAME = '[TEST] Sharing Project'
 
@@ -52,15 +53,17 @@ test.describe('Public Sharing', () => {
   let projectId: string
 
   test.beforeAll(async ({ browser }) => {
-    const page = await browser.newPage()
+    const context = await browser.newContext({ storageState: AUTH_FILE })
+    const page = await context.newPage()
     projectId = await createProject(page)
-    await page.close()
+    await context.close()
   })
 
   test.afterAll(async ({ browser }) => {
-    const page = await browser.newPage()
+    const context = await browser.newContext({ storageState: AUTH_FILE })
+    const page = await context.newPage()
     await deleteProject(page, projectId)
-    await page.close()
+    await context.close()
   })
 
   test('share dialog opens and shows a share URL input', async ({ page }) => {
@@ -121,6 +124,37 @@ test.describe('Public Sharing', () => {
       finalUrl.includes('/not-found') ||
       (await guestPage.locator('text=/not found|access denied|sign in/i').count()) > 0
     expect(isBlocked).toBe(true)
+    await guestContext.close()
+  })
+
+  test('disabling sharing does not block the questionnaire link', async ({ page, browser }) => {
+    // The questionnaire link uses the same shareToken but is independent of isPubliclyShared.
+    // Disabling public speech sharing must not block questionnaire submissions.
+    await page.goto(`/en/projects/${projectId}/questionnaire`)
+
+    // Copy the questionnaire link
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
+    await page.click('button:has-text("Copy questionnaire link")')
+    const questionnaireUrl = await page.evaluate(() => navigator.clipboard.readText())
+    expect(questionnaireUrl).toMatch(/\/questionnaire\//)
+
+    // Make sure sharing is disabled
+    await page.goto(`/en/projects/${projectId}/overview`)
+    await page.click('button:has-text("Share")')
+    await expect(page.locator('text=Share your Speech')).toBeVisible()
+    const disableBtn = page.locator('button:has-text("Disable")')
+    if (await disableBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
+      await disableBtn.click()
+      await page.waitForTimeout(1_000)
+    }
+    await page.keyboard.press('Escape')
+
+    // The questionnaire must still be accessible
+    const guestContext = await browser.newContext()
+    const guestPage = await guestContext.newPage()
+    await guestPage.goto(questionnaireUrl)
+    await expect(guestPage).not.toHaveURL(/\/login/)
+    await expect(guestPage.locator('h1, h2').first()).toBeVisible({ timeout: 10_000 })
     await guestContext.close()
   })
 })

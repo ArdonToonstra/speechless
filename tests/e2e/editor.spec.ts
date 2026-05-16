@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { AUTH_FILE } from './constants'
 
 const TEST_PROJECT_NAME = '[TEST] Editor Project'
 
@@ -30,15 +31,17 @@ test.describe('Editor', () => {
   let projectId: string
 
   test.beforeAll(async ({ browser }) => {
-    const page = await browser.newPage()
+    const context = await browser.newContext({ storageState: AUTH_FILE })
+    const page = await context.newPage()
     projectId = await createProject(page)
-    await page.close()
+    await context.close()
   })
 
   test.afterAll(async ({ browser }) => {
-    const page = await browser.newPage()
+    const context = await browser.newContext({ storageState: AUTH_FILE })
+    const page = await context.newPage()
     await deleteProject(page, projectId)
-    await page.close()
+    await context.close()
   })
 
   test('editor page loads with the toolbar visible', async ({ page }) => {

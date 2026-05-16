@@ -1,4 +1,5 @@
 import { test, expect, type Page, type BrowserContext } from '@playwright/test'
+import { AUTH_FILE } from './constants'
 
 const TEST_PROJECT_NAME = '[TEST] Scheduling Project'
 
@@ -36,30 +37,33 @@ test.describe('Scheduling', () => {
   let projectId: string
 
   test.beforeAll(async ({ browser }) => {
-    const page = await browser.newPage()
+    const context = await browser.newContext({ storageState: AUTH_FILE })
+    const page = await context.newPage()
     projectId = await createProject(page)
-    await page.close()
+    await context.close()
   })
 
   test.afterAll(async ({ browser }) => {
-    const page = await browser.newPage()
+    const context = await browser.newContext({ storageState: AUTH_FILE })
+    const page = await context.newPage()
     await deleteProject(page, projectId)
-    await page.close()
+    await context.close()
   })
 
   test('scheduling page loads', async ({ page }) => {
     await page.goto(`/en/projects/${projectId}/scheduling`)
-    await expect(page.getByText(/Scheduling/i)).toBeVisible()
+    // Use h1 to avoid strict mode with sidebar nav links that also contain "Scheduling"
+    await expect(page.locator('h1')).toContainText(/Scheduling/i)
   })
 
   test('owner can add a date option', async ({ page }) => {
     await page.goto(`/en/projects/${projectId}/scheduling`)
 
-    // Pick a date via the Calendar component (click any available day button)
+    // Pick a date via the Calendar component (data-day attribute set by CalendarDayButton)
     const dayButton = page.locator('button[data-day]:not([disabled])').first()
     await dayButton.click()
 
-    // Click the Add Date button (has a Plus icon, search by text as fallback)
+    // Click the Add Option button
     const addButton = page.locator('button').filter({ hasText: /add option/i })
     await addButton.click()
 

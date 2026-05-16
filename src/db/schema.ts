@@ -106,7 +106,9 @@ export const guests = pgTable('guests', {
   emailStatus: text('email_status').notNull().default('pending'), // pending, sent, bounced
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-})
+}, (t) => [
+  uniqueIndex('guests_email_project_unique').on(t.email, t.projectId),
+])
 
 export const invitations = pgTable('invitations', {
   id: serial('id').primaryKey(),

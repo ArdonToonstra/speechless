@@ -10,6 +10,12 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL(/\/en\/login/)
   })
 
+  test('redirects to /login when visiting a project page unauthenticated', async ({ page }) => {
+    // Use a numeric project ID — the layout should redirect to login before loading anything
+    await page.goto('/en/projects/1/editor')
+    await expect(page).toHaveURL(/\/en\/login/)
+  })
+
   test('login with valid credentials redirects to dashboard', async ({ page }) => {
     await page.goto('/en/login')
     await page.fill('input#email', TEST_EMAIL)
@@ -50,9 +56,10 @@ test.describe('Authentication', () => {
     // Open user avatar dropdown (h-10 w-10 uniquely identifies it vs other rounded-full buttons)
     await page.click('button.h-10.w-10.rounded-full')
     await page.click('button[type="submit"]:has-text("Log out")')
+    // Logout clears all better-auth cookies and redirects to /login
     await expect(page).toHaveURL(/\/en\/login/, { timeout: 10_000 })
 
-    // Navigating to dashboard should redirect back to login
+    // Verify session is fully cleared — dashboard should redirect to login
     await page.goto('/en/dashboard')
     await expect(page).toHaveURL(/\/en\/login/)
   })

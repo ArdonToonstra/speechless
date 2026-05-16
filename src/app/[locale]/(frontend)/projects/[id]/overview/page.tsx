@@ -5,6 +5,7 @@ import { LayoutDashboard } from 'lucide-react'
 import { db, projects, guests } from '@/db'
 import { getSession } from '@/actions/auth'
 import { ProjectOverview } from '@/components/features/ProjectOverview'
+import { ShareDialog } from '@/components/features/ShareDialog'
 import { StandardPageShell } from '@/components/layout/StandardPageShell'
 import { getLocale, getTranslations } from 'next-intl/server'
 
@@ -31,6 +32,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ id: s
     }
 
     const t = await getTranslations('projects.overview')
+    const isOwner = project.ownerId === session.user.id
 
     return (
         <StandardPageShell>
@@ -39,10 +41,17 @@ export default async function OverviewPage({ params }: { params: Promise<{ id: s
                     <div className="p-2 bg-primary/10 rounded-lg">
                         <LayoutDashboard className="w-6 h-6 text-primary" />
                     </div>
-                    <div>
+                    <div className="flex-1">
                         <h1 className="text-2xl font-bold">{t('title')}</h1>
                         <p className="text-muted-foreground">{t('description')}</p>
                     </div>
+                    {isOwner && (
+                        <ShareDialog
+                            projectId={projectId.toString()}
+                            initialToken={project.shareToken}
+                            initialEnabled={project.isPubliclyShared}
+                        />
+                    )}
                 </div>
 
                 <ProjectOverview project={project as any} />
