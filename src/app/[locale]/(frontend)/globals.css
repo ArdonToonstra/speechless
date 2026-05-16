@@ -97,7 +97,17 @@
     @apply border-border;
   }
 
+  html {
+    /* Prevent iOS from auto-zooming on input focus */
+    -webkit-text-size-adjust: 100%;
+    /* Remove tap highlight flash on mobile */
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
     @apply bg-background text-foreground;
+    /* Respect notch / home-indicator safe areas */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 }

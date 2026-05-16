@@ -5,7 +5,14 @@ import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
 import { cn } from '@/lib/utils'
+import type { Viewport } from 'next'
 import './(frontend)/globals.css'
+
+export const viewport: Viewport = {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+}
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 const newsreader = Newsreader({ subsets: ['latin'], variable: '--font-serif', style: ['normal', 'italic'] })

@@ -18,7 +18,9 @@ import {
     ChevronRight,
     Home,
     CalendarDays,
-    Heart
+    Heart,
+    Menu,
+    X
 } from 'lucide-react'
 
 interface User {
@@ -40,6 +42,7 @@ interface ProjectSidebarProps {
 
 export function ProjectSidebar({ projectId, projectTitle, user, occasion, speechType, showScheduling, hasFeedback }: ProjectSidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false)
+    const [isMobileOpen, setIsMobileOpen] = useState(false)
     const pathname = usePathname()
     const t = useTranslations('nav')
     const tCommon = useTranslations('common')
@@ -56,11 +59,25 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion, speech
         { label: t('invites'), href: 'invites', icon: Send },
     ]
 
-    // Optional: Persist collapse state
     useEffect(() => {
         const stored = localStorage.getItem('sidebar-collapsed')
         if (stored) setIsCollapsed(stored === 'true')
     }, [])
+
+    // Close mobile drawer on route change
+    useEffect(() => {
+        setIsMobileOpen(false)
+    }, [pathname])
+
+    // Lock body scroll when mobile drawer is open
+    useEffect(() => {
+        if (isMobileOpen) {
+            document.body.style.overflow = 'hidden'
+        } else {
+            document.body.style.overflow = ''
+        }
+        return () => { document.body.style.overflow = '' }
+    }, [isMobileOpen])
 
     const toggleCollapse = () => {
         const newState = !isCollapsed
@@ -77,21 +94,22 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion, speech
 
     const logoSrc = getLogo(occasion)
 
-    return (
-        <aside
-            className={cn(
-                "border-r border-border bg-card flex flex-col transition-all duration-300 ease-in-out",
-                isCollapsed ? "w-16" : "w-64"
-            )}
-        >
+    const filteredNavItems = navItems.filter(item => {
+        if (speechType === 'occasion' && (item.href === 'location' || item.href === 'invites')) return false
+        if (item.href === 'scheduling' && !showScheduling) return false
+        return true
+    })
+
+    const SidebarContent = ({ mobile = false }: { mobile?: boolean }) => (
+        <>
             {/* Header / Logo Area */}
             <div className={cn(
-                "h-16 flex items-center border-b border-border",
-                isCollapsed ? "justify-center" : "px-4 justify-center"
+                "h-16 flex items-center border-b border-border shrink-0",
+                (isCollapsed && !mobile) ? "justify-center" : "px-4 justify-between"
             )}>
-                <Link href="/dashboard" className="flex items-center justify-center w-full font-bold text-lg overflow-hidden whitespace-nowrap" title={t('backToDashboard')}>
-                    {!isCollapsed ? (
-                        <div className="relative w-full flex items-center justify-center">
+                <Link href="/dashboard" className="flex items-center justify-center font-bold text-lg overflow-hidden whitespace-nowrap flex-1" title={t('backToDashboard')}>
+                    {(!isCollapsed || mobile) ? (
+                        <div className="relative w-full flex items-center justify-start">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={logoSrc}
@@ -103,63 +121,63 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion, speech
                         <Home className="w-5 h-5 text-primary" />
                     )}
                 </Link>
+
+                {/* Close button — mobile only */}
+                {mobile && (
+                    <button
+                        type="button"
+                        onClick={() => setIsMobileOpen(false)}
+                        className="ml-2 shrink-0 h-9 w-9 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                        aria-label="Close navigation"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                )}
             </div>
 
-            {/* Project Context (Only visible when expanded) */}
-            {!isCollapsed && (
-                <div className="px-4 py-3 animate-in fade-in slide-in-from-left-2 duration-300">
+            {/* Project Context */}
+            {(!isCollapsed || mobile) && (
+                <div className="px-4 py-3 shrink-0 animate-in fade-in slide-in-from-left-2 duration-300">
                     <p className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider mb-1">{t('project')}</p>
                     <p className="font-semibold truncate text-sm" title={projectTitle}>{projectTitle}</p>
                 </div>
             )}
 
             {/* Navigation */}
-            <nav className="flex-1 p-2 space-y-1 overflow-y-auto overflow-x-hidden">
-                {navItems
-                    .filter(item => {
-                        // Hide location and invites tabs for "Speech for the Occasion"
-                        if (speechType === 'occasion' && (item.href === 'location' || item.href === 'invites')) {
-                            return false
-                        }
-                        // Hide scheduling if not relevant
-                        if (item.href === 'scheduling' && !showScheduling) {
-                            return false
-                        }
-                        return true
-                    })
-                    .map((item) => {
-                        const isActive = pathname.includes(`/projects/${projectId}/${item.href}`)
+            <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto overflow-x-hidden">
+                {filteredNavItems.map((item) => {
+                    const isActive = pathname.includes(`/projects/${projectId}/${item.href}`)
 
-                        return (
-                            <Button
-                                key={item.href}
-                                variant={isActive ? "secondary" : "ghost"}
-                                className={cn(
-                                    "w-full justify-start h-10 mb-1",
-                                    isCollapsed ? "px-0 justify-center" : "px-3 gap-3"
-                                )}
-                                asChild
-                                title={isCollapsed ? item.label : undefined}
-                            >
-                                <Link href={`/projects/${projectId}/${item.href}`}>
-                                    <item.icon className={cn("w-4 h-4 shrink-0", isActive && "text-primary")} />
-                                    {!isCollapsed && <span className="truncate">{item.label}</span>}
-                                </Link>
-                            </Button>
-                        )
-                    })}
+                    return (
+                        <Button
+                            key={item.href}
+                            variant={isActive ? "secondary" : "ghost"}
+                            className={cn(
+                                "w-full justify-start h-11 mb-0.5",
+                                (isCollapsed && !mobile) ? "px-0 justify-center" : "px-3 gap-3"
+                            )}
+                            asChild
+                            title={(isCollapsed && !mobile) ? item.label : undefined}
+                        >
+                            <Link href={`/projects/${projectId}/${item.href}`}>
+                                <item.icon className={cn("w-4 h-4 shrink-0", isActive && "text-primary")} />
+                                {(!isCollapsed || mobile) && <span className="truncate">{item.label}</span>}
+                            </Link>
+                        </Button>
+                    )
+                })}
             </nav>
 
-            {/* Footer / Toggle */}
-            <div className="p-2 border-t border-border mt-auto flex flex-col gap-2">
+            {/* Footer */}
+            <div className="p-2 border-t border-border mt-auto flex flex-col gap-2 shrink-0">
 
                 {/* Feedback link */}
                 <Link
                     href="/feedback"
-                    title={isCollapsed ? (hasFeedback ? t('feedbackDone') : t('feedbackPrompt')) : undefined}
+                    title={(isCollapsed && !mobile) ? (hasFeedback ? t('feedbackDone') : t('feedbackPrompt')) : undefined}
                     className={cn(
-                        "flex items-center rounded-md transition-colors hover:bg-muted/50",
-                        isCollapsed ? "justify-center w-full px-0 py-2" : "gap-3 px-2 py-2"
+                        "flex items-center rounded-md transition-colors hover:bg-muted/50 min-h-[44px]",
+                        (isCollapsed && !mobile) ? "justify-center w-full px-0 py-2" : "gap-3 px-2 py-2"
                     )}
                 >
                     <div className="relative shrink-0">
@@ -168,7 +186,7 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion, speech
                             <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500" />
                         )}
                     </div>
-                    {!isCollapsed && (
+                    {(!isCollapsed || mobile) && (
                         <div className="overflow-hidden">
                             <p className="text-sm font-medium truncate">{tCommon('feedback')}</p>
                             <p className="text-xs text-muted-foreground truncate opacity-70">
@@ -178,10 +196,10 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion, speech
                     )}
                 </Link>
 
-                {/* User Info (Only expanded) */}
-                {!isCollapsed && (
+                {/* User Info */}
+                {(!isCollapsed || mobile) && (
                     <Link href="/settings" className="block w-full">
-                        <div className="flex items-center gap-3 px-2 py-2 mb-2 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group">
+                        <div className="flex items-center gap-3 px-2 py-2 mb-2 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group min-h-[44px]">
                             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0 group-hover:bg-primary/20 transition-colors">
                                 {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                             </div>
@@ -193,16 +211,64 @@ export function ProjectSidebar({ projectId, projectTitle, user, occasion, speech
                     </Link>
                 )}
 
+                {/* Desktop collapse toggle — hidden on mobile */}
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="w-full h-8 hover:bg-muted"
+                    className="w-full h-9 hover:bg-muted hidden md:flex"
                     onClick={toggleCollapse}
                     title={isCollapsed ? t('expandSidebar') : t('collapseSidebar')}
                 >
                     {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
                 </Button>
             </div>
-        </aside>
+        </>
+    )
+
+    return (
+        <>
+            {/* ── Mobile hamburger button ── */}
+            <button
+                type="button"
+                onClick={() => setIsMobileOpen(true)}
+                className="md:hidden fixed top-3 left-3 z-40 h-10 w-10 flex items-center justify-center rounded-lg bg-card border border-border shadow-md text-foreground"
+                aria-label="Open navigation"
+            >
+                <Menu className="w-5 h-5" />
+            </button>
+
+            {/* ── Mobile backdrop ── */}
+            {isMobileOpen && (
+                <div
+                    className="md:hidden fixed inset-0 bg-black/40 z-40 backdrop-blur-sm"
+                    onClick={() => setIsMobileOpen(false)}
+                    aria-hidden="true"
+                />
+            )}
+
+            {/* ── Mobile drawer ── */}
+            <aside
+                className={cn(
+                    "md:hidden fixed inset-y-0 left-0 z-50 w-72 flex flex-col",
+                    "border-r border-border bg-card",
+                    "transition-transform duration-300 ease-in-out will-change-transform",
+                    isMobileOpen ? "translate-x-0" : "-translate-x-full"
+                )}
+                aria-hidden={!isMobileOpen}
+            >
+                <SidebarContent mobile />
+            </aside>
+
+            {/* ── Desktop sidebar ── */}
+            <aside
+                className={cn(
+                    "hidden md:flex flex-col",
+                    "border-r border-border bg-card transition-all duration-300 ease-in-out",
+                    isCollapsed ? "w-16" : "w-64"
+                )}
+            >
+                <SidebarContent />
+            </aside>
+        </>
     )
 }

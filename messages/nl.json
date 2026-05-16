@@ -38,7 +38,7 @@
     "heroTitle": "Toast.",
     "heroTagline1": "Schrijf, verfijn en geef je toespraak met vertrouwen.",
     "heroTagline2": "Geef het warmste en meest persoonlijke cadeau.",
-    "heroTagline3": "Laat ze sprakeloos achter.",
+    "heroTagline3": "Woorden die blijven.",
     "heroCta": "Aan de slag",
     "heroLogin": "Inloggen",
     "previewActiveProject": "Actief project",
@@ -78,7 +78,7 @@
     "step4Title": "Het Gouden Ticket",
     "step4Description": "Maak het officieel. Stuur een geheim \"Gouden Ticket\" naar de eregast en \"Zilveren Tickets\" naar al je genodigden. Coördineer de datum, locatie en dresscode in stijl.",
     "ctaTitle": "Klaar om ze sprakeloos te maken?",
-    "ctaDescription": "Sluit je aan bij andere toespraakleveraars die angst omzetten in applaus. Begin vandaag met je concept.",
+    "ctaDescription": "Sluit je aan bij andere toesprakers die angst omzetten in applaus. Begin vandaag met je concept.",
     "ctaCta": "Begin nu met schrijven"
   },
   "dashboard": {
@@ -95,7 +95,7 @@
   },
   "onboarding": {
     "heading": "Laten we beginnen",
-    "subheading": "Maak je spraakproject aan in {steps} eenvoudige stappen.",
+    "subheading": "Maak je toespraakproject aan in {steps} eenvoudige stappen.",
     "speechTypeTitle": "Wat voor soort toespraak?",
     "speechTypeDescription": "Dit helpt ons de juiste vragen te stellen.",
     "speechTypeGift": "Toespraak als cadeau",
@@ -395,7 +395,7 @@
     },
     "invites": {
       "title": "Uitnodigingen sturen",
-      "description": "Bereid uitnodigingen voor voor je toespraakvorm"
+      "description": "Bereid uitnodigingen voor je spreekevenement voor"
     },
     "projectSettings": {
       "title": "Toespraakinstellingen",
@@ -425,7 +425,7 @@
     "forHonoree": "Voor {name}",
     "lastEdited": "Laatst bewerkt {time}",
     "giftType": "Een toespraak als cadeau",
-    "giftTypeDesc": "Verrassing iemand",
+    "giftTypeDesc": "Verras iemand speciaals",
     "occasionType": "Toespraak voor de gelegenheid",
     "occasionTypeDesc": "Jij geeft de toespraak"
   },
@@ -448,8 +448,8 @@
       "welcomeToTeam": "Welkom in het team!",
       "youveJoined": "Je hebt je aangesloten bij \"{project}\" als {role}.",
       "viewProject": "Project bekijken",
-      "speechEditor": "Speech",
-      "collaborator": "Medewerker"
+      "speechEditor": "Speech-editor",
+      "collaborator": "Bijdrager"
     },
     "share": {
       "sharedVia": "Gedeeld via Toast",

@@ -42,7 +42,7 @@ export default async function ProjectLayout({
     const hasFeedback = !!feedbackRow
 
     return (
-        <div className="flex h-screen bg-background overflow-hidden">
+        <div className="flex h-dvh bg-background overflow-hidden">
             <ProjectSidebar
                 projectId={project.id}
                 projectTitle={project.name}

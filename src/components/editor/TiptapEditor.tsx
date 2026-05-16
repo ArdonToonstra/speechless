@@ -220,14 +220,14 @@ export function TiptapEditor({
         editorProps: {
             attributes: {
                 class: cn(
-                    'outline-none min-h-[600px] text-foreground font-serif text-lg leading-relaxed max-w-none prose prose-slate dark:prose-invert',
+                    'outline-none min-h-[320px] md:min-h-[600px] text-foreground font-serif text-base md:text-lg leading-relaxed max-w-none prose prose-slate dark:prose-invert',
                     'prose-headings:text-foreground prose-p:mb-4 prose-p:leading-relaxed',
                     'prose-h1:text-4xl prose-h1:font-bold prose-h1:mb-4 prose-h1:mt-8',
                     'prose-h2:text-3xl prose-h2:font-bold prose-h2:mb-3 prose-h2:mt-6',
                     'prose-h3:text-2xl prose-h3:font-bold prose-h3:mb-2 prose-h3:mt-4',
                     'prose-ul:list-disc prose-ul:ml-6 prose-ul:mb-4',
                     'prose-ol:list-decimal prose-ol:ml-6 prose-ol:mb-4',
-                    readOnly ? 'p-8' : 'p-12'
+                    readOnly ? 'p-4 md:p-8' : 'p-4 md:p-12'
                 )
             }
         },
@@ -459,8 +459,8 @@ export function TiptapEditor({
         <div className="relative w-full flex flex-col">
             {/* Toolbar */}
             {!readOnly && (
-                <div className="flex gap-2 px-3 py-2 border-b border-border/50 bg-background/95 backdrop-blur-sm items-center justify-between sticky top-0 z-10 rounded-t-xl">
-                    <div className="flex gap-2 items-center">
+                <div className="flex gap-2 px-2 md:px-3 py-2 border-b border-border/50 bg-background/95 backdrop-blur-sm items-center justify-between sticky top-0 z-10 rounded-t-xl overflow-x-auto scrollbar-none">
+                    <div className="flex gap-1.5 md:gap-2 items-center shrink-0">
                         {/* Headings group */}
                         <div className="flex items-center gap-0.5 bg-muted/40 rounded-lg p-0.5">
                             <ButtonBase
@@ -570,7 +570,7 @@ export function TiptapEditor({
                     </div>
 
                     {/* Right side: Answers + Writing Assistant */}
-                    <div className="flex gap-2 items-center">
+                    <div className="flex gap-1.5 md:gap-2 items-center shrink-0 ml-auto pl-1">
                         {/* Answers Popover */}
                         {groupedAnswers.length > 0 && (
                             <Popover>
