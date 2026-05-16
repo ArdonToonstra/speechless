@@ -12,7 +12,7 @@ async function createProject(page: Page): Promise<string> {
   await page.click('text=Continue')
   await page.fill('input#title', TEST_PROJECT_NAME)
   await page.fill('input#honoree', 'Test Honoree')
-  await page.click('text=Continue')
+  await page.click('text=Create Project')
   await page.waitForURL(/\/en\/projects\/\d+/, { timeout: 15_000 })
   return page.url().match(/\/en\/projects\/(\d+)/)?.[1] ?? ''
 }

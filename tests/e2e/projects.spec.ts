@@ -21,7 +21,7 @@ async function createTestProject(page: Page, name = TEST_PROJECT_NAME): Promise<
   // Step 4: Context — title + honoree required
   await page.fill('input#title', name)
   await page.fill('input#honoree', 'Playwright Honoree')
-  await page.click('text=Continue')
+  await page.click('text=Create Project')
 
   // Wait for redirect to the new project
   await page.waitForURL(/\/en\/projects\/\d+/, { timeout: 15_000 })

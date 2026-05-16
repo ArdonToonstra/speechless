@@ -47,7 +47,7 @@ export default function OnboardingPage() {
         })
 
         if (res.success) {
-            router.push('/dashboard')
+            router.push(res.redirectUrl)
         } else {
             console.error(res.error)
             alert(t('errorCreating'))

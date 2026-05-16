@@ -12,7 +12,7 @@ async function createProject(page: Page): Promise<string> {
   await page.click('text=Continue')
   await page.fill('input#title', TEST_PROJECT_NAME)
   await page.fill('input#honoree', 'Sharing Honoree')
-  await page.click('text=Continue')
+  await page.click('text=Create Project')
   await page.waitForURL(/\/en\/projects\/\d+/, { timeout: 15_000 })
   return page.url().match(/\/en\/projects\/(\d+)/)?.[1] ?? ''
 }
@@ -24,6 +24,28 @@ async function deleteProject(page: Page, projectId: string) {
   await dialog.locator('input').fill(TEST_PROJECT_NAME)
   await dialog.locator('button:has-text("Delete permanently")').click()
   await expect(page).toHaveURL(/\/en\/dashboard/, { timeout: 10_000 })
+}
+
+/** Open the share modal, generate the magic link if it doesn't exist yet, and ensure sharing is enabled. */
+async function openShareAndEnsureEnabled(page: Page): Promise<string> {
+  await page.click('button:has-text("Share")')
+  await expect(page.locator('text=Share your Speech')).toBeVisible()
+
+  // If no token yet, generate the magic link (also auto-enables it)
+  const generateBtn = page.locator('button:has-text("Generate Magic Link")')
+  if (await generateBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
+    await generateBtn.click()
+    await page.waitForTimeout(2_000)
+  }
+
+  // Enable if currently disabled
+  const enableBtn = page.locator('button:has-text("Enable")')
+  if (await enableBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
+    await enableBtn.click()
+    await page.waitForTimeout(1_000)
+  }
+
+  return page.locator('input[readonly]').inputValue()
 }
 
 test.describe('Public Sharing', () => {
@@ -43,11 +65,18 @@ test.describe('Public Sharing', () => {
 
   test('share dialog opens and shows a share URL input', async ({ page }) => {
     await page.goto(`/en/projects/${projectId}/overview`)
-    // Find the sharing section / button that opens the dialog
     await page.click('button:has-text("Share")')
-    const dialog = page.locator('[role="dialog"]')
-    await expect(dialog).toBeVisible()
-    await expect(dialog.locator('input[readonly]')).toBeVisible({ timeout: 5_000 })
+    await expect(page.locator('text=Share your Speech')).toBeVisible()
+
+    // Generate magic link if not yet created
+    const generateBtn = page.locator('button:has-text("Generate Magic Link")')
+    if (await generateBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
+      await generateBtn.click()
+      await page.waitForTimeout(2_000)
+    }
+
+    // Readonly URL input is shown when sharing is enabled (auto-enabled after generation)
+    await expect(page.locator('input[readonly]')).toBeVisible({ timeout: 5_000 })
   })
 
   test('enabling sharing makes the share URL accessible without auth', async ({
@@ -55,20 +84,7 @@ test.describe('Public Sharing', () => {
     browser,
   }) => {
     await page.goto(`/en/projects/${projectId}/overview`)
-    await page.click('button:has-text("Share")')
-    const dialog = page.locator('[role="dialog"]')
-    await expect(dialog).toBeVisible()
-
-    // Toggle sharing on if it isn't already
-    const toggle = dialog.locator('button[role="switch"], input[type="checkbox"]').first()
-    const isEnabled = await toggle.getAttribute('aria-checked')
-    if (isEnabled !== 'true') {
-      await toggle.click()
-      await page.waitForTimeout(1_000) // wait for server action
-    }
-
-    // Get the share URL from the read-only input
-    const shareUrl = await dialog.locator('input[readonly]').inputValue()
+    const shareUrl = await openShareAndEnsureEnabled(page)
     expect(shareUrl).toMatch(/\/share\//)
 
     // Open as unauthenticated user
@@ -76,7 +92,6 @@ test.describe('Public Sharing', () => {
     const guestPage = await guestContext.newPage()
     await guestPage.goto(shareUrl)
     await expect(guestPage).not.toHaveURL(/\/login/)
-    // The speech viewer should render some content
     await expect(guestPage.locator('main, [role="main"], article').first()).toBeVisible({
       timeout: 10_000,
     })
@@ -85,27 +100,21 @@ test.describe('Public Sharing', () => {
 
   test('disabling sharing makes the share URL inaccessible', async ({ page, browser }) => {
     await page.goto(`/en/projects/${projectId}/overview`)
-    await page.click('button:has-text("Share")')
-    const dialog = page.locator('[role="dialog"]')
-    await expect(dialog).toBeVisible()
-
-    // Make sure we have the share URL before disabling
-    const shareUrl = await dialog.locator('input[readonly]').inputValue()
+    // Ensure we have a URL and it's enabled first
+    const shareUrl = await openShareAndEnsureEnabled(page)
     expect(shareUrl).toMatch(/\/share\//)
 
-    // Turn sharing off
-    const toggle = dialog.locator('button[role="switch"], input[type="checkbox"]').first()
-    const isEnabled = await toggle.getAttribute('aria-checked')
-    if (isEnabled === 'true') {
-      await toggle.click()
+    // Disable sharing
+    const disableBtn = page.locator('button:has-text("Disable")')
+    if (await disableBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
+      await disableBtn.click()
       await page.waitForTimeout(1_000)
     }
 
-    // The URL should now be blocked (redirect to login or 404)
+    // The URL should now be blocked
     const guestContext = await browser.newContext()
     const guestPage = await guestContext.newPage()
     await guestPage.goto(shareUrl)
-    // Expect a redirect to login or an error / not-found page
     const finalUrl = guestPage.url()
     const isBlocked =
       finalUrl.includes('/login') ||

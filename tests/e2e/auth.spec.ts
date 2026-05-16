@@ -47,8 +47,8 @@ test.describe('Authentication', () => {
     await page.click('button[type="submit"]')
     await expect(page).toHaveURL(/\/en\/dashboard/)
 
-    // Open user avatar dropdown, then click Log out
-    await page.click('button.rounded-full')
+    // Open user avatar dropdown (h-10 w-10 uniquely identifies it vs other rounded-full buttons)
+    await page.click('button.h-10.w-10.rounded-full')
     await page.click('button[type="submit"]:has-text("Log out")')
     await expect(page).toHaveURL(/\/en\/login/, { timeout: 10_000 })
 

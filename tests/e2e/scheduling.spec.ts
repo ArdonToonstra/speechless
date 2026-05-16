@@ -12,7 +12,7 @@ async function createProject(page: Page): Promise<string> {
   await page.click('text=Continue')
   await page.fill('input#title', TEST_PROJECT_NAME)
   await page.fill('input#honoree', 'Scheduling Honoree')
-  await page.click('text=Continue')
+  await page.click('text=Create Project')
   await page.waitForURL(/\/en\/projects\/\d+/, { timeout: 15_000 })
   return page.url().match(/\/en\/projects\/(\d+)/)?.[1] ?? ''
 }
@@ -56,11 +56,11 @@ test.describe('Scheduling', () => {
     await page.goto(`/en/projects/${projectId}/scheduling`)
 
     // Pick a date via the Calendar component (click any available day button)
-    const dayButton = page.locator('button[name="day"]').first()
+    const dayButton = page.locator('button[data-day]:not([disabled])').first()
     await dayButton.click()
 
     // Click the Add Date button (has a Plus icon, search by text as fallback)
-    const addButton = page.locator('button').filter({ hasText: /add date/i })
+    const addButton = page.locator('button').filter({ hasText: /add option/i })
     await addButton.click()
 
     // A date card should now be visible
@@ -76,10 +76,10 @@ test.describe('Scheduling', () => {
   }) => {
     // Ensure a date option exists first
     await page.goto(`/en/projects/${projectId}/scheduling`)
-    const dayButton = page.locator('button[name="day"]').first()
+    const dayButton = page.locator('button[data-day]:not([disabled])').first()
     if (await dayButton.isVisible()) {
       await dayButton.click()
-      const addButton = page.locator('button').filter({ hasText: /add date/i })
+      const addButton = page.locator('button').filter({ hasText: /add option/i })
       if (await addButton.isVisible()) await addButton.click()
     }
 
@@ -98,10 +98,10 @@ test.describe('Scheduling', () => {
     await page.goto(`/en/projects/${projectId}/scheduling`)
 
     // Ensure at least one date option is present
-    const dayButton = page.locator('button[name="day"]').first()
+    const dayButton = page.locator('button[data-day]:not([disabled])').first()
     if (await dayButton.isVisible()) {
       await dayButton.click()
-      const addButton = page.locator('button').filter({ hasText: /add date/i })
+      const addButton = page.locator('button').filter({ hasText: /add option/i })
       if (await addButton.isVisible()) await addButton.click()
     }
 
