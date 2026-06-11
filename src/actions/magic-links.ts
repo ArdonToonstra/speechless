@@ -1,23 +1,24 @@
 'use server'
 
-import { db, magicLinks, projects, guests } from '@/db'
+import { db, magicLinks, guests } from '@/db'
 import { eq, and, gt, sql } from 'drizzle-orm'
 import { revalidateForAllLocales } from '@/lib/revalidation'
 import { requireAuth } from './auth'
 import { generateToken } from '@/lib/tokens'
+import { getProjectForManager } from '@/lib/permissions'
 
 export type MagicLinkRole = 'collaborator' | 'speech-editor'
 
 /**
  * Get or create a magic link for a project
  */
-export async function getMagicLink(projectId: number) {
+export async function getMagicLink(projectId: number, role: MagicLinkRole = 'collaborator') {
     const session = await requireAuth()
 
     try {
         // Verify user can manage (owner or speech-editor)
-        const canManage = await checkManagePermission(projectId, session.user.id, session.user.email)
-        if (!canManage) {
+        const project = await getProjectForManager(projectId, session.user.id, session.user.email)
+        if (!project) {
             return { error: 'Unauthorized' }
         }
 
@@ -43,7 +44,7 @@ export async function getMagicLink(projectId: number) {
         const [newLink] = await db.insert(magicLinks).values({
             projectId,
             token: generateToken(),
-            role: 'collaborator',
+            role,
             expiresAt,
             usageLimit: 20,
             usageCount: 0,
@@ -67,8 +68,8 @@ export async function regenerateMagicLink(projectId: number, role: MagicLinkRole
 
     try {
         // Verify user can manage
-        const canManage = await checkManagePermission(projectId, session.user.id, session.user.email)
-        if (!canManage) {
+        const project = await getProjectForManager(projectId, session.user.id, session.user.email)
+        if (!project) {
             return { error: 'Unauthorized' }
         }
 
@@ -121,11 +122,6 @@ export async function joinViaMagicLink(token: string) {
             return { error: 'Invalid or expired link' }
         }
 
-        // Check usage limit
-        if (magicLink.usageCount >= magicLink.usageLimit) {
-            return { error: 'This link has reached its maximum usage limit' }
-        }
-
         // Check if user is already the owner
         if (magicLink.project.ownerId === session.user.id) {
             return { error: 'You are the owner of this project' }
@@ -146,21 +142,42 @@ export async function joinViaMagicLink(token: string) {
             }
         }
 
-        // Add user as guest
-        await db.insert(guests).values({
-            email: session.user.email,
-            name: session.user.name,
-            projectId: magicLink.projectId,
-            role: magicLink.role,
-            status: 'accepted',
-            emailStatus: 'sent', // They joined via link, not email
-            token: generateToken(),
+        // Atomically claim a usage slot: the conditional UPDATE only succeeds while
+        // usageCount < usageLimit, so concurrent joins can never exceed the limit
+        // (check-then-increment would race). Claim + insert run in a transaction so a
+        // failed insert rolls the claim back.
+        const joined = await db.transaction(async (tx) => {
+            const claimed = await tx.update(magicLinks)
+                .set({ usageCount: sql`${magicLinks.usageCount} + 1` })
+                .where(and(
+                    eq(magicLinks.id, magicLink.id),
+                    sql`${magicLinks.usageCount} < ${magicLinks.usageLimit}`
+                ))
+                .returning({ id: magicLinks.id })
+
+            if (claimed.length === 0) return false
+
+            // Add user as guest. onConflictDoNothing on the (email, projectId) unique
+            // index keeps a rapid double-submit from throwing (the existing-member check
+            // above already handles the common case).
+            await tx.insert(guests).values({
+                email: session.user.email,
+                name: session.user.name,
+                projectId: magicLink.projectId,
+                role: magicLink.role,
+                status: 'accepted',
+                emailStatus: 'sent', // They joined via link, not email
+                token: generateToken(),
+            }).onConflictDoNothing({
+                target: [guests.email, guests.projectId],
+            })
+
+            return true
         })
 
-        // Increment usage count atomically to handle concurrent joins
-        await db.update(magicLinks)
-            .set({ usageCount: sql`${magicLinks.usageCount} + 1` })
-            .where(eq(magicLinks.id, magicLink.id))
+        if (!joined) {
+            return { error: 'This link has reached its maximum usage limit' }
+        }
 
         revalidateForAllLocales(`/projects/${magicLink.projectId}/collaborators`)
         return {
@@ -212,29 +229,4 @@ export async function getMagicLinkInfo(token: string) {
         console.error('Failed to get magic link info:', error)
         return { error: 'Failed to get link info' }
     }
-}
-
-/**
- * Helper: Check if user can manage project (owner or accepted speech-editor)
- */
-async function checkManagePermission(projectId: number, userId: string, userEmail: string): Promise<boolean> {
-    const project = await db.query.projects.findFirst({
-        where: and(
-            eq(projects.id, projectId),
-            eq(projects.ownerId, userId)
-        ),
-    })
-
-    if (project) return true
-
-    const guestWithRole = await db.query.guests.findFirst({
-        where: and(
-            eq(guests.projectId, projectId),
-            eq(guests.email, userEmail),
-            eq(guests.role, 'speech-editor'),
-            eq(guests.status, 'accepted')
-        ),
-    })
-
-    return !!guestWithRole
 }

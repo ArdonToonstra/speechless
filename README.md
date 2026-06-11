@@ -1,7 +1,5 @@
 # Toast
 
-A Payload 3.0 (Beta) application with Next.js App Router and Postgres.
-
 ## Prerequisites
 
 - Node.js (v18.20.2+ or >=20.9.0)

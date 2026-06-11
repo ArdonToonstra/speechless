@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(head -100 '/c/git/ArdonToonstra/speechless/src/app/\\(frontend\\)/globals.css')"
+      "Bash(head -100 '/c/git/ArdonToonstra/speechless/src/app/\\(frontend\\)/globals.css')",
+      "Bash(ls -la /c/git/ArdonToonstra/speechless/src/app/\\\\\\(frontend\\\\\\)/projects/[id\\\\\\)/)",
+      "Bash(xargs wc -l)",
+      "Bash(find \"c:/git/ArdonToonstra/speechless/src/app/[locale]/\\(frontend\\)\" -name \"page.tsx\")",
+      "Bash(grep -rl \"from ''@/i18n/navigation''\" \"c:/git/ArdonToonstra/speechless/src\")",
+      "Bash(pnpm tsc --noEmit)",
+      "Bash(grep -v \"^$\")",
+      "Bash(node -e \"const p = require\\(''./package.json''\\); console.log\\(''next:'', p.dependencies.next\\); console.log\\(''next-intl:'', p.dependencies[''next-intl'']\\)\")",
+      "Bash(grep -n \"LanguageSwitcher\\\\|language\" src/app/[locale]/\\\\\\(frontend\\\\\\)/page.tsx)"
     ]
   }
 }

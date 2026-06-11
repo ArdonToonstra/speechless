@@ -7,6 +7,7 @@ import { revalidateForAllLocales } from '@/lib/revalidation'
 import { requireAuth } from './auth'
 import type { QuestionItem, AnswerItem } from '@/db/schema'
 import { sendQuestionnaireInviteEmail } from '@/lib/email'
+import { validateQuestionnaireInput } from '@/lib/validation'
 
 export async function updateProjectQuestions(projectId: number, formData: FormData) {
     const session = await requireAuth()
@@ -139,12 +140,8 @@ export async function submitQuestionnaire(data: {
     submitterName: string
     answers: { question: string; answer: string }[]
 }) {
-    console.log('[submitQuestionnaire] Starting submission...')
-    console.log('[submitQuestionnaire] Data:', { projectId: data.projectId, token: data.token, submitterName: data.submitterName })
-
     try {
         // Verify the project exists with this share token
-        console.log('[submitQuestionnaire] Verifying project...')
         const project = await db.query.projects.findFirst({
             where: and(
                 eq(projects.id, data.projectId),
@@ -152,24 +149,40 @@ export async function submitQuestionnaire(data: {
             ),
         })
 
-        console.log('[submitQuestionnaire] Project found:', !!project)
-
         if (!project) {
-            console.error('[submitQuestionnaire] Invalid project or token')
             return { error: 'Invalid project or token' }
         }
 
-        // Create a temporary guest record for this submission
-        console.log('[submitQuestionnaire] Creating guest record...')
-        const [guest] = await db.insert(guests).values({
-            email: `${data.submitterName.toLowerCase().replace(/\s+/g, '_')}@anonymous.local`,
-            name: data.submitterName,
-            projectId: data.projectId,
-            role: 'contributor',
-            status: 'accepted',
-        }).returning()
+        // Validate input (length caps, answer count) before touching the DB
+        const validationError = validateQuestionnaireInput({
+            submitterName: data.submitterName,
+            answers: data.answers,
+            questionCount: (project.questions || []).length,
+        })
+        if (validationError) {
+            return { error: validationError }
+        }
 
-        console.log('[submitQuestionnaire] Guest created:', guest.id)
+        // Find-or-create the anonymous guest by derived email so repeat submissions
+        // from the same name reuse one guest row instead of growing the table unbounded
+        // (mirrors submitDateResponseAnonymous).
+        const anonEmail = `${data.submitterName.toLowerCase().replace(/\s+/g, '_')}@anonymous.local`
+        let guest = await db.query.guests.findFirst({
+            where: and(
+                eq(guests.projectId, data.projectId),
+                eq(guests.email, anonEmail)
+            ),
+        })
+        if (!guest) {
+            const [created] = await db.insert(guests).values({
+                email: anonEmail,
+                name: data.submitterName,
+                projectId: data.projectId,
+                role: 'contributor',
+                status: 'accepted',
+            }).returning()
+            guest = created
+        }
 
         // Build a lookup from rendered question text → question ID
         const questionLookup = new Map<string, string>()
@@ -190,16 +203,12 @@ export async function submitQuestionnaire(data: {
                 answer: a.answer,
             }))
 
-        console.log('[submitQuestionnaire] Creating submission with', validAnswers.length, 'answers...')
-        
         const [submission] = await db.insert(submissions).values({
             projectId: data.projectId,
             guestId: guest.id,
             submitterName: data.submitterName,
             answers: validAnswers,
         }).returning()
-
-        console.log('[submitQuestionnaire] Submission created:', submission.id)
 
         revalidateForAllLocales(`/projects/${data.projectId}/submissions`)
         return { success: true, submissionId: submission.id }

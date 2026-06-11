@@ -2,8 +2,9 @@ import React from 'react'
 import { notFound, redirect } from 'next/navigation'
 import { eq } from 'drizzle-orm'
 import { Send } from 'lucide-react'
-import { db, projects, guests } from '@/db'
+import { db, guests } from '@/db'
 import { getSession } from '@/actions/auth'
+import { getProjectForManager } from '@/lib/permissions'
 import { StandardPageShell } from '@/components/layout/StandardPageShell'
 import { InviteSender } from '@/components/features/InviteSender'
 import { getLocale, getTranslations } from 'next-intl/server'
@@ -17,9 +18,9 @@ export default async function InvitesPage({ params }: { params: Promise<{ id: st
     const locale = await getLocale()
     if (!session?.user) return redirect(`/${locale}/login`)
 
-    const project = await db.query.projects.findFirst({
-        where: eq(projects.id, projectId),
-    })
+    // Invites is a management surface: only the owner or an accepted speech-editor
+    // may view it (and the guest emails it exposes). Matches the collaborators page.
+    const project = await getProjectForManager(projectId, session.user.id, session.user.email)
 
     if (!project) notFound()
 

@@ -1,9 +1,8 @@
 import React from 'react'
 import { notFound, redirect } from 'next/navigation'
-import { eq, and } from 'drizzle-orm'
 import { MapPin } from 'lucide-react'
-import { db, projects, guests } from '@/db'
 import { getSession } from '@/actions/auth'
+import { getProjectForMember } from '@/lib/permissions'
 import { LocationPicker } from '@/components/features/LocationPicker'
 import { StandardPageShell } from '@/components/layout/StandardPageShell'
 import { getLocale, getTranslations } from 'next-intl/server'
@@ -17,18 +16,8 @@ export default async function LocationPage({ params }: { params: Promise<{ id: s
     const locale = await getLocale()
     if (!session?.user) return redirect(`/${locale}/login`)
 
-    const project = await db.query.projects.findFirst({
-        where: eq(projects.id, projectId),
-    })
-
+    const project = await getProjectForMember(projectId, session.user.id, session.user.email)
     if (!project) notFound()
-
-    if (project.ownerId !== session.user.id) {
-        const guest = await db.query.guests.findFirst({
-            where: and(eq(guests.projectId, projectId), eq(guests.email, session.user.email), eq(guests.status, 'accepted')),
-        })
-        if (!guest) notFound()
-    }
 
     const t = await getTranslations('projects.location')
 

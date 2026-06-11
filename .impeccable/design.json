@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-11T00:00:00.000Z",
+  "title": "Design System: Toast",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Deep Teal",
+        "canonical": "hsl(181 63% 23%)",
+        "tonalRamp": ["hsl(181 63% 10%)", "hsl(181 63% 16%)", "hsl(181 63% 23%)", "hsl(181 60% 32%)", "hsl(182 50% 42%)", "hsl(182 45% 55%)", "hsl(183 40% 70%)", "hsl(184 35% 88%)"]
+      },
+      "accent": {
+        "role": "tertiary",
+        "displayName": "Vibrant Teal",
+        "canonical": "hsl(182 41% 42%)",
+        "tonalRamp": ["hsl(182 41% 12%)", "hsl(182 41% 20%)", "hsl(182 41% 30%)", "hsl(182 41% 42%)", "hsl(182 41% 54%)", "hsl(182 41% 66%)", "hsl(182 41% 80%)", "hsl(182 41% 92%)"]
+      },
+      "secondary": {
+        "role": "secondary",
+        "displayName": "Muted Sky Blue",
+        "canonical": "hsl(204 25% 64%)",
+        "tonalRamp": ["hsl(204 25% 16%)", "hsl(204 25% 26%)", "hsl(204 25% 38%)", "hsl(204 25% 50%)", "hsl(204 25% 64%)", "hsl(204 25% 76%)", "hsl(204 25% 86%)", "hsl(204 25% 94%)"]
+      },
+      "celebration": {
+        "role": "tertiary",
+        "displayName": "Celebration Gold",
+        "canonical": "hsl(49 22% 47%)",
+        "tonalRamp": ["hsl(49 22% 14%)", "hsl(49 22% 22%)", "hsl(49 22% 32%)", "hsl(49 22% 47%)", "hsl(49 30% 58%)", "hsl(49 38% 70%)", "hsl(49 45% 82%)", "hsl(49 50% 92%)"]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Warm Paper",
+        "canonical": "hsl(53 27% 95%)",
+        "tonalRamp": ["hsl(53 18% 12%)", "hsl(53 18% 22%)", "hsl(53 16% 36%)", "hsl(53 14% 52%)", "hsl(53 18% 68%)", "hsl(53 22% 82%)", "hsl(53 27% 90%)", "hsl(53 27% 95%)"]
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "hsl(80 18% 5%)",
+        "tonalRamp": ["hsl(80 18% 4%)", "hsl(80 16% 9%)", "hsl(75 14% 16%)", "hsl(60 12% 26%)", "hsl(50 12% 40%)", "hsl(48 14% 58%)", "hsl(48 18% 78%)", "hsl(50 22% 92%)"]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Warm Brown",
+        "canonical": "hsl(31 14% 36%)",
+        "tonalRamp": ["hsl(31 14% 12%)", "hsl(31 14% 20%)", "hsl(31 14% 28%)", "hsl(31 14% 36%)", "hsl(31 14% 48%)", "hsl(31 16% 62%)", "hsl(31 18% 78%)", "hsl(31 20% 90%)"]
+      },
+      "destructive": {
+        "role": "neutral",
+        "displayName": "Alert Red",
+        "canonical": "hsl(0 84% 60%)",
+        "tonalRamp": ["hsl(0 70% 18%)", "hsl(0 72% 28%)", "hsl(0 76% 40%)", "hsl(0 80% 50%)", "hsl(0 84% 60%)", "hsl(0 84% 72%)", "hsl(0 84% 84%)", "hsl(0 84% 93%)"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display Serif", "purpose": "Landing hero and the largest emotional headlines. Newsreader, bold, tracked tight." },
+      "headline": { "displayName": "Headline Serif", "purpose": "Section titles, project names, emotional modal titles." },
+      "title": { "displayName": "UI Title", "purpose": "Card titles and in-product headings. Inter, semibold." },
+      "body": { "displayName": "Body", "purpose": "Default reading text; serif allowed for the speech draft and pull-quotes." },
+      "label": { "displayName": "Label / Eyebrow", "purpose": "Metadata, status chips, tracked-uppercase labels." }
+    },
+    "shadows": [
+      { "name": "resting", "value": "0 1px 3px rgba(0,0,0,0.10), 0 1px 2px rgba(0,0,0,0.06)", "purpose": "Default for cards, primary buttons, inputs at rest." },
+      { "name": "subtle", "value": "0 1px 2px rgba(0,0,0,0.05)", "purpose": "Secondary/outline buttons and quiet controls." },
+      { "name": "showcase", "value": "0 25px 50px -12px rgba(0,0,0,0.25)", "purpose": "Landing-page product-peek cards and hero moments only." }
+    ],
+    "motion": [
+      { "name": "transition-colors", "value": "color/background 150ms cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default for hover/focus state changes on buttons, links, inputs." },
+      { "name": "transform-hover", "value": "transform 200ms ease-out", "purpose": "Landing-page lift/scale affordances (hover:scale-105). Product UI stays calmer." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The affirmative action everywhere — deep teal, paper text, soft resting shadow.",
+      "html": "<button class=\"ds-btn-primary\">Get Started</button>",
+      "css": ".ds-btn-primary { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:40px; padding:8px 16px; background:hsl(181 63% 23%); color:hsl(53 27% 95%); font-family:Inter,system-ui,sans-serif; font-size:14px; font-weight:500; border:none; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.10),0 1px 2px rgba(0,0,0,0.06); cursor:pointer; transition:background-color 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-primary:hover { background:hsl(181 63% 21%); } .ds-btn-primary:focus-visible { outline:none; box-shadow:0 0 0 1px hsl(181 63% 23%); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Low-stakes companion action in muted sky blue.",
+      "html": "<button class=\"ds-btn-secondary\">Maybe later</button>",
+      "css": ".ds-btn-secondary { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:40px; padding:8px 16px; background:hsl(204 25% 64%); color:hsl(80 18% 5%); font-family:Inter,system-ui,sans-serif; font-size:14px; font-weight:500; border:none; border-radius:6px; box-shadow:0 1px 2px rgba(0,0,0,0.05); cursor:pointer; transition:background-color 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-secondary:hover { background:hsl(204 25% 58%); }"
+    },
+    {
+      "name": "Hero CTA Pill",
+      "kind": "button",
+      "refersTo": "cta-pill",
+      "description": "Landing-page call to action — full pill, larger, with a gentle lift on hover.",
+      "html": "<a class=\"ds-cta-pill\" href=\"#\">Start your toast</a>",
+      "css": ".ds-cta-pill { display:inline-flex; align-items:center; justify-content:center; padding:16px 32px; background:hsl(181 63% 23%); color:hsl(53 27% 95%); font-family:Inter,system-ui,sans-serif; font-size:18px; font-weight:700; text-decoration:none; border-radius:9999px; box-shadow:0 10px 15px -3px rgba(22,97,98,0.20); transition:transform 200ms ease-out, opacity 150ms; } .ds-cta-pill:hover { opacity:0.92; transform:scale(1.05); } @media (prefers-reduced-motion: reduce) { .ds-cta-pill { transition:opacity 150ms; } .ds-cta-pill:hover { transform:none; } }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Lifted white paper on the warm canvas; the tonal jump does the depth work.",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Sarah's Wedding Toast</h3><p class=\"ds-card-desc\">Last edited 2 hours ago</p></div>",
+      "css": ".ds-card { background:#FFFFFF; color:hsl(80 18% 5%); border:1px solid hsl(31 14% 36% / 0.4); border-radius:12px; padding:24px; box-shadow:0 1px 3px rgba(0,0,0,0.10),0 1px 2px rgba(0,0,0,0.06); } .ds-card-title { margin:0; font-family:Inter,system-ui,sans-serif; font-size:16px; font-weight:600; line-height:1; letter-spacing:-0.01em; } .ds-card-desc { margin:6px 0 0; font-family:Inter,system-ui,sans-serif; font-size:14px; color:hsl(31 14% 30%); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Quiet field with a warm-brown stroke and a teal focus ring.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"mom@example.com\" />",
+      "css": ".ds-input { display:flex; height:40px; width:100%; border-radius:6px; border:1px solid hsl(31 14% 36%); background:transparent; padding:4px 12px; font-family:Inter,system-ui,sans-serif; font-size:14px; color:hsl(80 18% 5%); box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:box-shadow 150ms, border-color 150ms; } .ds-input::placeholder { color:hsl(31 14% 36%); } .ds-input:focus-visible { outline:none; box-shadow:0 0 0 1px hsl(181 63% 23%); border-color:hsl(181 63% 23%); }"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Compact status/metadata chip; default teal, status variants use tinted backgrounds.",
+      "html": "<span class=\"ds-badge\">Drafting</span>",
+      "css": ".ds-badge { display:inline-flex; align-items:center; border-radius:6px; padding:2px 10px; background:hsl(181 63% 23%); color:hsl(53 27% 95%); font-family:Inter,system-ui,sans-serif; font-size:12px; font-weight:600; border:1px solid transparent; }"
+    },
+    {
+      "name": "Status Pill",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Tinted state indicator used on the landing/overview surfaces (e.g. active phase).",
+      "html": "<span class=\"ds-status-pill\"><span class=\"ds-dot\"></span>In drafting phase</span>",
+      "css": ".ds-status-pill { display:inline-flex; align-items:center; gap:8px; padding:4px 12px; border-radius:9999px; background:hsl(150 60% 90%); color:hsl(150 55% 28%); font-family:Inter,system-ui,sans-serif; font-size:12px; font-weight:700; } .ds-dot { width:8px; height:8px; border-radius:9999px; background:hsl(150 65% 42%); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Warm Table",
+    "overview": "Toast is the supportive friend who sits down next to you at the celebration table and says \"you've got this.\" The interface exists to calm a nervous, first-time speech-writer and to make collaboration feel welcoming, not administrative. Warmth is structural: it lives in the off-white paper-warm canvas (#F6F5EF), the deep dependable teal (#166162), and a Newsreader serif that gives headings the cadence of something handwritten and heartfelt. The system pairs an editorial serif voice for emotional moments with Inter for the calm, legible machinery of the product. Surfaces are soft and rounded, elevation is gentle and ambient, and color is deployed with restraint so the rare celebratory gold actually feels like a celebration. It is a product-register system first, with one expressive landing surface where the brand is allowed to sing. It rejects cold corporate SaaS, the clinical AI writing tool, and the cluttered overwhelming screen.",
+    "keyCharacteristics": [
+      "Warm paper-off-white canvas, not stark white or cream-by-default sand",
+      "Deep teal as the dependable primary; muted gold reserved for genuine celebration",
+      "Serif (Newsreader) for emotion, sans (Inter) for the working UI",
+      "Soft rounded surfaces (8-12px), gentle ambient shadows",
+      "Restraint: one accent at a time, complexity revealed progressively",
+      "Full light/dark parity"
+    ],
+    "rules": [
+      { "name": "The Earned Gold Rule", "body": "Celebration gold appears only at moments that are actually a celebration - never as decoration, never as a third button color. Its rarity is the point.", "section": "colors" },
+      { "name": "The Warm-Brown Contrast Rule", "body": "Warm Brown (#695D50) and muted-foreground are the contrast liability on the #F6F5EF canvas. Body text must clear 4.5:1; push toward Ink when close. Never use it for placeholder text or anything a user must read carefully.", "section": "colors" },
+      { "name": "The Serif-for-Feeling Rule", "body": "Newsreader is for emotion and identity - hero, section titles, the speech, pull-quotes. It never carries dense UI machinery. When in doubt, the working UI is Inter.", "section": "typography" },
+      { "name": "The Uppercase-Label Restraint Rule", "body": "Tracked uppercase is for metadata and status chips, not a decorative eyebrow above every section. Use it where it labels, not where it ornaments.", "section": "typography" },
+      { "name": "The Lifted-Paper Rule", "body": "Elevation reads as paper on a warm table: soft, ambient, warm-neutral. If a shadow looks hard, dark, or tight-radius, diffuse it. Heavy shadow-2xl is a landing-page device, not a product-UI default.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep Deep Teal (#166162) as the single affirmative action color; one accent at a time.",
+      "Do use Newsreader serif for emotion and Inter for all working UI.",
+      "Do float white cards on the warm #F6F5EF canvas and let the tonal jump carry depth; keep shadows soft, warm, and diffuse.",
+      "Do reserve Celebration Gold for genuine milestones.",
+      "Do verify Warm-Brown (#695D50) text clears 4.5:1 on the canvas; push toward Ink (#0D0F0B) when close.",
+      "Do reveal complexity progressively.",
+      "Do respect prefers-reduced-motion; motion is reassurance, never a barrier."
+    ],
+    "donts": [
+      "Don't let Toast read as cold corporate SaaS - no navy-and-gray dashboard chrome.",
+      "Don't imply the clinical AI writing tool that authors the speech for the user.",
+      "Don't ship cluttered, overwhelming screens that intimidate an anxious non-writer.",
+      "Don't spend Celebration Gold on routine screens or use it as a third button color.",
+      "Don't use Warm-Brown for placeholder text or anything a user must read carefully.",
+      "Don't add a tracked-uppercase eyebrow above every section.",
+      "Don't use heavy shadow-2xl as a product-UI default.",
+      "Don't add decorative border-left/border-right colored stripes on cards or callouts.",
+      "Don't put Newsreader serif into dense UI machinery (form labels, table data, button text)."
+    ]
+  }
+}

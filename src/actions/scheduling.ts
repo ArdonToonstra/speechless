@@ -4,6 +4,7 @@ import { eq, and, ne } from 'drizzle-orm'
 import { revalidateForAllLocales } from '@/lib/revalidation'
 import { db, dateOptions, dateResponses, guests, projects } from '@/db'
 import { getSession } from './auth'
+import { validateDateResponseInput } from '@/lib/validation'
 
 // Type for date option with responses
 export type DateOptionWithResponses = {
@@ -238,6 +239,12 @@ export async function submitDateResponseAnonymous(
     note?: string
 ): Promise<{ success: boolean; error?: string; guestId?: number }> {
     try {
+        // Validate input (name required + length caps) before any DB work
+        const validationError = validateDateResponseInput({ guestName, note })
+        if (validationError) {
+            return { success: false, error: validationError }
+        }
+
         // Verify project by share token
         const project = await db.query.projects.findFirst({
             where: eq(projects.shareToken, shareToken),
