@@ -30,13 +30,19 @@ function LoginContent() {
         const email = formData.get('email') as string
         const password = formData.get('password') as string
 
-        const result = await signIn.email({ email, password })
+        try {
+            const result = await signIn.email({ email, password })
 
-        if (result.error) {
-            setError(result.error.message || 'Invalid email or password')
+            if (result.error) {
+                setError(result.error.message || 'Invalid email or password')
+                setLoading(false)
+            } else {
+                router.push(isSafeRedirect(redirect) ? redirect : (invite ? `/invite/${invite}` : '/dashboard'))
+            }
+        } catch {
+            // Ensures the button never spins forever on an unexpected/network failure
+            setError('Something went wrong. Please try again.')
             setLoading(false)
-        } else {
-            router.push(isSafeRedirect(redirect) ? redirect : (invite ? `/invite/${invite}` : '/dashboard'))
         }
     }
 

@@ -6,7 +6,14 @@ import { db } from '@/db'
 import * as schema from '@/db/schema'
 import { sendVerificationEmail, sendPasswordResetEmail, sendEmailChangeVerification } from '@/lib/email'
 
+// Both must point at the real deployed origin (e.g. https://detoast.nl) in production.
+// Without baseURL, Better Auth can't reliably determine it behind Vercel's proxy.
+// Without the origin in trustedOrigins, Better Auth rejects sign-in/sign-up requests
+// from that origin outright — which is what was causing login to hang with no error.
+const appUrl = process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
 export const auth = betterAuth({
+  baseURL: appUrl,
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema: {
@@ -35,9 +42,7 @@ export const auth = betterAuth({
       maxAge: 60 * 5, // 5 minutes
     },
   },
-  trustedOrigins: [
-    process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-  ],
+  trustedOrigins: [appUrl],
   databaseHooks: {
     session: {
       create: {

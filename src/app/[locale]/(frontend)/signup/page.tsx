@@ -87,14 +87,20 @@ function SignupContent() {
             return
         }
 
-        const result = await signUp.email({ name, email, password })
+        try {
+            const result = await signUp.email({ name, email, password })
 
-        if (result.error) {
-            setError(result.error.message || 'Failed to create account')
+            if (result.error) {
+                setError(result.error.message || 'Failed to create account')
+                setLoading(false)
+            } else {
+                const redirectParam = isSafeRedirect(redirect) ? `&redirect=${encodeURIComponent(redirect)}` : (invite ? `&invite=${invite}` : '')
+                router.push(`/verify-email?email=${encodeURIComponent(email)}${redirectParam}`)
+            }
+        } catch {
+            // Ensures the button never spins forever on an unexpected/network failure
+            setError('Something went wrong. Please try again.')
             setLoading(false)
-        } else {
-            const redirectParam = isSafeRedirect(redirect) ? `&redirect=${encodeURIComponent(redirect)}` : (invite ? `&invite=${invite}` : '')
-            router.push(`/verify-email?email=${encodeURIComponent(email)}${redirectParam}`)
         }
     }
 
