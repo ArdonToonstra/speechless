@@ -10,6 +10,7 @@ import { createSnapshot } from '@/actions/snapshots'
 import { normalizeContent } from '@/lib/contentMigration'
 import { VersionHistory } from '@/components/features/VersionHistory'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 interface Stats {
     words: number
@@ -54,10 +55,17 @@ export function InteractiveEditor({ project, children, speechComments = [], auth
     const saveContent = useCallback(async (json: JSONContent) => {
         setSaving(true)
         try {
-            await updateProjectContent(project.id, json)
+            const result = await updateProjectContent(project.id, json)
+            if (result?.error) {
+                toast.error(result.error)
+                return false
+            }
             setLastSaved(new Date())
+            return true
         } catch (error) {
             console.error('Failed to save:', error)
+            toast.error('Failed to save — check your connection')
+            return false
         } finally {
             setSaving(false)
         }
@@ -102,9 +110,15 @@ export function InteractiveEditor({ project, children, speechComments = [], auth
     React.useEffect(() => {
         setMounted(true)
         return () => {
-            if (timeoutRef.current) clearTimeout(timeoutRef.current)
+            // Flush a pending debounced save instead of dropping it (fire-and-forget)
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current)
+                if (currentJsonRef.current) {
+                    updateProjectContent(project.id, currentJsonRef.current).catch(() => {})
+                }
+            }
         }
-    }, [])
+    }, [project.id])
 
     return (
         <div className={cn("flex flex-col", focusMode ? "fixed inset-0 z-50 h-full bg-background" : "relative")}>
@@ -148,7 +162,7 @@ export function InteractiveEditor({ project, children, speechComments = [], auth
                             </div>
 
                             {/* Right Side: Editor Controls */}
-                            <div className="flex gap-4 items-center">
+                            <div className="flex gap-2 md:gap-4 items-center">
                                 <div className="text-sm text-slate-600 hidden lg:block text-right bg-slate-50 px-4 py-2 rounded-xl border border-slate-100">
                                     <p className="font-semibold">
                                         {stats.words} <span className="font-normal text-slate-500">words</span>
@@ -172,7 +186,7 @@ export function InteractiveEditor({ project, children, speechComments = [], auth
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => setFocusMode(true)}
-                                    className="gap-2 h-9 px-4 rounded-lg hover:bg-slate-100 text-slate-700"
+                                    className="gap-2 h-9 px-2 md:px-4 rounded-lg hover:bg-slate-100 text-slate-700 hidden sm:inline-flex"
                                 >
                                     Focus
                                 </Button>

@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { CheckCircle2 } from 'lucide-react'
 import { submitQuestionnaireAsUser } from '@/actions/questionnaire'
 import { Wizard } from '@/components/ui/wizard'
+import { toast } from 'sonner'
 
 interface QuestionItem {
     text: string
@@ -50,11 +51,11 @@ export function QuestionnaireFormCollaborator({ project, userName, hasExistingSu
             if (result.success) {
                 setIsSubmitted(true)
             } else {
-                alert('Failed to submit: ' + (result.error || 'Unknown error'))
+                toast.error('Failed to submit: ' + (result.error || 'Unknown error'))
                 setIsSubmitting(false)
             }
         } catch {
-            alert('An error occurred. Please try again.')
+            toast.error('An error occurred. Please try again.')
             setIsSubmitting(false)
         }
     }

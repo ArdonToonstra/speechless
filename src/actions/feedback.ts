@@ -2,7 +2,6 @@
 
 import { requireAuth } from './auth'
 import { db, userFeedback } from '@/db'
-import { eq } from 'drizzle-orm'
 import { revalidateForAllLocales } from '@/lib/revalidation'
 
 export async function submitFeedback(answers: Record<string, string>) {
@@ -13,10 +12,3 @@ export async function submitFeedback(answers: Record<string, string>) {
     revalidateForAllLocales('/dashboard')
 }
 
-export async function hasSubmittedFeedback(): Promise<boolean> {
-    const session = await requireAuth()
-    const row = await db.query.userFeedback.findFirst({
-        where: eq(userFeedback.userId, session.user.id),
-    })
-    return !!row
-}

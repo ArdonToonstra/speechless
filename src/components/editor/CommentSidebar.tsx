@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
+import { toast } from 'sonner'
 import {
     MessageSquare,
     Check,
@@ -96,6 +97,12 @@ export function CommentSidebar({
                         selectedText,
                     } as SpeechComment,
                 ])
+            } else {
+                // Roll back the highlight so no orphaned mark gets auto-saved into the draft
+                onDeleteMark(commentMarkId)
+                toast.error('Failed to add comment')
+                setIsSubmitting(false)
+                return
             }
         }
 
@@ -114,6 +121,10 @@ export function CommentSidebar({
                 ...prev,
                 result.comment as unknown as SpeechComment,
             ])
+        } else {
+            toast.error('Failed to post reply')
+            setIsSubmitting(false)
+            return
         }
 
         setReplyContent('')
@@ -160,7 +171,7 @@ export function CommentSidebar({
     }
 
     return (
-        <div className="flex flex-col h-full max-h-[calc(100vh-200px)]">
+        <div className="flex flex-col h-full max-h-[calc(100dvh-200px)]">
             {/* Header */}
             <div className="px-4 py-3 border-b border-border/50">
                 <div className="flex items-center gap-2">

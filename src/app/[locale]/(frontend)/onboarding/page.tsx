@@ -8,6 +8,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useTranslations } from 'next-intl'
+import { toast } from 'sonner'
 
 export default function OnboardingPage() {
     const router = useRouter()
@@ -50,7 +51,7 @@ export default function OnboardingPage() {
             router.push(res.redirectUrl)
         } else {
             console.error(res.error)
-            alert(t('errorCreating'))
+            toast.error(t('errorCreating'))
             setIsSubmitting(false)
         }
     }

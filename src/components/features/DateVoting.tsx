@@ -55,6 +55,7 @@ function VotingCard({
     const [noteOpen, setNoteOpen] = useState(!!initialNote)
 
     const handleVote = async (value: 'yes' | 'no' | 'maybe') => {
+        const previous = response
         setResponse(value)
         setIsSubmitting(true)
 
@@ -62,6 +63,7 @@ function VotingCard({
 
         setIsSubmitting(false)
         if (!result.success) {
+            setResponse(previous) // revert optimistic update
             toast.error(result.error || 'Failed to save response')
         }
     }
@@ -117,13 +119,13 @@ function VotingCard({
                     </div>
                 </div>
 
-                {/* Vote buttons */}
-                <div className="flex items-center gap-1.5 shrink-0">
+                {/* Vote buttons — full-width ≥44px targets on mobile, compact row on desktop */}
+                <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:gap-1.5 shrink-0">
                     <Button
                         variant={response === 'yes' ? 'default' : 'outline'}
                         size="sm"
                         className={cn(
-                            "h-8 px-3 rounded-lg text-xs gap-1.5",
+                            "h-11 sm:h-8 px-3 rounded-lg text-xs gap-1.5",
                             response === 'yes' ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "hover:text-emerald-700 hover:border-emerald-200 hover:bg-emerald-50"
                         )}
                         onClick={() => handleVote('yes')}
@@ -136,7 +138,7 @@ function VotingCard({
                         variant={response === 'maybe' ? 'default' : 'outline'}
                         size="sm"
                         className={cn(
-                            "h-8 px-3 rounded-lg text-xs gap-1.5",
+                            "h-11 sm:h-8 px-3 rounded-lg text-xs gap-1.5",
                             response === 'maybe' ? "bg-amber-500 hover:bg-amber-600 text-white" : "hover:text-amber-700 hover:border-amber-200 hover:bg-amber-50"
                         )}
                         onClick={() => handleVote('maybe')}
@@ -149,7 +151,7 @@ function VotingCard({
                         variant={response === 'no' ? 'default' : 'outline'}
                         size="sm"
                         className={cn(
-                            "h-8 px-3 rounded-lg text-xs gap-1.5",
+                            "h-11 sm:h-8 px-3 rounded-lg text-xs gap-1.5",
                             response === 'no' ? "bg-rose-600 hover:bg-rose-700 text-white" : "hover:text-rose-700 hover:border-rose-200 hover:bg-rose-50"
                         )}
                         onClick={() => handleVote('no')}
@@ -167,7 +169,7 @@ function VotingCard({
                     {!noteOpen ? (
                         <button
                             onClick={() => setNoteOpen(true)}
-                            className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1"
+                            className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 min-h-[44px] sm:min-h-0 py-2 sm:py-0"
                         >
                             <MessageSquare className="w-3 h-3" />
                             add a note...
@@ -180,7 +182,7 @@ function VotingCard({
                                 onBlur={handleNoteSave}
                                 onKeyDown={(e) => e.key === 'Enter' && handleNoteSave()}
                                 placeholder="Add a note (optional)"
-                                className="text-sm h-8 bg-white border-slate-200 rounded-lg pr-8"
+                                className="h-11 sm:h-8 bg-white border-slate-200 rounded-lg pr-8"
                             />
                             {isSubmitting && (
                                 <div className="absolute right-2 top-2">

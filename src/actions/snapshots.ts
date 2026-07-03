@@ -4,18 +4,9 @@ import type { JSONContent } from '@tiptap/core'
 import { db, projects, contentSnapshots } from '@/db'
 import { eq, and, desc, count } from 'drizzle-orm'
 import { requireAuth } from './auth'
+import { getProjectForManager } from '@/lib/permissions'
 
 const MAX_SNAPSHOTS_PER_PROJECT = 30
-
-async function verifyProjectOwnership(projectId: number, userId: string) {
-    const project = await db.query.projects.findFirst({
-        where: and(
-            eq(projects.id, projectId),
-            eq(projects.ownerId, userId)
-        ),
-    })
-    return project
-}
 
 export async function createSnapshot(
     projectId: string,
@@ -29,7 +20,7 @@ export async function createSnapshot(
     if (wordCount < 0) return { error: 'Invalid word count' }
     if (label && label.length > 200) return { error: 'Label too long (max 200 characters)' }
 
-    const project = await verifyProjectOwnership(pid, session.user.id)
+    const project = await getProjectForManager(pid, session.user.id, session.user.email)
     if (!project) return { error: 'Unauthorized or not found' }
 
     try {
@@ -55,7 +46,7 @@ export async function getSnapshots(projectId: string) {
     const pid = parseInt(projectId)
     if (isNaN(pid)) return { error: 'Invalid project ID', snapshots: [] }
 
-    const project = await verifyProjectOwnership(pid, session.user.id)
+    const project = await getProjectForManager(pid, session.user.id, session.user.email)
     if (!project) return { error: 'Unauthorized or not found', snapshots: [] }
 
     const snapshots = await db.query.contentSnapshots.findMany({
@@ -77,7 +68,7 @@ export async function getSnapshotContent(snapshotId: number, projectId: string) 
     const pid = parseInt(projectId)
     if (isNaN(pid)) return { error: 'Invalid project ID' }
 
-    const project = await verifyProjectOwnership(pid, session.user.id)
+    const project = await getProjectForManager(pid, session.user.id, session.user.email)
     if (!project) return { error: 'Unauthorized or not found' }
 
     const snapshot = await db.query.contentSnapshots.findFirst({
@@ -97,7 +88,7 @@ export async function restoreSnapshot(snapshotId: number, projectId: string) {
     const pid = parseInt(projectId)
     if (isNaN(pid)) return { error: 'Invalid project ID' }
 
-    const project = await verifyProjectOwnership(pid, session.user.id)
+    const project = await getProjectForManager(pid, session.user.id, session.user.email)
     if (!project) return { error: 'Unauthorized or not found' }
 
     const snapshot = await db.query.contentSnapshots.findFirst({
@@ -136,7 +127,7 @@ export async function updateSnapshotLabel(snapshotId: number, projectId: string,
     if (isNaN(pid)) return { error: 'Invalid project ID' }
     if (label && label.length > 200) return { error: 'Label too long (max 200 characters)' }
 
-    const project = await verifyProjectOwnership(pid, session.user.id)
+    const project = await getProjectForManager(pid, session.user.id, session.user.email)
     if (!project) return { error: 'Unauthorized or not found' }
 
     await db.update(contentSnapshots)
@@ -154,7 +145,7 @@ export async function deleteSnapshot(snapshotId: number, projectId: string) {
     const pid = parseInt(projectId)
     if (isNaN(pid)) return { error: 'Invalid project ID' }
 
-    const project = await verifyProjectOwnership(pid, session.user.id)
+    const project = await getProjectForManager(pid, session.user.id, session.user.email)
     if (!project) return { error: 'Unauthorized or not found' }
 
     await db.delete(contentSnapshots)

@@ -65,7 +65,8 @@ export default async function ProjectLayout({
                 hasFeedback={hasFeedback}
             />
 
-            <main className="flex-1 flex flex-col overflow-hidden relative">
+            {/* pt-14 clears the fixed mobile hamburger button (ProjectSidebar) */}
+            <main className="flex-1 flex flex-col overflow-hidden relative pt-14 md:pt-0">
                 {children}
             </main>
         </div>

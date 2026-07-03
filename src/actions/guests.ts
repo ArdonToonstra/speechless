@@ -77,8 +77,6 @@ export async function deleteGuest(guestId: number, projectId: number) {
     const session = await requireAuth()
 
     try {
-        console.log(`[DELETE GUEST] Attempting to delete guest ${guestId} from project ${projectId} by user ${session.user.email}`)
-
         // Verify user owns the project
         const project = await db.query.projects.findFirst({
             where: and(

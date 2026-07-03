@@ -45,12 +45,8 @@ export async function prepareSpeechInvites(
             })
         }
 
-        // Log to console (mock email sending)
-        console.log(`[INVITE SYSTEM] Prepared ${recipients.length} invites for project ${projectId}`)
-        console.log(`Message type: ${messageType}`)
-        console.log(`Send via postcard: ${sendViaPostcard}`)
-        console.log(`Recipients:`, recipients)
-        console.log(`Custom message:`, customMessage)
+        // Mock email sending — no recipient PII in logs
+        console.log(`[INVITE SYSTEM] Prepared ${recipients.length} invites for project ${projectId} (type: ${messageType})`)
 
         revalidateForAllLocales(`/projects/${projectId}/invites`)
 

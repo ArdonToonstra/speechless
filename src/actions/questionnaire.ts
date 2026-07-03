@@ -2,6 +2,7 @@
 
 import { db, projects, guests, submissions } from '@/db'
 import { eq, and, ne } from 'drizzle-orm'
+import { getLocale } from 'next-intl/server'
 import { getSession } from './auth'
 import { revalidateForAllLocales } from '@/lib/revalidation'
 import { requireAuth } from './auth'
@@ -73,7 +74,8 @@ export async function sendQuestionnaireToCollaborators(projectId: number) {
     const eligible = projectGuests.filter(g => g.status !== 'declined' && g.email && !g.email.endsWith('@anonymous.local'))
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detoast.nl'
-    const questionnaireUrl = `${appUrl}/en/questionnaire/${project.shareToken}`
+    const locale = await getLocale()
+    const questionnaireUrl = `${appUrl}/${locale}/questionnaire/${project.shareToken}`
     const ownerName = session.user.name || session.user.email
 
     let sent = 0
@@ -88,7 +90,7 @@ export async function sendQuestionnaireToCollaborators(projectId: number) {
             })
             sent++
         } catch (err) {
-            console.error(`[QUESTIONNAIRE] Failed to send to ${guest.email}:`, err)
+            console.error(`[QUESTIONNAIRE] Failed to send questionnaire invite (guest ${guest.id}):`, err)
         }
     }
 
@@ -112,7 +114,8 @@ export async function sendQuestionnaireToEmails(
     if (!project.shareToken) return { error: 'Questionnaire has no share link yet' }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detoast.nl'
-    const questionnaireUrl = `${appUrl}/en/questionnaire/${project.shareToken}`
+    const locale = await getLocale()
+    const questionnaireUrl = `${appUrl}/${locale}/questionnaire/${project.shareToken}`
     const ownerName = session.user.name || session.user.email
 
     let sent = 0
@@ -127,7 +130,7 @@ export async function sendQuestionnaireToEmails(
             })
             sent++
         } catch (err) {
-            console.error(`[QUESTIONNAIRE] Failed to send to ${recipient.email}:`, err)
+            console.error('[QUESTIONNAIRE] Failed to send questionnaire invite:', err)
         }
     }
 

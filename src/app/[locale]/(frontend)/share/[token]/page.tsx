@@ -34,14 +34,14 @@ export default async function SharedProjectPage({ params }: { params: any }) {
     const initialContent = normalizedContent || undefined
 
     return (
-        <div className="min-h-screen bg-slate-50 p-6 md:p-12">
+        <div className="min-h-screen bg-slate-50 p-3 md:p-12">
             <div className="max-w-4xl mx-auto">
                 <div className="mb-8 text-center">
-                    <h1 className="text-4xl font-serif font-bold text-slate-900 mb-2">{project.name}</h1>
+                    <h1 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-2">{project.name}</h1>
                     <p className="text-slate-500">{t('sharedVia')}</p>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-8">
                     <TiptapEditor
                         initialContent={initialContent}
                         readOnly={true}

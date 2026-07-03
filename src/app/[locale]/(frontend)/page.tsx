@@ -37,7 +37,7 @@ export default async function Page() {
                         {t('heroTagline3')}
                     </p>
 
-                    <div className="flex gap-4 justify-center mb-4">
+                    <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 justify-center mb-4">
                         <Link href="/signup" className="px-8 py-4 bg-primary hover:opacity-90 text-primary-foreground font-bold rounded-full text-lg transition-all transform hover:scale-105 shadow-lg shadow-primary/20">
                             {t('heroCta')}
                         </Link>

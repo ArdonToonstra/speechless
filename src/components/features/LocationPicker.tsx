@@ -150,7 +150,7 @@ function PlacesSearch({
     }
 
     return (
-        <div className="m-2 bg-white rounded-lg shadow-lg w-80">
+        <div className="m-2 bg-white rounded-lg shadow-lg w-[calc(100vw-1.5rem)] max-w-80">
             <div className="p-2 flex gap-2 items-center">
                 <div className="relative flex-1">
                     <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

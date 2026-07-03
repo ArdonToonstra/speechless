@@ -77,7 +77,7 @@ const ButtonBase = React.forwardRef<
         }}
         title={label}
         className={cn(
-            "p-1.5 rounded-md w-8 h-8 flex items-center justify-center transition-colors duration-100",
+            "p-1.5 rounded-md w-10 h-10 md:w-8 md:h-8 flex items-center justify-center transition-colors duration-100",
             variant === 'accent' && active && "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
             variant === 'accent' && !active && "text-muted-foreground hover:text-foreground hover:bg-muted/60",
             variant === 'default' && active && "bg-primary/10 text-primary",
@@ -363,6 +363,14 @@ export function TiptapEditor({
         }, 500)
     }, [editor])
 
+    // On <lg the side panel stacks BELOW the (long) document; scroll it into view on open
+    const scrollPanelIntoView = useCallback(() => {
+        if (window.innerWidth >= 1024) return
+        setTimeout(() => {
+            document.getElementById('editor-side-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }, 50)
+    }, [])
+
     // Toggle Hemingway mode (mutually exclusive with comments)
     const toggleHemingway = useCallback(() => {
         const newState = !hemingwayEnabled
@@ -371,6 +379,7 @@ export function TiptapEditor({
         if (newState) {
             setCommentsOpen(false) // close comments when opening hemingway
             if (editor) runDebouncedAnalysis(editor.getText({ blockSeparator: '\n' }))
+            scrollPanelIntoView()
         } else {
             setAnalysisResult(null)
             if (editor && !editor.isDestroyed) {
@@ -379,7 +388,7 @@ export function TiptapEditor({
                 )
             }
         }
-    }, [hemingwayEnabled, editor, runDebouncedAnalysis])
+    }, [hemingwayEnabled, editor, runDebouncedAnalysis, scrollPanelIntoView])
 
     // Toggle comments panel (mutually exclusive with hemingway)
     const toggleComments = useCallback(() => {
@@ -394,7 +403,8 @@ export function TiptapEditor({
                 )
             }
         }
-    }, [commentsOpen, hemingwayEnabled, editor])
+        if (newState) scrollPanelIntoView()
+    }, [commentsOpen, hemingwayEnabled, editor, scrollPanelIntoView])
 
     // Create a comment on the current selection, apply mark, return the markId
     const handleCreateComment = useCallback(async (content: string): Promise<string | null> => {
@@ -587,7 +597,7 @@ export function TiptapEditor({
                                         </span>
                                     </button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-96 max-h-[28rem] overflow-y-auto p-4 space-y-4" align="end">
+                                <PopoverContent className="w-[min(24rem,calc(100vw-2rem))] max-h-[28rem] overflow-y-auto p-4 space-y-4" align="end">
                                     <h3 className="font-semibold text-sm text-slate-900 dark:text-white">Inspiration from collaborators</h3>
                                     {groupedAnswers.map((group, i) => (
                                         <div key={i} className="space-y-2">
@@ -763,7 +773,7 @@ export function TiptapEditor({
 
                 {/* Hemingway Panel */}
                 {hemingwayEnabled && !readOnly && (
-                    <div className="lg:w-1/3 border-l border-border">
+                    <div id="editor-side-panel" className="lg:w-1/3 border-l border-border">
                         <HemingwayPanel
                             result={analysisResult}
                             isAnalyzing={isAnalyzing}
@@ -773,7 +783,7 @@ export function TiptapEditor({
 
                 {/* Comments Panel */}
                 {commentsOpen && !readOnly && projectId && (
-                    <div className="lg:w-1/3 border-l border-border">
+                    <div id="editor-side-panel" className="lg:w-1/3 border-l border-border">
                         <CommentSidebar
                             projectId={projectId}
                             authorName={authorName}

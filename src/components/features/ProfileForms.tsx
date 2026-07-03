@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { updateProfile, changePassword, deleteAccount } from '@/actions/profile'
-import { useRouter } from '@/i18n/navigation'
+import { useRouter, Link } from '@/i18n/navigation'
 import { AlertTriangle, Check, X } from 'lucide-react'
 
 interface User {
@@ -148,12 +148,15 @@ export function ProfileForms({ user }: { user: User }) {
                             <Label htmlFor="email">Email</Label>
                             <Input
                                 id="email"
-                                name="email"
                                 defaultValue={user.email}
-                                required
+                                readOnly
+                                disabled
                                 type="email"
                                 className="bg-background"
                             />
+                            <p className="text-xs text-muted-foreground">
+                                <Link href="/settings/change-email" className="underline underline-offset-2 hover:text-foreground">Change email</Link> (requires verification)
+                            </p>
                         </div>
 
                         {profileMessage && (

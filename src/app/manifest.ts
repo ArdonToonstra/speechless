@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
         description: 'Speech writing collaboration app',
         start_url: '/',
         display: 'standalone',
-        background_color: '#ffffff',
-        theme_color: '#ffffff',
+        background_color: '#F6F5EF',
+        theme_color: '#F6F5EF',
         icons: [
             {
                 src: '/icons/icon-192.png',

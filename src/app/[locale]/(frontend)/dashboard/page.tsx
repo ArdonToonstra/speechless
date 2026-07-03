@@ -102,23 +102,23 @@ export default async function DashboardPage() {
     const userInitials = getUserInitials(user.name, user.email)
 
     return (
-        <div className="min-h-screen bg-background p-6 md:p-12">
+        <div className="min-h-screen bg-background p-4 md:p-12">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
-                <div className="flex justify-between items-end mb-12">
-                    <div className="flex items-center gap-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-end mb-8 md:mb-12">
+                    <div className="flex items-center gap-3 md:gap-6">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src="/images/branding/base-logo.webp"
                             alt="Toast"
-                            className="h-24 w-auto object-contain"
+                            className="h-14 md:h-24 w-auto object-contain"
                         />
                         <div>
                             <h1 className="text-3xl font-serif font-bold text-foreground">{t('title')}</h1>
                             <p className="text-muted-foreground mt-2">{t('welcome', { name: user.name || user.email })}</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 self-end sm:self-auto">
                         <LanguageSwitcher />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

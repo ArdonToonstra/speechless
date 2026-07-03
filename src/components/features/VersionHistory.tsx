@@ -165,7 +165,7 @@ export function VersionHistory({ projectId, open, onOpenChange, onRestore }: Ver
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+            <DialogContent className="max-w-2xl max-h-[80dvh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <History className="w-5 h-5" />
@@ -242,7 +242,7 @@ export function VersionHistory({ projectId, open, onOpenChange, onRestore }: Ver
                                                                 setEditingLabelId(snapshot.id)
                                                                 setEditLabelValue(snapshot.label || '')
                                                             }}
-                                                            className="p-0.5 text-muted-foreground/50 hover:text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            className="p-0.5 text-muted-foreground/50 hover:text-muted-foreground opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                                                             title="Edit label"
                                                         >
                                                             <Pencil className="w-3 h-3" />

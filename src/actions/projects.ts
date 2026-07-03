@@ -5,6 +5,7 @@ import { db, projects } from '@/db'
 import { eq, and, or } from 'drizzle-orm'
 import { requireAuth } from './auth'
 import { generateToken } from '@/lib/tokens'
+import { getProjectForManager } from '@/lib/permissions'
 
 export async function createProject(data: {
     title: string
@@ -52,16 +53,11 @@ export async function updateProjectContent(projectId: string, content: JSONConte
     const session = await requireAuth()
 
     try {
-        // Verify ownership
-        const project = await db.query.projects.findFirst({
-            where: and(
-                eq(projects.id, parseInt(projectId)),
-                eq(projects.ownerId, session.user.id)
-            ),
-        })
+        // Owner or accepted speech-editor may save the draft
+        const project = await getProjectForManager(parseInt(projectId), session.user.id, session.user.email)
 
         if (!project) {
-            return { error: 'Unauthorized or not found' }
+            return { error: 'You do not have permission to edit this speech' }
         }
 
         await db.update(projects)
@@ -75,26 +71,3 @@ export async function updateProjectContent(projectId: string, content: JSONConte
     }
 }
 
-export async function getProject(projectId: number) {
-    const session = await requireAuth()
-
-    const project = await db.query.projects.findFirst({
-        where: and(
-            eq(projects.id, projectId),
-            eq(projects.ownerId, session.user.id)
-        ),
-    })
-
-    return project
-}
-
-export async function getUserProjects() {
-    const session = await requireAuth()
-
-    const userProjects = await db.query.projects.findMany({
-        where: eq(projects.ownerId, session.user.id),
-        orderBy: (projects, { desc }) => [desc(projects.createdAt)],
-    })
-
-    return userProjects
-}

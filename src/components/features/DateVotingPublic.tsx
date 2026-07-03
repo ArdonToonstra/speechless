@@ -46,7 +46,7 @@ export function DateVotingPublic({ shareToken, projectName, options }: DateVotin
                             value={guestName}
                             onChange={(e) => setGuestName(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && guestName.trim() && setStarted(true)}
-                            className="pl-9 h-9 text-sm bg-white border-slate-200 rounded-lg"
+                            className="pl-9 h-11 sm:h-9 bg-white border-slate-200 rounded-lg"
                         />
                     </div>
                 </div>
@@ -54,7 +54,7 @@ export function DateVotingPublic({ shareToken, projectName, options }: DateVotin
                     onClick={() => setStarted(true)}
                     disabled={!guestName.trim()}
                     size="sm"
-                    className="w-full h-9 rounded-lg"
+                    className="w-full h-11 sm:h-9 rounded-lg"
                 >
                     Continue
                 </Button>
@@ -76,7 +76,13 @@ export function DateVotingPublic({ shareToken, projectName, options }: DateVotin
                     guestId={guestId}
                     onGuestId={setGuestId}
                     currentResponse={responses[opt.id]}
-                    onResponse={(r) => setResponses(prev => ({ ...prev, [opt.id]: r }))}
+                    onResponse={(r) => setResponses(prev => {
+                        if (r === undefined) {
+                            const { [opt.id]: _removed, ...rest } = prev
+                            return rest
+                        }
+                        return { ...prev, [opt.id]: r }
+                    })}
                 />
             ))}
             {Object.keys(responses).length === options.length && (
@@ -109,13 +115,14 @@ function VotingCardPublic({
     guestId: number | null
     onGuestId: (id: number) => void
     currentResponse?: 'yes' | 'no' | 'maybe'
-    onResponse: (r: 'yes' | 'no' | 'maybe') => void
+    onResponse: (r: 'yes' | 'no' | 'maybe' | undefined) => void
 }) {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [note, setNote] = useState('')
     const [noteOpen, setNoteOpen] = useState(false)
 
     const handleVote = async (value: 'yes' | 'no' | 'maybe') => {
+        const previous = currentResponse
         onResponse(value)
         setIsSubmitting(true)
 
@@ -125,6 +132,7 @@ function VotingCardPublic({
         if (result.success) {
             if (result.guestId) onGuestId(result.guestId)
         } else {
+            onResponse(previous) // revert optimistic update
             toast.error(result.error || 'Failed to save response')
         }
     }
@@ -178,13 +186,13 @@ function VotingCardPublic({
                     </div>
                 </div>
 
-                {/* Vote buttons */}
-                <div className="flex items-center gap-1.5 shrink-0">
+                {/* Vote buttons — full-width ≥44px targets on mobile, compact row on desktop */}
+                <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:gap-1.5 shrink-0">
                     <Button
                         variant={currentResponse === 'yes' ? 'default' : 'outline'}
                         size="sm"
                         className={cn(
-                            "h-8 px-3 rounded-lg text-xs gap-1.5",
+                            "h-11 sm:h-8 px-3 rounded-lg text-xs gap-1.5",
                             currentResponse === 'yes' ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "hover:text-emerald-700 hover:border-emerald-200 hover:bg-emerald-50"
                         )}
                         onClick={() => handleVote('yes')}
@@ -197,7 +205,7 @@ function VotingCardPublic({
                         variant={currentResponse === 'maybe' ? 'default' : 'outline'}
                         size="sm"
                         className={cn(
-                            "h-8 px-3 rounded-lg text-xs gap-1.5",
+                            "h-11 sm:h-8 px-3 rounded-lg text-xs gap-1.5",
                             currentResponse === 'maybe' ? "bg-amber-500 hover:bg-amber-600 text-white" : "hover:text-amber-700 hover:border-amber-200 hover:bg-amber-50"
                         )}
                         onClick={() => handleVote('maybe')}
@@ -210,7 +218,7 @@ function VotingCardPublic({
                         variant={currentResponse === 'no' ? 'default' : 'outline'}
                         size="sm"
                         className={cn(
-                            "h-8 px-3 rounded-lg text-xs gap-1.5",
+                            "h-11 sm:h-8 px-3 rounded-lg text-xs gap-1.5",
                             currentResponse === 'no' ? "bg-rose-600 hover:bg-rose-700 text-white" : "hover:text-rose-700 hover:border-rose-200 hover:bg-rose-50"
                         )}
                         onClick={() => handleVote('no')}
@@ -228,7 +236,7 @@ function VotingCardPublic({
                     {!noteOpen ? (
                         <button
                             onClick={() => setNoteOpen(true)}
-                            className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1"
+                            className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 min-h-[44px] sm:min-h-0 py-2 sm:py-0"
                         >
                             <MessageSquare className="w-3 h-3" />
                             add a note...
@@ -241,7 +249,7 @@ function VotingCardPublic({
                                 onBlur={handleNoteSave}
                                 onKeyDown={(e) => e.key === 'Enter' && handleNoteSave()}
                                 placeholder="Add a note (optional)"
-                                className="text-sm h-8 bg-white border-slate-200 rounded-lg pr-8"
+                                className="h-11 sm:h-8 bg-white border-slate-200 rounded-lg pr-8"
                             />
                             {isSubmitting && (
                                 <div className="absolute right-2 top-2">

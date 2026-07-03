@@ -6,6 +6,7 @@ import { submitFeedback } from '@/actions/feedback'
 import { useRouter } from '@/i18n/navigation'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslations } from 'next-intl'
+import { toast } from 'sonner'
 
 export default function FeedbackPage() {
     const router = useRouter()
@@ -22,7 +23,7 @@ export default function FeedbackPage() {
             await submitFeedback(answers)
             router.push('/dashboard')
         } catch {
-            alert(t('errorSubmitting'))
+            toast.error(t('errorSubmitting'))
             setIsSubmitting(false)
         }
     }

@@ -26,11 +26,6 @@ export async function updateProfile(formData: FormData) {
     
     const name = formData.get('name') as string
     const initials = formData.get('initials') as string
-    const email = formData.get('email') as string
-
-    if (!email) {
-        return { error: 'Email is required' }
-    }
 
     // Validate initials (max 4 characters, letters only)
     if (initials && (initials.length > 4 || !/^[a-zA-Z]*$/.test(initials))) {
@@ -38,11 +33,12 @@ export async function updateProfile(formData: FormData) {
     }
 
     try {
+        // Email is deliberately NOT updatable here — changing it requires the
+        // OTP-verified flow at /settings/change-email (Better Auth changeEmail).
         await db.update(user)
             .set({
                 name,
                 initials: initials?.toUpperCase() || null,
-                email,
                 updatedAt: new Date(),
             })
             .where(eq(user.id, session.user.id))
@@ -50,8 +46,9 @@ export async function updateProfile(formData: FormData) {
         revalidateForAllLocales('/settings')
         revalidateForAllLocales('/dashboard')
         return { success: 'Profile updated successfully' }
-    } catch (error: any) {
-        return { error: error.message || 'Failed to update profile' }
+    } catch (error) {
+        console.error('Update profile error:', error)
+        return { error: 'Failed to update profile' }
     }
 }
 

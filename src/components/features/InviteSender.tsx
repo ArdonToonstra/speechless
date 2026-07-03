@@ -9,17 +9,18 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Mail, Plus, X, Eye, Package, Sparkles } from 'lucide-react'
-import { prepareSpeechInvites, validatePostcardOption } from '@/actions/invites'
+import { prepareSpeechInvites, saveInviteTemplate, validatePostcardOption } from '@/actions/invites'
 import { useRouter } from '@/i18n/navigation'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 interface Project {
     id: number
     name: string
     occasionDate: Date | null
     emailTemplates: {
-        attendeeMessage?: string
-        receiverMessage?: string
+        attendee?: string
+        receiver?: string
     } | null
     locationSettings?: {
         venue?: string
@@ -61,7 +62,7 @@ export function InviteSender({ project, guests }: InviteSenderProps) {
     const defaultTemplate = useMemo(() => {
         const templates = project.emailTemplates || {}
         if (messageType === 'attendee') {
-            return templates.attendeeMessage || `Hi {name},
+            return templates.attendee || `Hi {name},
 
 You're invited to ${project.name} on {date}!
 
@@ -71,7 +72,7 @@ Address: {address}
 
 We're looking forward to celebrating with  you!`
         } else {
-            return templates.receiverMessage || `Dear {name},
+            return templates.receiver || `Dear {name},
 
 We're planning a special speech for you on {date}!
 
@@ -140,7 +141,7 @@ See you there!`
 
     const handleSend = async () => {
         if (totalRecipients === 0) {
-            alert('Please select at least one recipient')
+            toast.error('Please select at least one recipient')
             return
         }
 
@@ -154,6 +155,11 @@ See you there!`
             ...additionalRecipients,
         ]
 
+        // Persist the (possibly customized) template so it's the default next time
+        if (customMessage !== defaultTemplate) {
+            await saveInviteTemplate(project.id, messageType, customMessage)
+        }
+
         const result = await prepareSpeechInvites(
             project.id,
             allRecipients,
@@ -165,12 +171,12 @@ See you there!`
         setIsSending(false)
 
         if (result.success) {
-            alert(result.message)
+            toast.success(result.message)
             router.refresh()
             setSelectedGuestIds([])
             setAdditionalRecipients([])
         } else {
-            alert('Failed to prepare invites: ' + result.message)
+            toast.error('Failed to prepare invites: ' + result.message)
         }
     }
 

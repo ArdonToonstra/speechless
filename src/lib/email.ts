@@ -87,7 +87,7 @@ export async function sendVerificationEmail({ to, code }: SendVerificationEmailP
         throw new Error('Email service not configured - missing API keys')
     }
 
-    console.log('[EMAIL] Sending verification email to:', to)
+    console.log('[EMAIL] Sending verification email')
     try {
         const request = mailjet.post('send', { version: 'v3.1' }).request({
             Messages: [
@@ -139,7 +139,7 @@ export async function sendPasswordResetEmail({ to, resetUrl }: SendPasswordReset
         throw new Error('Email service not configured - missing API keys')
     }
 
-    console.log('[EMAIL] Sending password reset email to:', to)
+    console.log('[EMAIL] Sending password reset email')
     try {
         const request = mailjet.post('send', { version: 'v3.1' }).request({
             Messages: [
@@ -190,7 +190,7 @@ export async function sendDeletionWarningEmail({ to, name }: SendDeletionWarning
         throw new Error('Email service not configured - missing API keys')
     }
 
-    console.log('[EMAIL] Sending deletion warning email to:', to)
+    console.log('[EMAIL] Sending deletion warning email')
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detoast.nl'
     const safeName = escapeHtml(name)
     try {
@@ -253,7 +253,7 @@ export async function sendCollaboratorInviteEmail({ to, name, projectName, proje
     const greeting = safeName ? `Hi ${safeName},` : 'Hi,'
     const textGreeting = name ? `Hi ${name},` : 'Hi,'
 
-    console.log('[EMAIL] Sending collaborator invite email to:', to)
+    console.log('[EMAIL] Sending collaborator invite email')
     try {
         const request = mailjet.post('send', { version: 'v3.1' }).request({
             Messages: [
@@ -306,7 +306,7 @@ export async function sendQuestionnaireInviteEmail({ to, name, projectName, ques
     const greeting = safeName ? `Hi ${safeName},` : 'Hi,'
     const textGreeting = name ? `Hi ${name},` : 'Hi,'
 
-    console.log('[EMAIL] Sending questionnaire invite email to:', to)
+    console.log('[EMAIL] Sending questionnaire invite email')
     try {
         const request = mailjet.post('send', { version: 'v3.1' }).request({
             Messages: [
@@ -359,7 +359,7 @@ export async function sendSchedulingInviteEmail({ to, name, projectName, schedul
     const greeting = safeName ? `Hi ${safeName},` : 'Hi,'
     const textGreeting = name ? `Hi ${name},` : 'Hi,'
 
-    console.log('[EMAIL] Sending scheduling invite email to:', to)
+    console.log('[EMAIL] Sending scheduling invite email')
     try {
         const request = mailjet.post('send', { version: 'v3.1' }).request({
             Messages: [
@@ -405,7 +405,7 @@ export async function sendEmailChangeVerification({ to, code, isNewEmail }: Send
         throw new Error('Email service not configured - missing API keys')
     }
 
-    console.log('[EMAIL] Sending email change verification to:', to)
+    console.log('[EMAIL] Sending email change verification')
     try {
         const subject = isNewEmail ? 'Verify Your New Email Address' : 'Email Change Request'
         const heading = isNewEmail ? 'Verify Your New Email Address' : 'Email Change Request'

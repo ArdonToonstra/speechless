@@ -3,6 +3,8 @@ export const metadata = {
     description: 'Speech writing collaboration app',
     icons: {
         icon: '/images/branding/base-logo.png',
+        // iOS home-screen icon (iOS scales the 192px PWA icon fine)
+        apple: '/icons/icon-192.png',
     },
 }
 

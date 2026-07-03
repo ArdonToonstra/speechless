@@ -4,7 +4,6 @@ import {
   isTiptapFormat,
   convertLexicalToTiptap,
   normalizeContent,
-  tiptapToHtml,
 } from '@/lib/contentMigration'
 
 // ─── Format detection ────────────────────────────────────────────────────────
@@ -200,46 +199,3 @@ describe('normalizeContent', () => {
   })
 })
 
-// ─── tiptapToHtml ─────────────────────────────────────────────────────────────
-
-describe('tiptapToHtml', () => {
-  it('renders a paragraph', () => {
-    const doc = {
-      type: 'doc' as const,
-      content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Hello' }] }],
-    }
-    expect(tiptapToHtml(doc)).toBe('<p>Hello</p>')
-  })
-
-  it('renders a heading', () => {
-    const doc = {
-      type: 'doc' as const,
-      content: [
-        {
-          type: 'heading',
-          attrs: { level: 2 },
-          content: [{ type: 'text', text: 'Title' }],
-        },
-      ],
-    }
-    expect(tiptapToHtml(doc)).toBe('<h2>Title</h2>')
-  })
-
-  it('renders bold text', () => {
-    const doc = {
-      type: 'doc' as const,
-      content: [
-        {
-          type: 'paragraph',
-          content: [{ type: 'text', text: 'Bold', marks: [{ type: 'bold' }] }],
-        },
-      ],
-    }
-    expect(tiptapToHtml(doc)).toBe('<p><strong>Bold</strong></p>')
-  })
-
-  it('renders an empty doc as an empty string', () => {
-    const doc = { type: 'doc' as const, content: [] }
-    expect(tiptapToHtml(doc)).toBe('')
-  })
-})

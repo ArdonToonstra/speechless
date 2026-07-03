@@ -54,6 +54,7 @@ export function QuestionnaireEditor({
     ownerName,
 }: QuestionnaireEditorProps) {
     const processedInitialQuestions = initialQuestions?.map(q => ({
+        id: q.id,
         text: speechReceiverName ? q.text.replace(/\{speechReceiverName\}/g, speechReceiverName) : q.text
     })) || []
 
@@ -131,8 +132,17 @@ export function QuestionnaireEditor({
 
     const handleSave = React.useCallback(async () => {
         setIsSaving(true)
+        // Persist in the QuestionItem schema shape ({id, question, type});
+        // stable ids let answers match by id instead of fragile text comparison.
+        const withIds = questions.map(q => (q.id ? q : { ...q, id: crypto.randomUUID() }))
+        setQuestions(withIds) // keep ids stable across subsequent saves
+        const schemaQuestions = withIds.map(q => ({
+            id: q.id!,
+            question: q.text,
+            type: 'textarea' as const,
+        }))
         const formData = new FormData()
-        formData.append('questions', JSON.stringify(questions))
+        formData.append('questions', JSON.stringify(schemaQuestions))
         formData.append('description', description)
 
         const result = await updateProjectQuestions(projectId, formData)
@@ -220,7 +230,7 @@ export function QuestionnaireEditor({
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => removeQuestion(index)}
-                                    className="h-7 w-7 text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
+                                    className="h-7 w-7 text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all"
                                 >
                                     <Trash2 className="w-3.5 h-3.5" />
                                 </Button>

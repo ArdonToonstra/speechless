@@ -29,8 +29,9 @@ export default async function QuestionnairePage({ params }: { params: Promise<{ 
     const isOwner = project.ownerId === session.user.id
 
     if (isOwner) {
-        const rawQuestions = (project.questions || []) as Array<{ text?: string; question?: string }>
+        const rawQuestions = (project.questions || []) as Array<{ id?: string; text?: string; question?: string }>
         const projectQuestions = rawQuestions.map(q => ({
+            id: q.id,
             text: q.text || q.question || ''
         }))
 

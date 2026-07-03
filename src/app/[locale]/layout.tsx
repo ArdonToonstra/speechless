@@ -1,5 +1,6 @@
 import { Inter, Newsreader } from 'next/font/google'
 import Script from 'next/script'
+import { Toaster } from 'sonner'
 import { NextIntlClientProvider, hasLocale } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
@@ -11,6 +12,9 @@ import './(frontend)/globals.css'
 export const viewport: Viewport = {
     width: 'device-width',
     initialScale: 1,
+    // Required for the env(safe-area-inset-*) padding in globals.css to take effect
+    viewportFit: 'cover',
+    themeColor: '#F6F5EF',
 }
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
@@ -38,6 +42,7 @@ export default async function LocaleLayout({
                 <NextIntlClientProvider locale={locale} messages={messages}>
                     {children}
                 </NextIntlClientProvider>
+                <Toaster richColors position="top-center" />
                 <Script defer src="https://umami.donit.be/script.js" data-website-id="306004f2-2da6-473a-97a4-0c7a19b70289" />
             </body>
         </html>
