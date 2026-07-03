@@ -1,6 +1,7 @@
 import createMiddleware from 'next-intl/middleware'
 import { routing } from './i18n/routing'
 import { type NextRequest, NextResponse } from 'next/server'
+import { getSessionCookie } from 'better-auth/cookies'
 
 const intlMiddleware = createMiddleware(routing)
 
@@ -17,8 +18,10 @@ export default function middleware(request: NextRequest) {
     )
 
     if (isProtected) {
-        const sessionCookie = request.cookies.get('better-auth.session_token')
-        if (!sessionCookie?.value) {
+        // Better Auth prefixes the cookie name with `__Secure-` over HTTPS, so it can't
+        // be read by a fixed literal name — this helper resolves whichever name applies.
+        const sessionCookie = getSessionCookie(request)
+        if (!sessionCookie) {
             const localeMatch = pathname.match(localePattern)
             const locale = localeMatch ? localeMatch[1] : routing.defaultLocale
             const loginUrl = new URL(`/${locale}/login`, request.url)
