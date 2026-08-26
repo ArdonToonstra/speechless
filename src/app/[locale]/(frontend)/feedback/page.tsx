@@ -14,6 +14,7 @@ const OPEN_QUESTIONS = [
     { key: 'best', required: false },
     { key: 'stuck', required: false },
     { key: 'missing', required: false },
+    { key: 'pay', required: true },
 ] as const
 
 export default function FeedbackPage() {
@@ -36,12 +37,6 @@ export default function FeedbackPage() {
         }
     }
 
-    const PAY_OPTIONS = [
-        { id: 'free-only', label: t('payFreeOnly'), description: t('payFreeOnlyDesc') },
-        { id: '5-month', label: t('pay5'), description: t('pay5Desc') },
-        { id: '10-month', label: t('pay10'), description: t('pay10Desc') },
-        { id: '15-plus', label: t('pay15plus'), description: t('pay15plusDesc') },
-    ]
 
     const steps = [
         {
@@ -79,29 +74,6 @@ export default function FeedbackPage() {
                 </div>
             ),
         })),
-        {
-            title: t('payTitle'),
-            description: t('payDescription'),
-            isValid: !!answers.willingness,
-            content: (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                    {PAY_OPTIONS.map((opt) => (
-                        <button
-                            key={opt.id}
-                            onClick={() => update('willingness', opt.id)}
-                            className={`p-5 rounded-2xl border-2 text-left transition-all ${
-                                answers.willingness === opt.id
-                                    ? 'border-primary bg-primary/5 shadow-md'
-                                    : 'border-border/30 hover:border-border hover:shadow-sm'
-                            }`}
-                        >
-                            <p className="font-semibold text-foreground">{opt.label}</p>
-                            <p className="text-sm text-muted-foreground mt-0.5">{opt.description}</p>
-                        </button>
-                    ))}
-                </div>
-            ),
-        },
     ]
 
     return (
