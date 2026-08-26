@@ -8,6 +8,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 
+// ponytail: open questions are all the same shape, so they come from one list
+const OPEN_QUESTIONS = [
+    { key: 'impression', required: true },
+    { key: 'best', required: false },
+    { key: 'stuck', required: false },
+    { key: 'missing', required: false },
+] as const
+
 export default function FeedbackPage() {
     const router = useRouter()
     const t = useTranslations('feedback')
@@ -28,13 +36,6 @@ export default function FeedbackPage() {
         }
     }
 
-    const LIKELIHOOD_OPTIONS = [
-        { id: 'very-likely', label: t('likelihoodVeryLikely'), description: t('likelihoodVeryLikelyDesc') },
-        { id: 'somewhat-likely', label: t('likelihoodSomewhatLikely'), description: t('likelihoodSomewhatLikelyDesc') },
-        { id: 'not-sure', label: t('likelihoodNotSure'), description: t('likelihoodNotSureDesc') },
-        { id: 'unlikely', label: t('likelihoodUnlikely'), description: t('likelihoodUnlikelyDesc') },
-    ]
-
     const PAY_OPTIONS = [
         { id: 'free-only', label: t('payFreeOnly'), description: t('payFreeOnlyDesc') },
         { id: '5-month', label: t('pay5'), description: t('pay5Desc') },
@@ -44,8 +45,8 @@ export default function FeedbackPage() {
 
     const steps = [
         {
-            title: t('step1Title'),
-            description: t('step1Description'),
+            title: t('introTitle'),
+            description: t('introDescription'),
             isValid: true,
             content: (
                 <div className="flex flex-col items-center justify-center gap-6 mt-8 text-center px-4">
@@ -56,54 +57,31 @@ export default function FeedbackPage() {
                         className="h-28 w-auto object-contain opacity-90"
                     />
                     <p className="text-slate-600 text-base leading-relaxed max-w-md">
-                        {t('step1Body')}
+                        {t('introBody')}
                     </p>
-                    <p className="text-slate-400 text-sm">{t('step1Questions')}</p>
+                    <p className="text-slate-400 text-sm">{t('introQuestions')}</p>
                 </div>
             ),
         },
-        {
-            title: t('step2Title'),
-            description: t('step2Description'),
-            isValid: (answers.impression ?? '').trim().length > 0,
+        ...OPEN_QUESTIONS.map(({ key, required }) => ({
+            title: t(`${key}Title`),
+            description: t(`${key}Description`),
+            isValid: !required || (answers[key] ?? '').trim().length > 0,
             content: (
                 <div className="mt-6">
                     <Textarea
-                        placeholder={t('step2Placeholder')}
+                        placeholder={t(`${key}Placeholder`)}
                         className="min-h-[140px] resize-none rounded-2xl border-border/40 focus:border-primary"
-                        value={answers.impression ?? ''}
-                        onChange={(e) => update('impression', e.target.value)}
+                        value={answers[key] ?? ''}
+                        onChange={(e) => update(key, e.target.value)}
                         autoFocus
                     />
                 </div>
             ),
-        },
+        })),
         {
-            title: t('step3Title'),
-            description: t('step3Description'),
-            isValid: !!answers.likelihood,
-            content: (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                    {LIKELIHOOD_OPTIONS.map((opt) => (
-                        <button
-                            key={opt.id}
-                            onClick={() => update('likelihood', opt.id)}
-                            className={`p-5 rounded-2xl border-2 text-left transition-all ${
-                                answers.likelihood === opt.id
-                                    ? 'border-primary bg-primary/5 shadow-md'
-                                    : 'border-border/30 hover:border-border hover:shadow-sm'
-                            }`}
-                        >
-                            <p className="font-semibold text-foreground">{opt.label}</p>
-                            <p className="text-sm text-muted-foreground mt-0.5">{opt.description}</p>
-                        </button>
-                    ))}
-                </div>
-            ),
-        },
-        {
-            title: t('step4Title'),
-            description: t('step4Description'),
+            title: t('payTitle'),
+            description: t('payDescription'),
             isValid: !!answers.willingness,
             content: (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
@@ -121,22 +99,6 @@ export default function FeedbackPage() {
                             <p className="text-sm text-muted-foreground mt-0.5">{opt.description}</p>
                         </button>
                     ))}
-                </div>
-            ),
-        },
-        {
-            title: t('step5Title'),
-            description: t('step5Description'),
-            isValid: true,
-            content: (
-                <div className="mt-6">
-                    <Textarea
-                        placeholder={t('step5Placeholder')}
-                        className="min-h-[140px] resize-none rounded-2xl border-border/40 focus:border-primary"
-                        value={answers.feature ?? ''}
-                        onChange={(e) => update('feature', e.target.value)}
-                        autoFocus
-                    />
                 </div>
             ),
         },
