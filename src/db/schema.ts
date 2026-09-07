@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, boolean, jsonb, integer, uniqueIndex } from 'drizzle-orm/pg-core'
+import { pgTable, text, serial, timestamp, boolean, jsonb, integer, uniqueIndex, index } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 
 // ============================================================================
@@ -220,6 +220,20 @@ export const userFeedback = pgTable('user_feedback', {
   answers: jsonb('answers').$type<Record<string, string>>().notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
+
+// One row per batch of outbound emails a user triggers (invite/questionnaire/scheduling
+// emails), used to enforce a rolling hourly send quota. `count` lets a single action call
+// that emails several recipients count as one row instead of one row per recipient.
+export const emailSendLog = pgTable('email_send_log', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  count: integer('count').notNull().default(1),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  index('email_send_log_user_created_idx').on(table.userId, table.createdAt),
+])
 
 // ============================================================================
 // Type Definitions for JSONB columns

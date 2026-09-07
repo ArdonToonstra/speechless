@@ -6,6 +6,9 @@ import { revalidateForAllLocales } from '@/lib/revalidation'
 import { requireAuth } from './auth'
 import { generateToken } from '@/lib/tokens'
 import { sendCollaboratorInviteEmail } from '@/lib/email'
+import { reserveEmailQuota } from '@/lib/rateLimit'
+
+const VALID_GUEST_ROLES = new Set(['collaborator', 'speech-editor'])
 
 export async function inviteGuest(projectId: number, formData: FormData) {
     const session = await requireAuth()
@@ -16,6 +19,10 @@ export async function inviteGuest(projectId: number, formData: FormData) {
 
     if (!email || !projectId) {
         return { error: 'Missing required fields' }
+    }
+
+    if (role && !VALID_GUEST_ROLES.has(role)) {
+        return { error: 'Invalid role' }
     }
 
     try {
@@ -46,19 +53,25 @@ export async function inviteGuest(projectId: number, formData: FormData) {
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detoast.nl'
         const projectUrl = `${appUrl}/en/projects/${projectId}`
         let emailStatus: 'sent' | 'pending' = 'pending'
+        let rateLimited = false
 
-        try {
-            await sendCollaboratorInviteEmail({
-                to: email,
-                name: name || undefined,
-                projectName: project.name,
-                projectUrl,
-                role: (role || 'collaborator') as 'collaborator' | 'speech-editor',
-                inviterName: session.user.name || session.user.email,
-            })
-            emailStatus = 'sent'
-        } catch (err) {
-            console.error('[INVITE] Failed to send invite email:', err)
+        const { allowed } = await reserveEmailQuota(session.user.id, 1)
+        if (allowed < 1) {
+            rateLimited = true
+        } else {
+            try {
+                await sendCollaboratorInviteEmail({
+                    to: email,
+                    name: name || undefined,
+                    projectName: project.name,
+                    projectUrl,
+                    role: (role || 'collaborator') as 'collaborator' | 'speech-editor',
+                    inviterName: session.user.name || session.user.email,
+                })
+                emailStatus = 'sent'
+            } catch (err) {
+                console.error('[INVITE] Failed to send invite email:', err)
+            }
         }
 
         if (emailStatus === 'sent') {
@@ -66,7 +79,12 @@ export async function inviteGuest(projectId: number, formData: FormData) {
         }
 
         revalidateForAllLocales(`/projects/${projectId}/collaborators`)
-        return { success: true, message: 'Invite sent!' }
+        return {
+            success: true,
+            message: rateLimited
+                ? 'Invite created, but the email send limit was reached — it will need to be resent later.'
+                : 'Invite sent!',
+        }
     } catch (error) {
         console.error('Failed to invite guest:', error)
         return { error: 'Failed to invite guest' }
@@ -115,6 +133,10 @@ export async function deleteGuest(guestId: number, projectId: number) {
 
 export async function updateGuestRole(guestId: number, projectId: number, newRole: 'collaborator' | 'speech-editor') {
     const session = await requireAuth()
+
+    if (!VALID_GUEST_ROLES.has(newRole)) {
+        return { error: 'Invalid role' }
+    }
 
     try {
         // Verify user owns the project

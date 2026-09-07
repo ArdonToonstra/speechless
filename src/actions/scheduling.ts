@@ -142,7 +142,7 @@ export async function deleteDateOption(
     }
 
     try {
-        await db.delete(dateOptions).where(eq(dateOptions.id, optionId))
+        await db.delete(dateOptions).where(and(eq(dateOptions.id, optionId), eq(dateOptions.projectId, projectId)))
 
         revalidateForAllLocales(`/projects/${projectId}/scheduling`)
         return { success: true }
@@ -175,6 +175,15 @@ export async function submitDateResponse(
 
         if (!guest) {
             return { success: false, error: 'You are not a collaborator on this project' }
+        }
+
+        // Verify the date option actually belongs to this project, not just that
+        // the caller is a member of *some* project — dateOptionId is client-supplied.
+        const option = await db.query.dateOptions.findFirst({
+            where: and(eq(dateOptions.id, dateOptionId), eq(dateOptions.projectId, projectId)),
+        })
+        if (!option) {
+            return { success: false, error: 'Date option not found' }
         }
 
         await db.insert(dateResponses)

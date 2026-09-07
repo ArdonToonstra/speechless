@@ -9,6 +9,7 @@ import { requireAuth } from './auth'
 import type { QuestionItem, AnswerItem } from '@/db/schema'
 import { sendQuestionnaireInviteEmail } from '@/lib/email'
 import { validateQuestionnaireInput } from '@/lib/validation'
+import { reserveEmailQuota } from '@/lib/rateLimit'
 
 export async function updateProjectQuestions(projectId: number, formData: FormData) {
     const session = await requireAuth()
@@ -78,8 +79,10 @@ export async function sendQuestionnaireToCollaborators(projectId: number) {
     const questionnaireUrl = `${appUrl}/${locale}/questionnaire/${project.shareToken}`
     const ownerName = session.user.name || session.user.email
 
+    const { allowed, limited } = await reserveEmailQuota(session.user.id, eligible.length)
+
     let sent = 0
-    for (const guest of eligible) {
+    for (const guest of eligible.slice(0, allowed)) {
         try {
             await sendQuestionnaireInviteEmail({
                 to: guest.email,
@@ -94,7 +97,7 @@ export async function sendQuestionnaireToCollaborators(projectId: number) {
         }
     }
 
-    return { success: true, sent }
+    return { success: true, sent, rateLimited: limited }
 }
 
 export async function sendQuestionnaireToEmails(
@@ -118,8 +121,10 @@ export async function sendQuestionnaireToEmails(
     const questionnaireUrl = `${appUrl}/${locale}/questionnaire/${project.shareToken}`
     const ownerName = session.user.name || session.user.email
 
+    const { allowed, limited } = await reserveEmailQuota(session.user.id, emails.length)
+
     let sent = 0
-    for (const recipient of emails) {
+    for (const recipient of emails.slice(0, allowed)) {
         try {
             await sendQuestionnaireInviteEmail({
                 to: recipient.email,
@@ -134,7 +139,7 @@ export async function sendQuestionnaireToEmails(
         }
     }
 
-    return { success: true, sent }
+    return { success: true, sent, rateLimited: limited }
 }
 
 export async function submitQuestionnaire(data: {
@@ -237,7 +242,6 @@ export async function submitQuestionnaireAsUser(
 
         const isOwner = project.ownerId === session.user.id
 
-        // Find or create a guest record for this user on the project
         let guest = await db.query.guests.findFirst({
             where: and(
                 eq(guests.projectId, projectId),
@@ -246,14 +250,21 @@ export async function submitQuestionnaireAsUser(
         })
 
         if (!guest) {
+            // Only the owner gets an implicit guest record created here (so they can
+            // answer their own questionnaire). Anyone else must already have joined
+            // the project via an invite or magic link — never auto-grant access.
+            if (!isOwner) return { error: 'Forbidden' }
+
             const [created] = await db.insert(guests).values({
                 email: session.user.email,
                 name: session.user.name,
                 projectId,
-                role: isOwner ? 'owner' : 'collaborator',
+                role: 'owner',
                 status: 'accepted',
             }).returning()
             guest = created
+        } else if (guest.status !== 'accepted' && !isOwner) {
+            return { error: 'Forbidden' }
         }
 
         // Build lookup from rendered question text → question ID

@@ -3,9 +3,13 @@ import { db } from '@/db'
 import { verification } from '@/db/schema'
 import { eq, desc, like } from 'drizzle-orm'
 
+// Allowlist rather than denylist: only known-safe environments unlock this
+// endpoint, so an unset/unexpected NODE_ENV (a misconfigured deployment) fails
+// closed instead of silently falling through to "allowed".
+const ALLOWED_ENVS = new Set(['development', 'test'])
+
 export async function GET(request: NextRequest) {
-  // Only allow in non-production environments
-  if (process.env.NODE_ENV === 'production') {
+  if (!ALLOWED_ENVS.has(process.env.NODE_ENV ?? '')) {
     return NextResponse.json(
       { error: 'Not available in production' },
       { status: 403 }

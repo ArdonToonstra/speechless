@@ -292,6 +292,9 @@ export function QuestionnaireEditor({
                                             toast.error(result.error)
                                         } else {
                                             toast.success(`Sent to ${result.sent} collaborator${result.sent === 1 ? '' : 's'}`)
+                                            if (result.rateLimited) {
+                                                toast.warning('Hourly email limit reached — some invites were not sent. Try the rest later.')
+                                            }
                                         }
                                     }}
                                     disabled={isSendingEmails}
@@ -368,6 +371,9 @@ export function QuestionnaireEditor({
                                         toast.error(result.error)
                                     } else {
                                         toast.success(`Sent to ${result.sent} recipient${result.sent === 1 ? '' : 's'}`)
+                                        if (result.rateLimited) {
+                                            toast.warning('Hourly email limit reached — some invites were not sent. Try the rest later.')
+                                        }
                                         setAdditionalEmails([])
                                     }
                                 }}

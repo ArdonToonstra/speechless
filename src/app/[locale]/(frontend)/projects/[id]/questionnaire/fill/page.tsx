@@ -23,12 +23,16 @@ export default async function QuestionnaireFillPage({ params }: { params: Promis
 
     if (!project) notFound()
 
+    const isOwner = project.ownerId === session.user.id
+
     const guestRecord = await db.query.guests.findFirst({
         where: and(
             eq(guests.projectId, projectId),
             eq(guests.email, session.user.email)
         ),
     })
+
+    if (!isOwner && guestRecord?.status !== 'accepted') notFound()
 
     const existingSubmission = guestRecord
         ? await db.query.submissions.findFirst({

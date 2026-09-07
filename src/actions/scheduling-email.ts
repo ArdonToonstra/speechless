@@ -5,6 +5,7 @@ import { getLocale } from 'next-intl/server'
 import { db, projects, guests } from '@/db'
 import { requireAuth } from './auth'
 import { sendSchedulingInviteEmail } from '@/lib/email'
+import { reserveEmailQuota } from '@/lib/rateLimit'
 
 export async function sendSchedulingToCollaborators(projectId: number) {
     const session = await requireAuth()
@@ -33,8 +34,10 @@ export async function sendSchedulingToCollaborators(projectId: number) {
     const schedulingUrl = `${appUrl}/${locale}/scheduling/${project.shareToken}`
     const ownerName = session.user.name || session.user.email
 
+    const { allowed, limited } = await reserveEmailQuota(session.user.id, eligible.length)
+
     let sent = 0
-    for (const guest of eligible) {
+    for (const guest of eligible.slice(0, allowed)) {
         try {
             await sendSchedulingInviteEmail({
                 to: guest.email,
@@ -49,7 +52,7 @@ export async function sendSchedulingToCollaborators(projectId: number) {
         }
     }
 
-    return { success: true, sent }
+    return { success: true, sent, rateLimited: limited }
 }
 
 export async function sendSchedulingToEmails(
@@ -73,8 +76,10 @@ export async function sendSchedulingToEmails(
     const schedulingUrl = `${appUrl}/${locale}/scheduling/${project.shareToken}`
     const ownerName = session.user.name || session.user.email
 
+    const { allowed, limited } = await reserveEmailQuota(session.user.id, emails.length)
+
     let sent = 0
-    for (const recipient of emails) {
+    for (const recipient of emails.slice(0, allowed)) {
         try {
             await sendSchedulingInviteEmail({
                 to: recipient.email,
@@ -89,5 +94,5 @@ export async function sendSchedulingToEmails(
         }
     }
 
-    return { success: true, sent }
+    return { success: true, sent, rateLimited: limited }
 }
